@@ -1,13 +1,16 @@
 # sqlSubmit
+
 SQL submission program base on flink
 Now just support flink 1.10.1
 [https://flink.apache.org/][Learn more about Flink]
 
 ## Features
+
 * submit flink sql to cluster
 
 ## Example
-sql flink ***demo.sql*** like : 
+
+SQL file ***demo.sql*** like : 
 ```sql
 -- source
 CREATE TABLE user_log (
@@ -53,6 +56,7 @@ GROUP BY DATE_FORMAT(ts, 'yyyy-MM-dd HH:00')
 ```
 
 commit to flink cluster
+
 ```Bash
 sh sqlSubmit.sh sql/demo.sql # submit demo.sql to flink cluster
 
