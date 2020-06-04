@@ -73,7 +73,7 @@ sh sqlSubmit.sh sql/demo.sql --sql demo.sql --state.backend rocksdb --job.prop.f
 ## Building 
 
 * Git
-* Maven (we recommend version 3.2.5 and require at least 3.1.1)
+* Maven (recommend version 3.2.5 and require at least 3.1.1)
 * Java 8 or 11 (Java 9 or 10 may work)
 
 ```bash
