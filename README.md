@@ -1,8 +1,12 @@
 # sqlSubmit
 
 SQL submission program base on flink
+
 Now just support flink 1.10.1
-[https://flink.apache.org/][Learn more about Flink]
+
+Learn more about Flink https://flink.apache.org/
+
+jark's flink-sql-submit https://github.com/wuchong/flink-sql-submit
 
 ## Features
 
