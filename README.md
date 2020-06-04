@@ -77,6 +77,6 @@ mvn clean package -DskipTests # this will take up to 10 minutes
 
 ## Support
 
-![image](https://github.com/ButBueatiful/dotvim/raw/master/screenshots/vim-screenshot.jpg)
+![image](https://github.com/springMoon/sqlSubmit/doc/picture/gzh.png)
 
 ## About
