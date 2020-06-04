@@ -57,7 +57,7 @@ GROUP BY DATE_FORMAT(ts, 'yyyy-MM-dd HH:00')
 
 commit to flink cluster
 
-```Bash
+```bash
 sh sqlSubmit.sh sql/demo.sql # submit demo.sql to flink cluster
 
 ```
@@ -68,7 +68,7 @@ sh sqlSubmit.sh sql/demo.sql # submit demo.sql to flink cluster
 * Maven (we recommend version 3.2.5 and require at least 3.1.1)
 * Java 8 or 11 (Java 9 or 10 may work)
 
-```Bash
+```bash
 git clone https://github.com/springMoon/sqlSubmit.git
 cd sqlSubmit
 mvn clean package -DskipTests # this will take up to 10 minutes
