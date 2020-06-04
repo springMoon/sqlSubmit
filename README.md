@@ -1,5 +1,6 @@
 # sqlSubmit
-sql submit program base flink 1.10
+SQL submission program base on flink
+Now just support flink 1.10.1
 [https://flink.apache.org/][Learn more about Flink]
 
 ## Features
