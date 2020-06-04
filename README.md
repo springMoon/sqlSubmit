@@ -6,7 +6,7 @@ Now just support flink 1.10.1
 
 Learn more about Flink https://flink.apache.org/
 
-jark's flink-sql-submit https://github.com/wuchong/flink-sql-submit
+Derived from Jark's blog http://wuchong.me/blog/2019/09/02/flink-sql-1-9-read-from-kafka-write-into-mysql/
 
 ## Features
 
@@ -62,7 +62,10 @@ GROUP BY DATE_FORMAT(ts, 'yyyy-MM-dd HH:00')
 commit to flink cluster
 
 ```bash
-sh sqlSubmit.sh sql/demo.sql # submit demo.sql to flink cluster
+# --sql special sql file
+# --test add properties test
+# --job.prop.file special job properties
+sh sqlSubmit.sh sql/demo.sql --sql demo.sql --test xxx --job.prop.file C:\Users\wuxu\github\sqlSubmit\target\classes\xx.properties
 
 ```
 
