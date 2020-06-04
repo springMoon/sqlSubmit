@@ -62,10 +62,11 @@ GROUP BY DATE_FORMAT(ts, 'yyyy-MM-dd HH:00')
 commit to flink cluster
 
 ```bash
-# --sql special sql file
-# --test add properties test
-# --job.prop.file special job properties
-sh sqlSubmit.sh sql/demo.sql --sql demo.sql --test xxx --job.prop.file C:\Users\wuxu\github\sqlSubmit\target\classes\xx.properties
+# --sql demo.sql                              special sql file demo.sql
+# --state.backend rocksdb                     add properties state.backend as rocksdb
+# --job.prop.file demoJobPropFile.properties  special job properties
+# parameter priority : special parameter is hightest, next is job.prop.file, default properties [sqlSubmit.properties] last
+sh sqlSubmit.sh sql/demo.sql --sql demo.sql --state.backend rocksdb --job.prop.file demoJobPropFile.properties
 
 ```
 
