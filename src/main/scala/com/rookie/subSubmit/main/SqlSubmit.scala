@@ -53,7 +53,7 @@ object SqlSubmit {
     // add sql
     for (sql <- sqlList) {
       try {
-        tabEnv.sqlUpdate("sql")
+        tabEnv.sqlUpdate(sql)
         println("execute success : " + sql)
       } catch {
         case e: Exception => {
