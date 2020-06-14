@@ -30,7 +30,9 @@ public class SqlFileUtil {
                 continue;
             }
             // remove comment
-            line = line.substring(line.indexOf("--"));
+            if (line.contains("--")) {
+                line = line.substring(line.indexOf("--"));
+            }
             // add current line to sqlBuffer
             sqlBuffer.append(line);
             // check sql end
