@@ -45,8 +45,8 @@ object SqlSubmit {
     TableConfUtil.conf(tabEnv, paraTool)
 
     // register catalog
-    val catalog = new HiveCatalog(Constant.HIVE_CATALOG_NAME, Constant.HIVE_DEFAULT_DATABASE, Constant.HIVE_CONFIG_PATH, Constant.HIVE_VERSION)
-    tabEnv.useCatalog(Constant.HIVE_CATALOG_NAME)
+//    val catalog = new HiveCatalog(Constant.HIVE_CATALOG_NAME, Constant.HIVE_DEFAULT_DATABASE, Constant.HIVE_CONFIG_PATH, Constant.HIVE_VERSION)
+//    tabEnv.useCatalog(Constant.HIVE_CATALOG_NAME)
 
     // load udf
 
@@ -59,6 +59,7 @@ object SqlSubmit {
         case e: Exception => {
           println("execute sql error : " + sql)
           e.printStackTrace()
+          System.exit(-1)
         }
       }
     }

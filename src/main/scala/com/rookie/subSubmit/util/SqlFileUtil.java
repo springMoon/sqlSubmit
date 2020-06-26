@@ -31,16 +31,20 @@ public class SqlFileUtil {
             }
             // remove comment
             if (line.contains("--")) {
-                line = line.substring(line.indexOf("--"));
+                line = line.substring(0, line.indexOf("--"));
             }
             // add current line to sqlBuffer
             sqlBuffer.append(line);
+            sqlBuffer.append("\n");
             // check sql end
             if (line.endsWith(";")) {
                 // add sql to sqlList
-                sqlList.add(sqlBuffer.toString());
+                String tmpSql = sqlBuffer.toString();
+                // remove last ";"
+                tmpSql = tmpSql.substring(0, tmpSql.lastIndexOf(";"));
+                sqlList.add(tmpSql);
                 // remove StringBuilder
-                sqlBuffer.delete(0, sqlBuffer.length() - 1);
+                sqlBuffer.delete(0, sqlBuffer.length());
             }
         }
         // if last sql sentence not end with ";"
