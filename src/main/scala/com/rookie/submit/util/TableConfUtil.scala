@@ -1,6 +1,6 @@
-package com.rookie.subSubmit.util
+package com.rookie.submit.util
 
-import com.rookie.subSubmit.common.Constant
+import com.rookie.submit.common.Constant
 import org.apache.flink.api.common.time.Time
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.table.api.scala.StreamTableEnvironment

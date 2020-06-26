@@ -1,4 +1,4 @@
-package com.rookie.subSubmit.common;
+package com.rookie.submit.common;
 
 public class Constant {
 

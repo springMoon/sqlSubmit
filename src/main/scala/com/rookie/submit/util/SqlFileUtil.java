@@ -1,4 +1,4 @@
-package com.rookie.subSubmit.util;
+package com.rookie.submit.util;
 
 import org.apache.commons.lang3.StringUtils;
 

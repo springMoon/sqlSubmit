@@ -1,4 +1,4 @@
-package com.rookie.subSubmit.common
+package com.rookie.submit.common
 
 import java.io.File
 import org.apache.flink.api.java.utils.ParameterTool

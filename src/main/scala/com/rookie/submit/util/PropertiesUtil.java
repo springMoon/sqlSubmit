@@ -1,4 +1,4 @@
-package com.rookie.subSubmit.util;
+package com.rookie.submit.util;
 
 import java.io.File;
 import java.io.FileInputStream;
