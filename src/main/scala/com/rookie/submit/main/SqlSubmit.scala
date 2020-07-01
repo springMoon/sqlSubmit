@@ -1,18 +1,11 @@
 package com.rookie.submit.main
 
-import java.time.Duration
 import java.util.List
-
 import com.rookie.submit.common.{Common, Constant}
 import com.rookie.submit.util.{SqlFileUtil, TableConfUtil}
-import org.apache.flink.api.common.time.Time
-import org.apache.flink.configuration.{Configuration, CoreOptions, PipelineOptions}
-import org.apache.flink.streaming.api.environment.ExecutionCheckpointingOptions
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.EnvironmentSettings
 import org.apache.flink.table.api.scala.StreamTableEnvironment
-import org.apache.flink.table.catalog.hive.HiveCatalog
-
 import scala.collection.JavaConversions._
 
 
@@ -28,8 +21,6 @@ object SqlSubmit {
 
     // parse input parameter and load job properties
     val paraTool = Common.init(args);
-    // todo just for test
-
 
     // parse sql file
     val sqlList: List[String] = SqlFileUtil.readFile(paraTool.get(Constant.INPUT_SQL_FILE_PARA))
