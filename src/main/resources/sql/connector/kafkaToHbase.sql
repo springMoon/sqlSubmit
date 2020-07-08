@@ -8,41 +8,34 @@ CREATE TABLE user_log (
 ) WITH (
   'connector.type' = 'kafka'
   ,'connector.version' = 'universal'
-  ,'connector.topic' = 'user_behavior'                            -- required: topic name from which the table is read
-  ,'connector.properties.zookeeper.connect' = 'master:2181,slave1:2181,slave2:2181'    -- required: specify the ZooKeeper connection string
-  ,'connector.properties.bootstrap.servers' = 'master:6667,slave1:6667,slave2:6667,slave3:6667,slave4:6667'    -- required: specify the Kafka server connection string
-  ,'connector.properties.group.id' = 'user_log'                   -- optional: required in Kafka consumer, specify consumer group
-  ,'connector.startup-mode' = 'group-offsets'                     -- optional: valid modes are "earliest-offset", "latest-offset", "group-offsets",  "specific-offsets"
-  ,'connector.sink-partitioner' = 'fixed'                         --optional fixed 每个 flink 分区数据只发到 一个 kafka 分区
-                                                                          -- round-robin flink 分区轮询分配到 kafka 分区
-                                                                          -- custom 自定义分区策略
-  --,'connector.sink-partitioner-class' = 'org.mycompany.MyPartitioner'   -- 自定义分区类
-  ,'format.type' = 'json'                 -- required:  'csv', 'json' and 'avro'.
+  ,'connector.topic' = 'user_behavior_1'
+  ,'connector.properties.zookeeper.connect' = 'master:2181,slave1:2181,slave2:2181'
+  ,'connector.properties.bootstrap.servers' = 'master:6667,slave1:6667,slave2:6667,slave3:6667,slave4:6667'
+  ,'connector.properties.group.id' = 'user_log_x'
+  ,'connector.startup-mode' = 'group-offsets'
+  ,'connector.sink-partitioner' = 'fixed'
+  ,'format.type' = 'json'
 );
 
 -- kafka sink
 CREATE TABLE user_log_sink (
-  user_id VARCHAR
-  ,item_id VARCHAR
-  ,category_id VARCHAR
-  ,behavior VARCHAR
-  ,ts TIMESTAMP(3)
+  user_id string
+  ,f ROW(item_id VARCHAR
+      ,category_id VARCHAR
+      ,behavior VARCHAR
+      ,ts TIMESTAMP(3))
 ) WITH (
-  'connector.type' = 'kafka'
-  ,'connector.version' = 'universal'
-  ,'connector.topic' = 'user_behavior_sink'                            -- required: topic name from which the table is read
-  ,'connector.properties.zookeeper.connect' = 'master:2181,slave1:2181,slave2:2181'    -- required: specify the ZooKeeper connection string
-  ,'connector.properties.bootstrap.servers' = 'master:6667,slave1:6667,slave2:6667,slave3:6667,slave4:6667'    -- required: specify the Kafka server connection string
-  ,'connector.properties.group.id' = 'user_log'                   -- optional: required in Kafka consumer, specify consumer group
-  ,'connector.startup-mode' = 'group-offsets'                     -- optional: valid modes are "earliest-offset", "latest-offset", "group-offsets",  "specific-offsets"
-  ,'connector.sink-partitioner' = 'fixed'                         --optional fixed 每个 flink 分区数据只发到 一个 kafka 分区
-                                                                          -- round-robin flink 分区轮询分配到 kafka 分区
-                                                                          -- custom 自定义分区策略
-  --,'connector.sink-partitioner-class' = 'org.mycompany.MyPartitioner'   -- 自定义分区类
-  ,'format.type' = 'json'                 -- required:  'csv', 'json' and 'avro'.
+  'connector.type' = 'hbase'
+  ,'connector.version' = '1.4.3'
+  ,'connector.table-name' = 'collision_detection:terminal_geographic_info_30'
+  ,'connector.zookeeper.quorum' = 'master:2181,slave1:2181,slave2:2181'
+  ,'connector.zookeeper.znode.parent' = '/hbase-unsecure'
+  ,'connector.write.buffer-flush.max-size' = '10mb'
+  ,'connector.write.buffer-flush.max-rows' = '1000'
+  ,'connector.write.buffer-flush.interval' = '2s'
 );
 
 -- insert
 insert into user_log_sink
-select user_id, item_id, category_id, behavior, ts
+select user_id, ROW(item_id, category_id, behavior, ts) as f
 from user_log;
