@@ -1,8 +1,8 @@
-package com.venn.sql.udf;
+package com.rookie.submit.udf;
 
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.table.catalog.DataTypeFactory;
 import org.apache.flink.table.functions.ScalarFunction;
+import org.apache.flink.table.types.inference.TypeInference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,10 +26,13 @@ public class Decode extends ScalarFunction {
         }
         return obj[size - 1];
     }
-
-
-    public TypeInformation<?> getResultType(Class<?>[] signature) {
+    /*public TypeInformation<?> getResultType(Class<?>[] signature) {
         return Types.STRING;
+    }*/
+
+    @Override
+    public TypeInference getTypeInference(DataTypeFactory typeFactory) {
+        return TypeInference.newBuilder().build();
     }
 
     public static void main(String[] args) throws Exception {

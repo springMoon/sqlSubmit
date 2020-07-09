@@ -1,7 +1,7 @@
 package com.rookie.submit.util
 
 import com.rookie.submit.common.Constant
-import org.apache.flink.table.api.scala.StreamTableEnvironment
+import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
 import org.apache.flink.table.catalog.hive.HiveCatalog
 
 /**
