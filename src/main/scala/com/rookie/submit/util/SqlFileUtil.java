@@ -26,7 +26,7 @@ public class SqlFileUtil {
         StringBuilder sqlBuffer = new StringBuilder();
         while ((line = br.readLine()) != null) {
             // ignore empty line and comment line
-            if (StringUtils.isEmpty(line) || line.startsWith("--")) {
+            if (StringUtils.isEmpty(line) || line.trim().startsWith("--")) {
                 continue;
             }
             // remove comment

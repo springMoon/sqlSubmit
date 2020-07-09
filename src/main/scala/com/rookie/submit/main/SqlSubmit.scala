@@ -11,8 +11,9 @@ import org.apache.flink.streaming.api.CheckpointingMode
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.EnvironmentSettings
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
-import scala.collection.JavaConversions._
+import org.slf4j.LoggerFactory
 
+import scala.collection.JavaConversions._
 
 /**
   * sqlSubmit main class
@@ -20,10 +21,9 @@ import scala.collection.JavaConversions._
   */
 object SqlSubmit {
 
-  var path: String = DEFAULT_CONFIG_FILE
+  private val logger = LoggerFactory.getLogger(SqlSubmit.getClass)
 
   def main(args: Array[String]): Unit = {
-
     // parse input parameter and load job properties
     val paraTool = Common.init(args)
 
@@ -54,16 +54,16 @@ object SqlSubmit {
     for (sql <- sqlList) {
       try {
         tabEnv.executeSql(sql)
-        println("execute success : " + sql)
+        logger.info("execute success : " + sql)
       } catch {
         case e: Exception =>
-          println("execute sql error : " + sql)
+          logger.error("execute sql error : " + sql, e)
           e.printStackTrace()
           System.exit(-1)
       }
     }
-    // execute flink job
-    env.execute(Common.jobName)
+    // not need, sql will execute when call executeSql
+    //    env.execute(Common.jobName)
   }
 
   def enableCheckpoint(env: StreamExecutionEnvironment, paraTool: ParameterTool): Unit = {
@@ -76,8 +76,8 @@ object SqlSubmit {
     }
     env.setStateBackend(stateBackend)
     // checkpoint
-    env.enableCheckpointing(paraTool.getLong(CHECKPOINT_INTERVAL), CheckpointingMode.EXACTLY_ONCE)
-    env.getCheckpointConfig.setCheckpointTimeout(paraTool.getLong(CHECKPOINT_TIMEOUT))
+    env.enableCheckpointing(paraTool.getLong(CHECKPOINT_INTERVAL) * 1000, CheckpointingMode.EXACTLY_ONCE)
+    env.getCheckpointConfig.setCheckpointTimeout(paraTool.getLong(CHECKPOINT_TIMEOUT) * 1000)
     // Flink 1.11.0 new feature: Enables unaligned checkpoints
     env.getCheckpointConfig.enableUnalignedCheckpoints()
   }
