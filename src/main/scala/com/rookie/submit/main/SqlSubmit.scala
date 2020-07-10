@@ -9,7 +9,7 @@ import org.apache.flink.runtime.state.StateBackend
 import org.apache.flink.runtime.state.filesystem.FsStateBackend
 import org.apache.flink.streaming.api.CheckpointingMode
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
-import org.apache.flink.table.api.EnvironmentSettings
+import org.apache.flink.table.api.{EnvironmentSettings, StatementSet}
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
 import org.slf4j.LoggerFactory
 
@@ -53,6 +53,13 @@ object SqlSubmit {
     // execute sql
     for (sql <- sqlList) {
       try {
+        if (sql.startsWith("insert")) {
+
+          // ss
+          val statement: StatementSet = tabEnv.createStatementSet()
+          val result = statement.addInsertSql(sql)
+          result.execute(Common.jobName)
+        }
         tabEnv.executeSql(sql)
         logger.info("execute success : " + sql)
       } catch {

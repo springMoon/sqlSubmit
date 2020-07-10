@@ -696,12 +696,16 @@ public class TableEnvironmentImpl implements TableEnvironmentInternal {
 
     @Override
     public TableResult executeInternal(List<ModifyOperation> operations) {
+        return executeInternal(operations, null);
+    }
+
+    @Override
+    public TableResult executeInternal(List<ModifyOperation> operations, String jobName) {
         List<Transformation<?>> transformations = translate(operations);
         List<String> sinkIdentifierNames = extractSinkIdentifierNames(operations);
-        // update by flink-rookie for special jobName
-//		String jobName = "insert-into_" + String.join(",", sinkIdentifierNames);
-        String jobName = Common.jobName();
-        logger.error("update jobName : {}", jobName);
+        if (jobName == null) {
+            jobName = "insert-into_" + String.join(",", sinkIdentifierNames);
+        }
         Pipeline pipeline = execEnv.createPipeline(transformations, tableConfig, jobName);
         try {
             JobClient jobClient = execEnv.executeAsync(pipeline);
@@ -1136,7 +1140,7 @@ public class TableEnvironmentImpl implements TableEnvironmentInternal {
 
     /**
      * extract sink identifier names from {@link ModifyOperation}s.
-     *
+     * <p>
      * <p>If there are multiple ModifyOperations have same name,
      * an index suffix will be added at the end of the name to ensure each name is unique.
      */
@@ -1240,7 +1244,7 @@ public class TableEnvironmentImpl implements TableEnvironmentInternal {
 
     /**
      * Translate the buffered operations to Transformations, and clear the buffer.
-     *
+     * <p>
      * <p>The buffer will be clear even if the `translate` fails. In most cases,
      * the failure is not retryable (e.g. type mismatch, can't generate physical plan).
      * If the buffer is not clear after failure, the following `translate` will also fail.
