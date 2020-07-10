@@ -44,5 +44,10 @@ CREATE TABLE user_log_sink (
 
 -- insert
 insert into user_log_sink
-select user_id, item_id, category_id, behavior, ts
+select user_id, item_id, category_id, behavior || '_1', ts
+from user_log;
+
+-- insert 2
+insert into user_log_sink
+select user_id, item_id, category_id, behavior || '_2', ts
 from user_log;

@@ -51,16 +51,16 @@ object SqlSubmit {
     // load udf
     RegisterUdf.registerUdf(tabEnv)
     // execute sql
+    val statement: StatementSet = tabEnv.createStatementSet()
+    var result: StatementSet = null
     for (sql <- sqlList) {
       try {
         if (sql.startsWith("insert")) {
-
           // ss
-          val statement: StatementSet = tabEnv.createStatementSet()
-          val result = statement.addInsertSql(sql)
-          result.execute(Common.jobName)
+          result = statement.addInsertSql(sql)
+        } else {
+          tabEnv.executeSql(sql)
         }
-        tabEnv.executeSql(sql)
         logger.info("execute success : " + sql)
       } catch {
         case e: Exception =>
@@ -70,7 +70,8 @@ object SqlSubmit {
       }
     }
     // not need, sql will execute when call executeSql
-    //    env.execute(Common.jobName)
+    result.execute(Common.jobName)
+    //        env.execute(Common.jobName)
   }
 
   def enableCheckpoint(env: StreamExecutionEnvironment, paraTool: ParameterTool): Unit = {
