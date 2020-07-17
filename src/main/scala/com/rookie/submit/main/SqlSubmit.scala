@@ -69,8 +69,8 @@ object SqlSubmit {
           System.exit(-1)
       }
     }
-    // not need, sql will execute when call executeSql
     result.execute(Common.jobName)
+    // not need, sql will execute when call executeSql
     //        env.execute(Common.jobName)
   }
 
