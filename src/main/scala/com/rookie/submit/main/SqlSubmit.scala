@@ -9,8 +9,8 @@ import org.apache.flink.runtime.state.StateBackend
 import org.apache.flink.runtime.state.filesystem.FsStateBackend
 import org.apache.flink.streaming.api.CheckpointingMode
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
-import org.apache.flink.table.api.{EnvironmentSettings, StatementSet}
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
+import org.apache.flink.table.api.{EnvironmentSettings, StatementSet}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
@@ -44,23 +44,22 @@ object SqlSubmit {
     // table Config
     TableConfUtil.conf(tabEnv, paraTool)
 
-    // register catalog
-    //    val catalog = new HiveCatalog(Constant.HIVE_CATALOG_NAME, Constant.HIVE_DEFAULT_DATABASE, Constant.HIVE_CONFIG_PATH, Constant.HIVE_VERSION)
-    //    tabEnv.useCatalog(Constant.HIVE_CATALOG_NAME)
+    // register catalog, only in server
+//    val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH), paraTool.get(Constant.HIVE_VERSION))
+//    tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
+//    tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
 
     // load udf
     RegisterUdf.registerUdf(tabEnv)
     // execute sql
-    val statement: StatementSet = tabEnv.createStatementSet()
+    val statement = tabEnv.createStatementSet()
     var result: StatementSet = null
     for (sql <- sqlList) {
       try {
         if (sql.startsWith("insert")) {
           // ss
           result = statement.addInsertSql(sql)
-        } else {
-          tabEnv.executeSql(sql)
-        }
+        } else tabEnv.executeSql(sql)
         logger.info("execute success : " + sql)
       } catch {
         case e: Exception =>
