@@ -4,6 +4,7 @@ object FlinkTestDemo {
 
   def test() = {
     println("xx")
+    println("xx")
   }
 
 }

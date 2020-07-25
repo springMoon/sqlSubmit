@@ -14,11 +14,15 @@ public class SqlFileUtil {
     public static List<String> readFile(String fileName) throws IOException {
         // list store return sql
         List<String> sqlList = new ArrayList<String>();
-
+        // add widonw path
+        if (File.separator.equals("\\")) {
+            fileName = SqlFileUtil.class.getClassLoader().getResource("").getPath() + fileName;
+        }
         File file = new File(fileName);
         // check file exists
         if (!file.exists()) {
             System.out.println("File not found: " + fileName);
+            System.exit(-1);
         }
         // read file
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -26,7 +30,7 @@ public class SqlFileUtil {
         StringBuilder sqlBuffer = new StringBuilder();
         while ((line = br.readLine()) != null) {
             // ignore empty line and comment line
-            if (StringUtils.isEmpty(line) || line.startsWith("--")) {
+            if (StringUtils.isEmpty(line) || line.trim().startsWith("--")) {
                 continue;
             }
             // remove comment

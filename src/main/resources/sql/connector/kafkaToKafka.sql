@@ -8,9 +8,9 @@ CREATE TABLE user_log (
 ) WITH (
   'connector.type' = 'kafka'
   ,'connector.version' = 'universal'
-  ,'connector.topic' = 'user_behavior'                            -- required: topic name from which the table is read
-  ,'connector.properties.zookeeper.connect' = 'master:2181,slave1:2181,slave2:2181'    -- required: specify the ZooKeeper connection string
-  ,'connector.properties.bootstrap.servers' = 'master:6667,slave1:6667,slave2:6667,slave3:6667,slave4:6667'    -- required: specify the Kafka server connection string
+  ,'connector.topic' = 'user_behavior_2'                            -- required: topic name from which the table is read
+  ,'connector.properties.zookeeper.connect' = 'venn:2181'    -- required: specify the ZooKeeper connection string
+  ,'connector.properties.bootstrap.servers' = 'venn:9092'    -- required: specify the Kafka server connection string
   ,'connector.properties.group.id' = 'user_log'                   -- optional: required in Kafka consumer, specify consumer group
   ,'connector.startup-mode' = 'group-offsets'                     -- optional: valid modes are "earliest-offset", "latest-offset", "group-offsets",  "specific-offsets"
   ,'connector.sink-partitioner' = 'fixed'                         --optional fixed 每个 flink 分区数据只发到 一个 kafka 分区
@@ -30,9 +30,9 @@ CREATE TABLE user_log_sink (
 ) WITH (
   'connector.type' = 'kafka'
   ,'connector.version' = 'universal'
-  ,'connector.topic' = 'user_behavior_sink'                            -- required: topic name from which the table is read
-  ,'connector.properties.zookeeper.connect' = 'master:2181,slave1:2181,slave2:2181'    -- required: specify the ZooKeeper connection string
-  ,'connector.properties.bootstrap.servers' = 'master:6667,slave1:6667,slave2:6667,slave3:6667,slave4:6667'    -- required: specify the Kafka server connection string
+  ,'connector.topic' = 'user_behavior_sink_2'                            -- required: topic name from which the table is read
+  ,'connector.properties.zookeeper.connect' = 'venn:2181'    -- required: specify the ZooKeeper connection string
+  ,'connector.properties.bootstrap.servers' = 'venn:9092'    -- required: specify the Kafka server connection string
   ,'connector.properties.group.id' = 'user_log'                   -- optional: required in Kafka consumer, specify consumer group
   ,'connector.startup-mode' = 'group-offsets'                     -- optional: valid modes are "earliest-offset", "latest-offset", "group-offsets",  "specific-offsets"
   ,'connector.sink-partitioner' = 'fixed'                         --optional fixed 每个 flink 分区数据只发到 一个 kafka 分区
@@ -44,5 +44,10 @@ CREATE TABLE user_log_sink (
 
 -- insert
 insert into user_log_sink
-select user_id, item_id, category_id, behavior, ts
+select user_id, item_id, category_id, behavior || '_1', ts
+from user_log;
+
+-- insert 2
+insert into user_log_sink
+select user_id, item_id, category_id, behavior || '_2', ts
 from user_log;
