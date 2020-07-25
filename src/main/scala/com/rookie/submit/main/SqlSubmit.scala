@@ -45,9 +45,9 @@ object SqlSubmit {
     TableConfUtil.conf(tabEnv, paraTool)
 
     // register catalog, only in server
-//    val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH), paraTool.get(Constant.HIVE_VERSION))
-//    tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
-//    tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
+    //    val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH), paraTool.get(Constant.HIVE_VERSION))
+    //    tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
+    //    tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
 
     // load udf
     RegisterUdf.registerUdf(tabEnv)
@@ -68,9 +68,10 @@ object SqlSubmit {
           System.exit(-1)
       }
     }
+    // execute insert
     result.execute(Common.jobName)
     // not need, sql will execute when call executeSql
-    //        env.execute(Common.jobName)
+    //    env.execute(Common.jobName)
   }
 
   def enableCheckpoint(env: StreamExecutionEnvironment, paraTool: ParameterTool): Unit = {

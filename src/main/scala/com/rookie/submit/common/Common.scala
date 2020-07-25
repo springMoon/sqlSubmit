@@ -54,8 +54,8 @@ object Common {
     // parse job nam
     jobName = parameterTool.get(INPUT_SQL_FILE_PARA)
     // split prefix
-    if (jobName.contains(File.separator)) {
-      jobName = jobName.substring(jobName.lastIndexOf(File.separator) + 1)
+    if (jobName.contains("/")) {
+      jobName = jobName.substring(jobName.lastIndexOf("/") + 1)
     }
     // suffix
     if (jobName.contains(".")) {
