@@ -18,7 +18,7 @@
 
 package org.apache.flink.table.api.internal;
 
-import com.rookie.submit.common.Common;
+
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.api.common.JobExecutionResult;
@@ -73,7 +73,9 @@ import org.apache.flink.table.descriptors.ConnectorDescriptor;
 import org.apache.flink.table.descriptors.StreamTableDescriptor;
 import org.apache.flink.table.expressions.ApiExpressionUtils;
 import org.apache.flink.table.expressions.Expression;
+import org.apache.flink.table.factories.CatalogFactory;
 import org.apache.flink.table.factories.ComponentFactoryService;
+import org.apache.flink.table.factories.TableFactoryService;
 import org.apache.flink.table.functions.ScalarFunction;
 import org.apache.flink.table.functions.UserDefinedFunction;
 import org.apache.flink.table.functions.UserDefinedFunctionHelper;
@@ -134,8 +136,6 @@ import org.apache.flink.table.utils.TableSchemaUtils;
 import org.apache.flink.types.Row;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -162,14 +162,13 @@ public class TableEnvironmentImpl implements TableEnvironmentInternal {
     private final OperationTreeBuilder operationTreeBuilder;
     private final List<ModifyOperation> bufferedModifyOperations = new ArrayList<>();
 
-    private final Logger logger = LoggerFactory.getLogger(TableEnvironmentImpl.class);
-
     protected final TableConfig tableConfig;
     protected final Executor execEnv;
     protected final FunctionCatalog functionCatalog;
     protected final Planner planner;
     protected final Parser parser;
     private final boolean isStreamingMode;
+    private final ClassLoader userClassLoader;
     private static final String UNSUPPORTED_QUERY_IN_SQL_UPDATE_MSG =
             "Unsupported SQL query! sqlUpdate() only accepts a single SQL statement of type " +
                     "INSERT, CREATE TABLE, DROP TABLE, ALTER TABLE, USE CATALOG, USE [CATALOG.]DATABASE, " +
@@ -203,7 +202,8 @@ public class TableEnvironmentImpl implements TableEnvironmentInternal {
             Executor executor,
             FunctionCatalog functionCatalog,
             Planner planner,
-            boolean isStreamingMode) {
+            boolean isStreamingMode,
+            ClassLoader userClassLoader) {
         this.catalogManager = catalogManager;
         this.catalogManager.setCatalogTableSchemaResolver(
                 new CatalogTableSchemaResolver(planner.getParser(), isStreamingMode));
@@ -216,6 +216,7 @@ public class TableEnvironmentImpl implements TableEnvironmentInternal {
         this.planner = planner;
         this.parser = planner.getParser();
         this.isStreamingMode = isStreamingMode;
+        this.userClassLoader = userClassLoader;
         this.operationTreeBuilder = OperationTreeBuilder.create(
                 tableConfig,
                 functionCatalog.asLookup(parser::parseIdentifier),
@@ -278,7 +279,8 @@ public class TableEnvironmentImpl implements TableEnvironmentInternal {
                 executor,
                 functionCatalog,
                 planner,
-                settings.isStreamingMode()
+                settings.isStreamingMode(),
+                classLoader
         );
     }
 
@@ -789,7 +791,6 @@ public class TableEnvironmentImpl implements TableEnvironmentInternal {
     }
 
     private TableResult executeOperation(Operation operation) {
-        logger.error("executeOperation....");
         if (operation instanceof ModifyOperation) {
             return executeInternal(Collections.singletonList((ModifyOperation) operation));
         } else if (operation instanceof CreateTableOperation) {
@@ -1023,15 +1024,7 @@ public class TableEnvironmentImpl implements TableEnvironmentInternal {
         } else if (operation instanceof AlterCatalogFunctionOperation) {
             return alterCatalogFunction((AlterCatalogFunctionOperation) operation);
         } else if (operation instanceof CreateCatalogOperation) {
-            CreateCatalogOperation createCatalogOperation = (CreateCatalogOperation) operation;
-            String exMsg = getDDLOpExecuteErrorMsg(createCatalogOperation.asSummaryString());
-            try {
-                catalogManager.registerCatalog(
-                        createCatalogOperation.getCatalogName(), createCatalogOperation.getCatalog());
-                return TableResultImpl.TABLE_RESULT_OK;
-            } catch (CatalogException e) {
-                throw new ValidationException(exMsg, e);
-            }
+            return createCatalog((CreateCatalogOperation) operation);
         } else if (operation instanceof DropCatalogOperation) {
             DropCatalogOperation dropCatalogOperation = (DropCatalogOperation) operation;
             String exMsg = getDDLOpExecuteErrorMsg(dropCatalogOperation.asSummaryString());
@@ -1084,6 +1077,24 @@ public class TableEnvironmentImpl implements TableEnvironmentInternal {
             return executeInternal((QueryOperation) operation);
         } else {
             throw new TableException(UNSUPPORTED_QUERY_IN_EXECUTE_SQL_MSG);
+        }
+    }
+
+    private TableResult createCatalog(CreateCatalogOperation operation) {
+        String exMsg = getDDLOpExecuteErrorMsg(operation.asSummaryString());
+        try {
+            String catalogName = operation.getCatalogName();
+            Map<String, String> properties = operation.getProperties();
+            final CatalogFactory factory = TableFactoryService.find(
+                    CatalogFactory.class,
+                    properties,
+                    userClassLoader);
+
+            Catalog catalog = factory.createCatalog(catalogName, properties);
+            catalogManager.registerCatalog(catalogName, catalog);
+            return TableResultImpl.TABLE_RESULT_OK;
+        } catch (CatalogException e) {
+            throw new ValidationException(exMsg, e);
         }
     }
 
@@ -1140,7 +1151,7 @@ public class TableEnvironmentImpl implements TableEnvironmentInternal {
 
     /**
      * extract sink identifier names from {@link ModifyOperation}s.
-     * <p>
+     *
      * <p>If there are multiple ModifyOperations have same name,
      * an index suffix will be added at the end of the name to ensure each name is unique.
      */
@@ -1244,7 +1255,7 @@ public class TableEnvironmentImpl implements TableEnvironmentInternal {
 
     /**
      * Translate the buffered operations to Transformations, and clear the buffer.
-     * <p>
+     *
      * <p>The buffer will be clear even if the `translate` fails. In most cases,
      * the failure is not retryable (e.g. type mismatch, can't generate physical plan).
      * If the buffer is not clear after failure, the following `translate` will also fail.
