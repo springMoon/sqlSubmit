@@ -19,6 +19,8 @@ object TableConfUtil {
     val conf = tableEnv.getConfig.getConfiguration
     // sql default parallelism
     conf.setString("table.exec.resource.default-parallelism", paraTool.get(Constant.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM))
+    // close hive source parallelism auto set: hive file is 21, hive source parallelism
+    conf.setString("table.exec.hive.infer-source-parallelism", "false")
   }
 
 }
