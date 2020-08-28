@@ -1,7 +1,11 @@
 -- 输入数据不按字段分割，当前一个String 类型的字段，交由后续的sql 处理
 -- kafka source
 CREATE TABLE user_log (
-    str varchar
+  user_id VARCHAR
+  ,item_id VARCHAR
+  ,category_id VARCHAR
+  ,behavior VARCHAR
+  ,ts TIMESTAMP(3)
 ) WITH (
   'connector.type' = 'kafka'
   ,'connector.version' = 'universal'
@@ -14,8 +18,7 @@ CREATE TABLE user_log (
                                                                           -- round-robin flink 分区轮询分配到 kafka 分区
                                                                           -- custom 自定义分区策略
   --,'connector.sink-partitioner-class' = 'org.mycompany.MyPartitioner'   -- 自定义分区类
-  ,'format.type' = 'csv'                 -- required:  'csv', 'json' and 'avro'.
-  ,'format.field-delimiter' = '|'
+  ,'format.type' = 'json'                 -- required:  'csv', 'json' and 'avro'.
 );
 
 -- kafka sink
@@ -27,6 +30,6 @@ CREATE TABLE user_log_sink (
 
 -- insert
 insert into user_log_sink
-select str
+select user_id, item_id, category_id, behavior || '_1', ts
 from user_log;
 

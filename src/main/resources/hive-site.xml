@@ -782,7 +782,7 @@
     
     <property>
       <name>hive.strict.managed.tables</name>
-      <value>true</value>
+      <value>false</value>
     </property>
     
     <property>

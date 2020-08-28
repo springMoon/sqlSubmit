@@ -48,11 +48,12 @@ object SqlSubmit {
     TableConfUtil.conf(tabEnv, paraTool)
 
     // register catalog, only in server
-    if ("/".equals(File.separator)) {
-      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH), paraTool.get(Constant.HIVE_VERSION))
-      tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
-      tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
-    }
+    //    if ("/".equals(File.separator)) {
+    //      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH), paraTool.get(Constant.HIVE_VERSION))
+    val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH))
+    tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
+    tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
+    //    }
 
     // load udf
     RegisterUdf.registerUdf(tabEnv)

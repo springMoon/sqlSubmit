@@ -45,6 +45,6 @@ if [ -n "$session_status" ];then
 fi
 
 ## start session
-yarn-session.sh -d -qu "collision" -nm "$session_name" -s 4
+yarn-session.sh -d -qu "queue" -nm "$session_name" -s 4
 write_log "start session $session_name"
 
