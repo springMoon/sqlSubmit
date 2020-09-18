@@ -9,7 +9,7 @@
     <version>0.1</version>
 
     <properties>
-        <flink.version>1.11.1</flink.version>
+        <flink.version>1.11.2</flink.version>
         <scala.binary.version>2.11</scala.binary.version>
         <hadoop.version>2.7.7</hadoop.version>
         <elasticsearch.version>7.2.0</elasticsearch.version>
@@ -107,11 +107,6 @@
                     <artifactId>hadoop-common</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-sql-connector-hive-3.1.2_${scala.binary.version}</artifactId>
-            <version>${flink.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>

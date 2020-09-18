@@ -1,4 +1,5 @@
 -- kafka source
+drop table if exists user_log ;
 CREATE TABLE user_log (
   user_id VARCHAR
   ,item_id VARCHAR
@@ -21,6 +22,7 @@ CREATE TABLE user_log (
 );
 
 -- kafka sink
+drop table if exists user_log_sink ;
 CREATE TABLE user_log_sink (
   user_id VARCHAR
   ,item_id VARCHAR

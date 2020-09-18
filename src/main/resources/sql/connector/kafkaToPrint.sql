@@ -1,5 +1,6 @@
 -- 输入数据不按字段分割，当前一个String 类型的字段，交由后续的sql 处理
 -- kafka source
+drop table if exists user_log ;
 CREATE TABLE user_log (
     str varchar
 ) WITH (
@@ -19,6 +20,7 @@ CREATE TABLE user_log (
 );
 
 -- kafka sink
+drop table if exists user_log_sink ;
 CREATE TABLE user_log_sink (
   str varchar
 ) WITH (
