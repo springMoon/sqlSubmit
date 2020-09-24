@@ -12,7 +12,7 @@ import org.apache.flink.runtime.state.filesystem.FsStateBackend
 import org.apache.flink.streaming.api.CheckpointingMode
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
-import org.apache.flink.table.api.{EnvironmentSettings, StatementSet}
+import org.apache.flink.table.api.{EnvironmentSettings, SqlDialect, StatementSet}
 import org.apache.flink.table.catalog.hive.HiveCatalog
 import org.slf4j.LoggerFactory
 
@@ -24,7 +24,7 @@ import scala.collection.JavaConversions._
   */
 object SqlSubmit {
 
-  private val logger = LoggerFactory.getLogger(SqlSubmit.getClass)
+  private val logger = LoggerFactory.getLogger("SqlSubmit")
 
   def main(args: Array[String]): Unit = {
     // parse input parameter and load job properties
@@ -48,34 +48,46 @@ object SqlSubmit {
     TableConfUtil.conf(tabEnv, paraTool)
 
     // register catalog, only in server
-    //    if ("/".equals(File.separator)) {
-    //      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH), paraTool.get(Constant.HIVE_VERSION))
-    val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH))
-    tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
-    tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
-    //    }
+    if ("/".equals(File.separator)) {
+      //      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH), paraTool.get(Constant.HIVE_VERSION))
+      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH))
+      tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
+      tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
+    }
 
     // load udf
     RegisterUdf.registerUdf(tabEnv)
+
     // execute sql
     val statement = tabEnv.createStatementSet()
     var result: StatementSet = null
     for (sql <- sqlList) {
       try {
+        logger.info("dialect : " + tabEnv.getConfig.getSqlDialect)
         if (sql.startsWith("insert")) {
           // ss
           result = statement.addInsertSql(sql)
-        } else tabEnv.executeSql(sql)
-        logger.info("execute success : " + sql)
+        } else {
+          if (sql.contains("hive_")) {
+            tabEnv.getConfig().setSqlDialect(SqlDialect.HIVE)
+
+          } else {
+            tabEnv.getConfig().setSqlDialect(SqlDialect.DEFAULT)
+          }
+          tabEnv.executeSql(sql)
+        }
+        println("execute success : " + sql)
       } catch {
         case e: Exception =>
+          println("execute sql error : " + sql)
           logger.error("execute sql error : " + sql, e)
           e.printStackTrace()
           System.exit(-1)
       }
     }
     // execute insert
-    result.execute(Common.jobName)
+    //    result.execute(Common.jobName)
+    result.execute()
     // not need, sql will execute when call executeSql
     //    env.execute(Common.jobName)
   }
