@@ -63,19 +63,20 @@ object SqlSubmit {
     var result: StatementSet = null
     for (sql <- sqlList) {
       try {
-        logger.info("dialect : " + tabEnv.getConfig.getSqlDialect)
         if (sql.startsWith("insert")) {
           // ss
           result = statement.addInsertSql(sql)
         } else {
           if (sql.contains("hive_")) {
             tabEnv.getConfig().setSqlDialect(SqlDialect.HIVE)
-
           } else {
             tabEnv.getConfig().setSqlDialect(SqlDialect.DEFAULT)
           }
+          logger.info("dialect : " + tabEnv.getConfig.getSqlDialect)
+          println("dialect : " + tabEnv.getConfig.getSqlDialect)
           tabEnv.executeSql(sql)
         }
+        logger.info("execute success : " + sql)
         println("execute success : " + sql)
       } catch {
         case e: Exception =>
@@ -86,8 +87,8 @@ object SqlSubmit {
       }
     }
     // execute insert
-    //    result.execute(Common.jobName)
-    result.execute()
+    result.execute(Common.jobName)
+//    result.execute()
     // not need, sql will execute when call executeSql
     //    env.execute(Common.jobName)
   }

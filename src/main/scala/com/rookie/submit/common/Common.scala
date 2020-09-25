@@ -62,7 +62,6 @@ object Common {
       jobName = jobName.substring(0, jobName.indexOf("."))
     }
 
-
     parameterTool
   }
 

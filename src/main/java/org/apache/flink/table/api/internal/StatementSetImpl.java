@@ -41,73 +41,73 @@ import java.util.stream.Collectors;
  */
 @Internal
 class StatementSetImpl implements StatementSet {
-	private final TableEnvironmentInternal tableEnvironment;
-	private List<ModifyOperation> operations = new ArrayList<>();
+    private final TableEnvironmentInternal tableEnvironment;
+    private List<ModifyOperation> operations = new ArrayList<>();
 
-	protected StatementSetImpl(TableEnvironmentInternal tableEnvironment) {
-		this.tableEnvironment = tableEnvironment;
-	}
+    protected StatementSetImpl(TableEnvironmentInternal tableEnvironment) {
+        this.tableEnvironment = tableEnvironment;
+    }
 
-	@Override
-	public StatementSet addInsertSql(String statement) {
-		List<Operation> operations = tableEnvironment.getParser().parse(statement);
+    @Override
+    public StatementSet addInsertSql(String statement) {
+        List<Operation> operations = tableEnvironment.getParser().parse(statement);
 
-		if (operations.size() != 1) {
-			throw new TableException("Only single statement is supported.");
-		}
+        if (operations.size() != 1) {
+            throw new TableException("Only single statement is supported.");
+        }
 
-		Operation operation = operations.get(0);
-		if (operation instanceof ModifyOperation) {
-			this.operations.add((ModifyOperation) operation);
-		} else {
-			throw new TableException("Only insert statement is supported now.");
-		}
-		return this;
-	}
+        Operation operation = operations.get(0);
+        if (operation instanceof ModifyOperation) {
+            this.operations.add((ModifyOperation) operation);
+        } else {
+            throw new TableException("Only insert statement is supported now.");
+        }
+        return this;
+    }
 
-	@Override
-	public StatementSet addInsert(String targetPath, Table table) {
-		return addInsert(targetPath, table, false);
-	}
+    @Override
+    public StatementSet addInsert(String targetPath, Table table) {
+        return addInsert(targetPath, table, false);
+    }
 
-	@Override
-	public StatementSet addInsert(String targetPath, Table table, boolean overwrite) {
-		UnresolvedIdentifier unresolvedIdentifier = tableEnvironment.getParser().parseIdentifier(targetPath);
-		ObjectIdentifier objectIdentifier = tableEnvironment.getCatalogManager()
-				.qualifyIdentifier(unresolvedIdentifier);
+    @Override
+    public StatementSet addInsert(String targetPath, Table table, boolean overwrite) {
+        UnresolvedIdentifier unresolvedIdentifier = tableEnvironment.getParser().parseIdentifier(targetPath);
+        ObjectIdentifier objectIdentifier = tableEnvironment.getCatalogManager()
+                .qualifyIdentifier(unresolvedIdentifier);
 
-		operations.add(new CatalogSinkModifyOperation(
-				objectIdentifier,
-				table.getQueryOperation(),
-				Collections.emptyMap(),
-				overwrite,
-				Collections.emptyMap()));
+        operations.add(new CatalogSinkModifyOperation(
+                objectIdentifier,
+                table.getQueryOperation(),
+                Collections.emptyMap(),
+                overwrite,
+                Collections.emptyMap()));
 
-		return this;
-	}
+        return this;
+    }
 
-	@Override
-	public String explain(ExplainDetail... extraDetails) {
-		List<Operation> operationList = operations.stream().map(o -> (Operation) o).collect(Collectors.toList());
-		return tableEnvironment.explainInternal(operationList, extraDetails);
-	}
+    @Override
+    public String explain(ExplainDetail... extraDetails) {
+        List<Operation> operationList = operations.stream().map(o -> (Operation) o).collect(Collectors.toList());
+        return tableEnvironment.explainInternal(operationList, extraDetails);
+    }
 
-	@Override
-	public TableResult execute() {
-		try {
-			return tableEnvironment.executeInternal(operations);
-		} finally {
-			operations.clear();
-		}
-	}
+    @Override
+    public TableResult execute() {
+        try {
+            return tableEnvironment.executeInternal(operations);
+        } finally {
+            operations.clear();
+        }
+    }
 
-	@Override
-	public TableResult execute(String jobName) {
-		Preconditions.checkNotNull(jobName, "Streaming Job name should not be null.");
-		try {
-			return tableEnvironment.executeInternal(operations, jobName);
-		} finally {
-			operations.clear();
-		}
-	}
+    @Override
+    public TableResult execute(String jobName) {
+        Preconditions.checkNotNull(jobName, "Streaming Job name should not be null.");
+        try {
+            return tableEnvironment.executeInternal(operations, jobName);
+        } finally {
+            operations.clear();
+        }
+    }
 }

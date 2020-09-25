@@ -38,6 +38,6 @@ CREATE TABLE hive_table (
 
 
 -- streaming sql, insert into hive table
-INSERT INTO TABLE hive_table
+insert into table hive_table
 SELECT user_id, item_id, category_id, behavior, DATE_FORMAT(ts, 'yyyy-MM-dd'), DATE_FORMAT(ts, 'HH')
 FROM user_log;
