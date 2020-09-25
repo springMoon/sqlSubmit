@@ -82,6 +82,28 @@ cd sqlSubmit
 mvn clean package -DskipTests # this will take up to 10 minutes
 
 ```
+## hive dialect
+
+Flink create hive table need use hive dialect, just create rule when sql containes "hive_table_" means use hive dialect. such as :
+
+```sql
+-- set table.sql-dialect=hive;
+-- hvie sink
+drop table if exists hive_table_user_log_sink;
+CREATE TABLE hive_table_user_log_sink (
+  user_id STRING
+  ,item_id STRING
+  ,category_id STRING
+  ,behavior STRING
+) PARTITIONED BY (dt STRING, hr STRING) STORED AS parquet TBLPROPERTIES (
+  'partition.time-extractor.timestamp-pattern'='$dt $hr:00:00',
+  'sink.partition-commit.trigger'='partition-time',
+  'sink.partition-commit.delay'='1 min',
+  'sink.partition-commit.policy.kind'='metastore,success-file'
+);
+
+```
+
 
 ## Support
 
