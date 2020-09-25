@@ -67,7 +67,7 @@ object SqlSubmit {
           // ss
           result = statement.addInsertSql(sql)
         } else {
-          if (sql.contains("hive_")) {
+          if (sql.contains("hive_table_")) {
             tabEnv.getConfig().setSqlDialect(SqlDialect.HIVE)
           } else {
             tabEnv.getConfig().setSqlDialect(SqlDialect.DEFAULT)

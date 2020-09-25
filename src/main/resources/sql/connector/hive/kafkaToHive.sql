@@ -23,8 +23,8 @@ CREATE TABLE user_log (
 
 -- set table.sql-dialect=hive;
 -- kafka sink
-drop table if exists hive_table;
-CREATE TABLE hive_table (
+drop table if exists hive_table_user_log_sink;
+CREATE TABLE hive_table_user_log_sink (
   user_id STRING
   ,item_id STRING
   ,category_id STRING
@@ -38,6 +38,6 @@ CREATE TABLE hive_table (
 
 
 -- streaming sql, insert into hive table
-insert into table hive_table
+insert into table hive_table_user_log_sink
 SELECT user_id, item_id, category_id, behavior, DATE_FORMAT(ts, 'yyyy-MM-dd'), DATE_FORMAT(ts, 'HH')
 FROM user_log;
