@@ -98,6 +98,7 @@ public class KafkaUpsertTableSink implements UpsertStreamTableSink<Row> {
                     @Override
                     public void flatMap(Tuple2<Boolean, Row> element, Collector<Row> out) throws Exception {
                         // upsertStream include insert/update/delete change, true is upsert, false is delete
+                        // create new row include upsert message
                         if (element.f0) {
                             out.collect(element.f1);
                         } else {
