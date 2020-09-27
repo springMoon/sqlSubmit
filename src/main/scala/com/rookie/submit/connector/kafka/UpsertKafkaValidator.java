@@ -39,10 +39,6 @@ import static org.apache.flink.table.descriptors.StreamTableDescriptorValidator.
 public class UpsertKafkaValidator extends ConnectorDescriptorValidator {
 
 	public static final String CONNECTOR_TYPE_VALUE_KAFKA = "upsertKafka";
-	public static final String CONNECTOR_VERSION_VALUE_08 = "0.8";
-	public static final String CONNECTOR_VERSION_VALUE_09 = "0.9";
-	public static final String CONNECTOR_VERSION_VALUE_010 = "0.10";
-	public static final String CONNECTOR_VERSION_VALUE_011 = "0.11";
 	public static final String CONNECTOR_VERSION_VALUE_UNIVERSAL = "universal";
 	public static final String CONNECTOR_TOPIC = "connector.topic";
 	public static final String CONNECTOR_STARTUP_MODE = "connector.startup-mode";
@@ -119,7 +115,7 @@ public class UpsertKafkaValidator extends ConnectorDescriptorValidator {
 			|| properties.containsKey(CONNECTOR_PROPERTIES_BOOTSTRAP_SERVER)
 			|| properties.containsKey(CONNECTOR_PROPERTIES_GROUP_ID)) {
 
-			if (properties.getString(CONNECTOR_VERSION).equals(CONNECTOR_VERSION_VALUE_08)) {
+			if (properties.getString(CONNECTOR_VERSION).equals(CONNECTOR_VERSION_VALUE_UNIVERSAL)) {
 				properties.validateString(CONNECTOR_PROPERTIES_ZOOKEEPER_CONNECT, false);
 			} else {
 				properties.validateString(CONNECTOR_PROPERTIES_ZOOKEEPER_CONNECT, true);

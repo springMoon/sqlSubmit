@@ -48,7 +48,7 @@ object SqlSubmit {
     TableConfUtil.conf(tabEnv, paraTool)
 
     // register catalog, only in server
-    if ("/".equals(File.separator)) {
+    if (paraTool.getBoolean(Constant.HIVE_USE_CATALOG)) {
       //      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH), paraTool.get(Constant.HIVE_VERSION))
       val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH))
       tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
@@ -88,7 +88,7 @@ object SqlSubmit {
     }
     // execute insert
     result.execute(Common.jobName)
-//    result.execute()
+    //    result.execute()
     // not need, sql will execute when call executeSql
     //    env.execute(Common.jobName)
   }

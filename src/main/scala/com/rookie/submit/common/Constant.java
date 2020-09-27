@@ -15,6 +15,7 @@ public class Constant {
     public final static String STATE_RETENTION_MIN_TIME = "state.retention.min.time";
     public final static String STATE_RETENTION_MAX_TIME = "state.retention.max.time";
     public final static String TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM = "table.exec.resource.default-parallelism";
+    public final static String HIVE_USE_CATALOG = "hive.use.catalog";
 
     public final static String STATE_BACKEND = "state.backend";
     public final static String CHECKPOINT_DIR = "checkpoint.dir";
