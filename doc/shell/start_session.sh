@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export FLINK_HOME=/opt/flink-1.10.1
+export FLINK_HOME=/opt/flink-1.11.1
 export PATH=$PATH:$FLINK_HOME/bin
 export HADOOP_CLASSPATH=`hadoop classpath`
 
@@ -45,6 +45,6 @@ if [ -n "$session_status" ];then
 fi
 
 ## start session
-yarn-session.sh -d -qu "queue" -nm "$session_name" -s 4
+yarn-session.sh -d -nm "$session_name" -s 4
 write_log "start session $session_name"
 

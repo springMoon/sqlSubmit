@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export FLINK_HOME=/opt/flink-1.10.1
+export FLINK_HOME=/opt/flink-1.11.1
 export PATH=$PATH:$FLINK_HOME/bin
 export HADOOP_CLASSPATH=`hadoop classpath`
 
@@ -16,7 +16,7 @@ write_log(){
   echo "[ $date_str ] $@" | tee -a $logFile
 }
 
-set -x
+#set -x
 write_log "start : $current_path"
 
 write_log "start parameter : $@"
