@@ -109,4 +109,8 @@ CREATE TABLE hive_table_user_log_sink (
 
 ![image](https://github.com/springMoon/sqlSubmit/blob/master/doc/picture/gzh.png)
 
+## Gratitude
+
+Thanks for [JetBrains](https://www.jetbrains.com/?from=sqlSubmit) provide  opensource license.
+
 ## About

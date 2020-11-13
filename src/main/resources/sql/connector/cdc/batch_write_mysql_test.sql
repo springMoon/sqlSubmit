@@ -6,6 +6,7 @@ CREATE TABLE user_log (
   ,category_id VARCHAR
   ,behavior VARCHAR
   ,ts TIMESTAMP(3)
+  ,proc_time as proctime()
   ,WATERMARK FOR ts AS ts - INTERVAL '5' SECOND
 ) WITH (
   'connector.type' = 'kafka'
@@ -28,19 +29,20 @@ CREATE TABLE mysql_table_venn_user_log_sink (
   ,category_id STRING
   ,behavior STRING
   ,ts timestamp(3)
+  ,create_time timestamp(3)
 ) WITH (
   'connector' = 'jdbc'
   ,'url' = 'jdbc:mysql://venn:3306/venn'
   ,'table-name' = 'user_log'
   ,'username' = 'root'
   ,'password' = '123456'
-  ,'sink.buffer-flush.max-rows' = '100' -- default
-  ,'sink.buffer-flush.interval' = '10s'
+  ,'sink.buffer-flush.max-rows' = '10000' -- default
+  ,'sink.buffer-flush.interval' = '50s'
   ,'sink.max-retries' = '3'
 );
 
 
 -- streaming sql, insert into mysql table
 insert into mysql_table_venn_user_log_sink
-SELECT user_id, item_id, category_id, behavior, ts
+SELECT user_id, item_id, category_id, behavior, ts, proc_time
 FROM user_log;
