@@ -66,7 +66,7 @@ commit to flink cluster
 # --state.backend rocksdb                     add properties state.backend as rocksdb
 # --job.prop.file demoJobPropFile.properties  special job properties
 # parameter priority : special parameter is hightest, next is job.prop.file, default properties [sqlSubmit.properties] last
-sh sqlSubmit.sh --sql demo.sql --state.backend rocksdb --job.prop.file demoJobPropFile.properties
+sh start_pre_job.sh --session sqlDemo --sql demo.sql --state.backend rocksdb --job.prop.file demoJobPropFile.properties
 
 ```
 
