@@ -6,7 +6,7 @@
 
     <groupId>com.rookie</groupId>
     <artifactId>sqlSubmit</artifactId>
-    <version>0.1</version>
+    <version>1.1</version>
 
     <properties>
         <flink.version>1.11.2</flink.version>
