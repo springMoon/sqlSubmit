@@ -10,13 +10,13 @@ object Common {
   var jobName: String = _
 
   /**
-    * 1. add sqlSubmit.properties to parameterTool
-    * 2. add job.prop.file content properties to  parameterTool (if file exists)
-    * 3. add input parameter to parameterTool (if exists)
-    *
-    * @param args program input param
-    * @return
-    */
+   * 1. add sqlSubmit.properties to parameterTool
+   * 2. add job.prop.file content properties to  parameterTool (if file exists)
+   * 3. add input parameter to parameterTool (if exists)
+   *
+   * @param args program input param
+   * @return
+   */
   def init(args: Array[String]): ParameterTool = {
 
     // input parameter
@@ -26,9 +26,9 @@ object Common {
       System.exit(-1)
     }
     // load properties
-    if ("\\" == File.separator) { // windows
-      path = Common.getClass.getClassLoader.getResource(DEFAULT_CONFIG_FILE).getPath.substring(1)
-    }
+    //    if ("\\" == File.separator) { // windows
+    path = Common.getClass.getClassLoader.getResource(DEFAULT_CONFIG_FILE).getPath //.substring(1)
+    //    }
 
     // load default properties
     // load default properties : sqlSubmit.properties
@@ -60,6 +60,9 @@ object Common {
     // suffix
     if (jobName.contains(".")) {
       jobName = jobName.substring(0, jobName.indexOf("."))
+    }
+    if (jobName == null || jobName.isEmpty) {
+      jobName = parameterTool.get(Constant.JOB_NAME)
     }
 
     parameterTool

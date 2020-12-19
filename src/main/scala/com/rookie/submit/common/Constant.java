@@ -14,7 +14,10 @@ public class Constant {
     public final static String KAFKA_BOOTSTRAP_SERVER = "kafka.bootstrap.server";
     public final static String STATE_RETENTION_MIN_TIME = "state.retention.min.time";
     public final static String STATE_RETENTION_MAX_TIME = "state.retention.max.time";
+    public final static String STATE_RETENTION_DURATION = "state.retention.duration";
+
     public final static String TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM = "table.exec.resource.default-parallelism";
+    public final static String JOB_NAME = "job.name";
 
     public final static String STATE_BACKEND = "state.backend";
     public final static String CHECKPOINT_DIR = "checkpoint.dir";

@@ -19,9 +19,9 @@ import org.slf4j.LoggerFactory
 import scala.collection.JavaConversions._
 
 /**
-  * sqlSubmit main class
-  * input sql file name and execute sql content
-  */
+ * sqlSubmit main class
+ * input sql file name and execute sql content
+ */
 object SqlSubmit {
 
   private val logger = LoggerFactory.getLogger("SqlSubmit")
@@ -48,12 +48,11 @@ object SqlSubmit {
     TableConfUtil.conf(tabEnv, paraTool)
 
     // register catalog, only in server
-    if ("/".equals(File.separator)) {
-      //      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH), paraTool.get(Constant.HIVE_VERSION))
-      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH))
-      tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
-      tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
-    }
+    //    if ("/".equals(File.separator)) {
+    //      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH))
+    //      tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
+    //      tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
+    //    }
 
     // load udf
     RegisterUdf.registerUdf(tabEnv)
@@ -86,9 +85,9 @@ object SqlSubmit {
           System.exit(-1)
       }
     }
-    // execute insert
-    result.execute(Common.jobName)
-//    result.execute()
+    // useless execute insert
+    result.execute()
+    //    result.execute()
     // not need, sql will execute when call executeSql
     //    env.execute(Common.jobName)
   }

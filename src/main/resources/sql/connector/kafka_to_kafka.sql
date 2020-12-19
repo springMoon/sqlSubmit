@@ -31,6 +31,7 @@ CREATE TABLE user_log_sink (
   ,ts TIMESTAMP(3)
 ) WITH (
   'connector.type' = 'kafka'
+--   ,'pipeline.name' = 'kafka_to_Kafka'
   ,'connector.version' = 'universal'
   ,'connector.topic' = 'user_behavior_sink'                            -- required: topic name from which the table is read
   ,'connector.properties.zookeeper.connect' = 'venn:2181'    -- required: specify the ZooKeeper connection string
