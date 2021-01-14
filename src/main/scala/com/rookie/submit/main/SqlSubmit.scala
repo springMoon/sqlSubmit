@@ -85,11 +85,8 @@ object SqlSubmit {
           System.exit(-1)
       }
     }
-    // useless execute insert
+    // execute sql insert
     result.execute()
-    //    result.execute()
-    // not need, sql will execute when call executeSql
-    //    env.execute(Common.jobName)
   }
 
   def enableCheckpoint(env: StreamExecutionEnvironment, paraTool: ParameterTool): Unit = {

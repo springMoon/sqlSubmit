@@ -27,7 +27,7 @@ object Common {
     }
     // load properties
     //    if ("\\" == File.separator) { // windows
-    path = Common.getClass.getClassLoader.getResource(DEFAULT_CONFIG_FILE).getPath //.substring(1)
+    //    path = Common.getClass.getClassLoader.getResource(DEFAULT_CONFIG_FILE).getPath //.substring(1)
     //    }
 
     // load default properties

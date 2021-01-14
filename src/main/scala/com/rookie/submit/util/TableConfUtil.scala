@@ -3,7 +3,6 @@ package com.rookie.submit.util
 import java.time.Duration
 
 import com.rookie.submit.common.{Common, Constant}
-import org.apache.flink.api.common.time.Time
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
 
