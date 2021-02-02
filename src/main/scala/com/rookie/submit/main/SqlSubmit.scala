@@ -67,9 +67,9 @@ object SqlSubmit {
           result = statement.addInsertSql(sql)
         } else {
           if (sql.contains("hive_table_")) {
-            tabEnv.getConfig().setSqlDialect(SqlDialect.HIVE)
+            tabEnv.getConfig.setSqlDialect(SqlDialect.HIVE)
           } else {
-            tabEnv.getConfig().setSqlDialect(SqlDialect.DEFAULT)
+            tabEnv.getConfig.setSqlDialect(SqlDialect.DEFAULT)
           }
           logger.info("dialect : " + tabEnv.getConfig.getSqlDialect)
           println("dialect : " + tabEnv.getConfig.getSqlDialect)
@@ -86,7 +86,7 @@ object SqlSubmit {
       }
     }
     // execute sql insert
-    result.execute()
+//    result.execute()
   }
 
   def enableCheckpoint(env: StreamExecutionEnvironment, paraTool: ParameterTool): Unit = {
