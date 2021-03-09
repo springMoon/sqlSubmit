@@ -25,6 +25,9 @@ object TableConfUtil {
     // close hive source parallelism auto set: hive file is 21, hive source parallelism
     conf.setString("table.exec.hive.infer-source-parallelism", "false")
     conf.setString("pipeline.name", Common.jobName)
+    //    conf.setString("table.exec.mini-batch.enabled", paraTool.get(Constant.TABLE_EXEC_MINI_BATCH_ENABLE))
+    //    conf.setString("table.exec.mini-batch.allow-latency", paraTool.get(Constant.TABLE_EXEC_MINI_BATCH_ALLOW_LATENCY))
+    //    conf.setString("table.exec.mini-batch.size", paraTool.get(Constant.TABLE_EXEC_MINI_BATCH_SIZE))
   }
 
 }

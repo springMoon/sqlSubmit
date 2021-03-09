@@ -23,4 +23,7 @@ public class Constant {
     public final static String CHECKPOINT_DIR = "checkpoint.dir";
     public final static String CHECKPOINT_INTERVAL = "checkpoint.interval";
     public final static String CHECKPOINT_TIMEOUT = "checkpoint.timeout";
+    public final static String TABLE_EXEC_MINI_BATCH_ENABLE = "table.exec.mini-batch.enabled";
+    public final static String TABLE_EXEC_MINI_BATCH_ALLOW_LATENCY = "table.exec.mini-batch.allow-latency";
+    public final static String TABLE_EXEC_MINI_BATCH_SIZE = "table.exec.mini-batch.size";
 }

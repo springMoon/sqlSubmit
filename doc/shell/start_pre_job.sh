@@ -7,7 +7,7 @@ export HADOOP_CLASSPATH=`hadoop classpath`
 current_path=$(cd "$(dirname $0)";pwd)
 logFile=$current_path/start.log
 write_log(){
-  date_str=`date -d now +"$F %T"`
+  date_str=`date -d now +"%F %T"`
   if [ -n "$1" ];then
      message="$1"
   else

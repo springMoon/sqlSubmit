@@ -86,7 +86,7 @@ object SqlSubmit {
       }
     }
     // execute sql insert
-//    result.execute()
+    result.execute()
   }
 
   def enableCheckpoint(env: StreamExecutionEnvironment, paraTool: ParameterTool): Unit = {

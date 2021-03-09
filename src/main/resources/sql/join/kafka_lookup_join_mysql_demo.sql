@@ -43,7 +43,7 @@ CREATE TABLE mysql_behavior_conf (
 
 ---sinkTable
 CREATE TABLE kakfa_join_mysql_demo (
-    user_id VARCHAR
+  user_id VARCHAR
   ,item_id VARCHAR
   ,category_id VARCHAR
   ,behavior INT
@@ -63,6 +63,13 @@ CREATE TABLE kakfa_join_mysql_demo (
 );
 
 ---sink
+-- 时态表 join 和 一般的 join 的效果看起来并没有什么不一样的（user_log 表需要去掉 事件事件属性），维表都是一次性读取，然后 finish
+-- INSERT INTO kakfa_join_mysql_demo(user_id, item_id, category_id, behavior, behavior_map, ts)
+-- SELECT a.user_id, a.item_id, a.category_id, a.behavior, b.behavior_map, a.ts
+-- FROM user_log a
+--   left join mysql_behavior_conf b on a.behavior = b.id
+-- where a.behavior is not null;
+
 INSERT INTO kakfa_join_mysql_demo(user_id, item_id, category_id, behavior, behavior_map, ts)
 SELECT a.user_id, a.item_id, a.category_id, a.behavior, b.behavior_map, a.ts
 FROM user_log a
