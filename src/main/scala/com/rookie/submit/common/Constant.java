@@ -26,4 +26,5 @@ public class Constant {
     public final static String TABLE_EXEC_MINI_BATCH_ENABLE = "table.exec.mini-batch.enabled";
     public final static String TABLE_EXEC_MINI_BATCH_ALLOW_LATENCY = "table.exec.mini-batch.allow-latency";
     public final static String TABLE_EXEC_MINI_BATCH_SIZE = "table.exec.mini-batch.size";
+    public final static String TABLE_EXEC_STATE_TTL = "table.exec.state.ttl";
 }

@@ -1,10 +1,11 @@
--- 去重查询
+-- Top N 查询
 -- kafka source
 CREATE TABLE user_log (
   user_id VARCHAR
   ,item_id VARCHAR
   ,category_id VARCHAR
   ,behavior INT
+  ,sales DOUBLE
   ,ts TIMESTAMP(3)
   ,process_time as proctime()
   , WATERMARK FOR ts AS ts
@@ -23,6 +24,7 @@ CREATE TABLE user_log_sink (
   ,item_id VARCHAR
   ,category_id VARCHAR
   ,behavior INT
+  ,sales DOUBLE
   ,ts TIMESTAMP(3)
   ,num BIGINT
   ,primary key (user_id) not enforced
@@ -39,12 +41,10 @@ CREATE TABLE user_log_sink (
 );
 
 -- insert
-insert into user_log_sink(user_id, item_id, category_id,behavior,ts,num)
-SELECT user_id, item_id, category_id,behavior,ts,rownum
+insert into user_log_sink(user_id, item_id, category_id,behavior,sales,ts,num)
+SELECT user_id, item_id, category_id,behavior,sales,ts,rownum
 FROM (
-   SELECT user_id, item_id, category_id,behavior,ts,
-     ROW_NUMBER() OVER (PARTITION BY category_id ORDER BY ts desc) AS rownum -- desc use the latest one,
+   SELECT user_id, item_id, category_id,behavior,sales, ts,
+     ROW_NUMBER() OVER (PARTITION BY category_id ORDER BY ts desc) AS rownum
    FROM user_log)
-WHERE rownum=1
--- 没有配置 mini batch 也不行，不能去重
--- 只能使用 rownum=1，如果写 rownum=2（或<10），每个分区只会输出一条数据(小于是多条)rownum=2的，看起来基于全局去重了
+WHERE rownum = 1
