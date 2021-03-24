@@ -9,7 +9,7 @@ import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.contrib.streaming.state.RocksDBStateBackend
 import org.apache.flink.runtime.state.StateBackend
 import org.apache.flink.runtime.state.filesystem.FsStateBackend
-import org.apache.flink.streaming.api.CheckpointingMode
+import org.apache.flink.streaming.api.{CheckpointingMode, TimeCharacteristic}
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
 import org.apache.flink.table.api.{EnvironmentSettings, SqlDialect, StatementSet}
@@ -35,6 +35,8 @@ object SqlSubmit {
 
     // StreamExecutionEnvironment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime)
+    env.getConfig.setAutoWatermarkInterval(200l)
     // state backend and checkpoint
     enableCheckpoint(env, paraTool)
     // EnvironmentSettings

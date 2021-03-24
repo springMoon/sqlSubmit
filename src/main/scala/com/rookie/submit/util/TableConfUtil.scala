@@ -30,10 +30,12 @@ object TableConfUtil {
       conf.setString("table.exec.mini-batch.allow-latency", paraTool.get(Constant.TABLE_EXEC_MINI_BATCH_ALLOW_LATENCY))
       conf.setString("table.exec.mini-batch.size", paraTool.get(Constant.TABLE_EXEC_MINI_BATCH_SIZE))
     }
-    // for topn/deduplication state ttl
+    // for deduplication state ttl
     if (paraTool.get(Constant.TABLE_EXEC_STATE_TTL) != null) {
       conf.setString("table.exec.state.ttl", paraTool.get(Constant.TABLE_EXEC_STATE_TTL))
     }
+
+
   }
 
 }

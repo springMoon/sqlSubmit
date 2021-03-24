@@ -6,6 +6,7 @@ CREATE TABLE user_log (
   ,category_id VARCHAR
   ,behavior INT
   ,sales DOUBLE
+  ,sort_col int
   ,ts TIMESTAMP(3)
   ,process_time as proctime()
   , WATERMARK FOR ts AS ts
@@ -25,8 +26,9 @@ CREATE TABLE user_log_sink (
   ,category_id VARCHAR
   ,behavior INT
   ,sales DOUBLE
+  ,sort_col INT
   ,ts TIMESTAMP(3)
-  ,num BIGINT
+  ,num bigint
   ,primary key (user_id) not enforced
 ) WITH (
 'connector' = 'upsert-kafka'
@@ -41,10 +43,16 @@ CREATE TABLE user_log_sink (
 );
 
 -- insert
-insert into user_log_sink(user_id, item_id, category_id,behavior,sales,ts,num)
-SELECT user_id, item_id, category_id,behavior,sales,ts,rownum
+insert into user_log_sink(user_id, item_id, category_id,behavior,sales,ts,sort_col,rownum)
+SELECT user_id, item_id, category_id,behavior,sales,sort_col,ts,rownum
 FROM (
-   SELECT user_id, item_id, category_id,behavior,sales, ts,
+   SELECT user_id, item_id, category_id,behavior,sales, ts, sort_col,
      ROW_NUMBER() OVER (PARTITION BY category_id ORDER BY ts desc) AS rownum
    FROM user_log)
-WHERE rownum = 1
+-- WHERE rownum < sort_col
+WHERE rownum < 6
+-- 只支持两种 top n:
+--  rownum < 10 or rownum > 3 and rownum < 10
+--  rownum < source_table.column
+-- rownum > 3 是不支持的 Rank end is not specified. Currently rank only support TopN, which means the rank end must be specified.
+-- 不输出 rownum 可以启动无排名优化，仅输出当前数据，对历史数据的排名更新，不再输出
