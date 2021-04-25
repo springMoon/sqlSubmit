@@ -26,9 +26,9 @@ object Common {
       System.exit(-1)
     }
     // load properties
-    //    if ("\\" == File.separator) { // windows
-    //    path = Common.getClass.getClassLoader.getResource(DEFAULT_CONFIG_FILE).getPath //.substring(1)
-    //    }
+    if ("\\" == File.separator) { // windows
+      path = Common.getClass.getClassLoader.getResource(DEFAULT_CONFIG_FILE).getPath //.substring(1)
+    }
 
     // load default properties
     // load default properties : sqlSubmit.properties
