@@ -1,16 +1,20 @@
 package com.rookie.submit.main
 
-import com.rookie.submit.common.Common
+import java.io.File
+
+import com.rookie.submit.common.{Common, Constant}
 import com.rookie.submit.common.Constant._
 import com.rookie.submit.util.{RegisterUdf, SqlFileUtil, TableConfUtil}
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.contrib.streaming.state.RocksDBStateBackend
 import org.apache.flink.runtime.state.StateBackend
 import org.apache.flink.runtime.state.filesystem.FsStateBackend
+import org.apache.flink.streaming.api.{CheckpointingMode, TimeCharacteristic}
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.streaming.api.{CheckpointingMode, TimeCharacteristic}
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
 import org.apache.flink.table.api.{EnvironmentSettings, SqlDialect, StatementSet}
+import org.apache.flink.table.catalog.hive.HiveCatalog
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
