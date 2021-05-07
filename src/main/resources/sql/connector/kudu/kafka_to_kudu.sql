@@ -11,7 +11,7 @@ CREATE TABLE user_log (
 ) WITH (
   'connector' = 'kafka'
   ,'topic' = 'user_behavior'
-  ,'properties.bootstrap.servers' = 'venn:9092'
+  ,'properties.bootstrap.servers' = 'localhost:9092'
   ,'properties.group.id' = 'user_log_x'
   ,'scan.startup.mode' = 'group-offsets'
   ,'format' = 'json'
@@ -26,7 +26,7 @@ CREATE TABLE user_log_sink (
   ,ts  TIMESTAMP(3)
 ) WITH (
   'connector.type' = 'kudu'
-  ,'kudu.masters' = 'venn:7051,venn:7151,venn:7251'
+  ,'kudu.masters' = 'localhost:7051,localhost:7151,localhost:7251'
   ,'kudu.table' = 'user_log'
   ,'kudu.hash-columns' = 'user_id'
   ,'kudu.primary-key-columns' = 'user_id'
