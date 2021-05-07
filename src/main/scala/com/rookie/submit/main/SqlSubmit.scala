@@ -1,20 +1,16 @@
 package com.rookie.submit.main
 
-import java.io.File
-
-import com.rookie.submit.common.{Common, Constant}
+import com.rookie.submit.common.Common
 import com.rookie.submit.common.Constant._
 import com.rookie.submit.util.{RegisterUdf, SqlFileUtil, TableConfUtil}
 import org.apache.flink.api.java.utils.ParameterTool
-import org.apache.flink.contrib.streaming.state.RocksDBStateBackend
+import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend
 import org.apache.flink.runtime.state.StateBackend
-import org.apache.flink.runtime.state.filesystem.FsStateBackend
-import org.apache.flink.streaming.api.{CheckpointingMode, TimeCharacteristic}
+import org.apache.flink.runtime.state.hashmap.HashMapStateBackend
+import org.apache.flink.streaming.api.CheckpointingMode
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
-import org.apache.flink.streaming.api.{CheckpointingMode, TimeCharacteristic}
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
 import org.apache.flink.table.api.{EnvironmentSettings, SqlDialect, StatementSet}
-import org.apache.flink.table.catalog.hive.HiveCatalog
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
@@ -29,14 +25,13 @@ object SqlSubmit {
 
   def main(args: Array[String]): Unit = {
     // parse input parameter and load job properties
-    val paraTool = Common.init(args)
+    val paraTool: ParameterTool = Common.init(args)
 
     // parse sql file
     val sqlList = SqlFileUtil.readFile(paraTool.get(INPUT_SQL_FILE_PARA))
 
     // StreamExecutionEnvironment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime)
     env.getConfig.setAutoWatermarkInterval(200l)
     // state backend and checkpoint
     enableCheckpoint(env, paraTool)
@@ -96,9 +91,9 @@ object SqlSubmit {
     // state backend
     var stateBackend: StateBackend = null
     if ("rocksdb".equals(paraTool.get(STATE_BACKEND))) {
-      stateBackend = new RocksDBStateBackend(paraTool.get(CHECKPOINT_DIR), true)
+      stateBackend = new EmbeddedRocksDBStateBackend(true)
     } else {
-      stateBackend = new FsStateBackend(paraTool.get(CHECKPOINT_DIR), true)
+      stateBackend = new HashMapStateBackend()
     }
     env.setStateBackend(stateBackend)
     // checkpoint
@@ -106,6 +101,10 @@ object SqlSubmit {
     env.getCheckpointConfig.setCheckpointTimeout(paraTool.getLong(CHECKPOINT_TIMEOUT) * 1000)
     // Flink 1.11.0 new feature: Enables unaligned checkpoints
     env.getCheckpointConfig.enableUnalignedCheckpoints()
+    // checkpoint dir
+    env.getCheckpointConfig.setCheckpointStorage(paraTool.get(CHECKPOINT_DIR))
+    // or
+    //    env.getCheckpointConfig.setCheckpointStorage(new FileSystemCheckpointStorage(paraTool.get(CHECKPOINT_DIR)))
   }
 
 }

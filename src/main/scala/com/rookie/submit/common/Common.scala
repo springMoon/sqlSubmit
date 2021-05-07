@@ -26,7 +26,7 @@ object Common {
       System.exit(-1)
     }
     // load properties
-    if ("\\" == File.separator) { // windows
+    if (!new File(path).exists()) {
       path = Common.getClass.getClassLoader.getResource(DEFAULT_CONFIG_FILE).getPath //.substring(1)
     }
 

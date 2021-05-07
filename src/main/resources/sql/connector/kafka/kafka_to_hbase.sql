@@ -7,15 +7,11 @@ CREATE TABLE user_log (
   ,behavior VARCHAR
   ,ts TIMESTAMP(3)
 ) WITH (
-  'connector.type' = 'kafka'
-  ,'connector.version' = 'universal'
-  ,'connector.topic' = 'user_behavior'
-  ,'connector.properties.zookeeper.connect' = 'venn:2181'
-  ,'connector.properties.bootstrap.servers' = 'venn:9092'
-  ,'connector.properties.group.id' = 'user_log_x'
-  ,'connector.startup-mode' = 'group-offsets'
-  ,'connector.sink-partitioner' = 'fixed'
-  ,'format.type' = 'json'
+   'connector' = 'kafka'
+  ,'topic' = 'user_behavior'                            -- required: topic name from which the table is read
+  ,'properties.bootstrap.servers' = 'localhost:9092'    -- required: specify the Kafka server connection string
+  ,'properties.group.id' = 'user_log'                   -- optional: required in Kafka consumer, specify consumer group
+  ,'format' = 'json'                 -- required:  'csv', 'json' and 'avro'.
 );
 
 -- kafka sink
