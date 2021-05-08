@@ -33,7 +33,7 @@ CREATE CATALOG hive_catalog WITH (
 -- ) WITH (
 --   'type'='iceberg',
 --   'catalog-type'='hadoop',
---   'warehouse'='hdfs:////tmp/iceberg/hive_catalog/hive_catalog_db/user_log_sink',
+--   'warehouse'='hdfs:///tmp/iceberg/hive_catalog/hive_catalog_db/user_log_sink',
 --   'property-version'='1'
 -- );
 
