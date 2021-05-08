@@ -72,12 +72,12 @@
   </property>
   <property>
     <name>hive.exec.local.scratchdir</name>
-    <value>/opt/hive2.3/tmp/root</value>
+    <value>/opt/data/hive2.3/tmp/root</value>
     <description>Local scratch space for Hive jobs</description>
   </property>
   <property>
     <name>hive.downloaded.resources.dir</name>
-    <value>/opt/hive2.3/tmp/${hive.session.id}_resources</value>
+    <value>/opt/data/hive2.3/tmp/${hive.session.id}_resources</value>
     <description>Temporary local directory for added resources in the remote file system.</description>
   </property>
   <property>
@@ -368,7 +368,7 @@
   </property>
   <property>
     <name>hive.metastore.uris</name>
-    <value>thrift://venn:9083</value>
+    <value/>
     <description>Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore.</description>
   </property>
   <property>
@@ -527,7 +527,7 @@
   </property>
   <property>
     <name>javax.jdo.option.ConnectionPassword</name>
-    <value>hive</value>
+    <value>123456</value>
     <description>password to use against metastore database</description>
   </property>
   <property>
@@ -542,7 +542,7 @@
   </property>
   <property>
     <name>javax.jdo.option.ConnectionURL</name>
-    <value>jdbc:mysql://venn:3306/hive?useSSL=false&amp;createDatabaseIfNotExist=true&amp;allowPublicKeyRetrieval=true</value>
+    <value>jdbc:mysql://thinkpad:3306/hive?createDatabaseIfNotExist=true&amp;useUnicode=true&amp;characterEncoding=utf-8&amp;useSSL=true&amp;autoReconnect=true&amp;allowPublicKeyRetrieval=true</value>
     <description>
       JDBC connect string for a JDBC metastore.
       To use SSL to encrypt/authenticate the connection, provide database-specific SSL flag in the connection URL.
@@ -743,7 +743,7 @@
   </property>
   <property>
     <name>hive.metastore.schema.verification</name>
-    <value>false</value>
+    <value>true</value>
     <description>
       Enforce metastore schema version consistency.
       True: Verify that version information stored in is compatible with one from Hive jars.  Also disable automatic
@@ -1017,7 +1017,7 @@
   </property>
   <property>
     <name>javax.jdo.option.ConnectionDriverName</name>
-    <value>com.mysql.jdbc.Driver</value>
+    <value>com.mysql.cj.jdbc.Driver</value>
     <description>Driver class name for a JDBC metastore</description>
   </property>
   <property>
@@ -1682,7 +1682,7 @@
   </property>
   <property>
     <name>hive.querylog.location</name>
-    <value>/opt/hive2.3/tmp/root</value>
+    <value>/opt/data/hive2.3/tmp/root</value>
     <description>Location of Hive run time structured log file</description>
   </property>
   <property>
@@ -3973,7 +3973,7 @@
   </property>
   <property>
     <name>hive.server2.logging.operation.log.location</name>
-    <value>/opt/hive2.3/tmp/root/operation_logs</value>
+    <value>/opt/data/hive2.3/tmp/root/operation_logs</value>
     <description>Top level directory where operation logs are stored if logging functionality is enabled</description>
   </property>
   <property>
@@ -5955,9 +5955,5 @@
       This is a performance optimization that forces the final FileSinkOperator to write to the blobstore.
       See HIVE-15121 for details.
     </description>
-  </property>
-  <property>
-	<name>hive.metastore.local</name>
-	<value>true</value>
   </property>
 </configuration>

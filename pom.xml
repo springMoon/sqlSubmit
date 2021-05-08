@@ -16,7 +16,7 @@
         <jackson.version>2.12.1</jackson.version>
         <flink.shaded.version>13.0</flink.shaded.version>
         <hbase.version>1.1.2</hbase.version>
-        <hive.version>2.2.0</hive.version>
+        <hive.version>2.3.6</hive.version>
         <mysql-connector.version>8.0.21</mysql-connector.version>
         <flink.cdc.version>1.3.0</flink.cdc.version>
         <gson.version>2.2.4</gson.version>
@@ -156,6 +156,11 @@
             <artifactId>flink-connector-mysql-cdc</artifactId>
             <version>${flink.cdc.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-core</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
         <!--log-->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -181,11 +186,11 @@
             <version>${log4j.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.apache.bahir</groupId>
             <artifactId>flink-connector-kudu_2.11</artifactId>
             <version>${kudu.version}</version>
-        </dependency>
+        </dependency>-->
     </dependencies>
 
     <build>
