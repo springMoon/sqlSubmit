@@ -2,13 +2,13 @@ package com.rookie.submit.main
 
 import java.io.File
 
-import com.rookie.submit.common.{Common, Constant}
 import com.rookie.submit.common.Constant._
+import com.rookie.submit.common.{Common, Constant}
 import com.rookie.submit.util.{RegisterUdf, SqlFileUtil, TableConfUtil}
 import org.apache.flink.api.java.utils.ParameterTool
-import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend
+import org.apache.flink.contrib.streaming.state.RocksDBStateBackend
 import org.apache.flink.runtime.state.StateBackend
-import org.apache.flink.runtime.state.hashmap.HashMapStateBackend
+import org.apache.flink.runtime.state.filesystem.FsStateBackend
 import org.apache.flink.streaming.api.CheckpointingMode
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
@@ -94,9 +94,9 @@ object SqlSubmit {
     // state backend
     var stateBackend: StateBackend = null
     if ("rocksdb".equals(paraTool.get(STATE_BACKEND))) {
-      stateBackend = new EmbeddedRocksDBStateBackend(true)
+      stateBackend = new RocksDBStateBackend(paraTool.get(CHECKPOINT_DIR), true)
     } else {
-      stateBackend = new HashMapStateBackend()
+      stateBackend = new FsStateBackend(paraTool.get(CHECKPOINT_DIR), true)
     }
     env.setStateBackend(stateBackend)
     // checkpoint
@@ -104,10 +104,6 @@ object SqlSubmit {
     env.getCheckpointConfig.setCheckpointTimeout(paraTool.getLong(CHECKPOINT_TIMEOUT) * 1000)
     // Flink 1.11.0 new feature: Enables unaligned checkpoints
     env.getCheckpointConfig.enableUnalignedCheckpoints()
-    // checkpoint dir
-    env.getCheckpointConfig.setCheckpointStorage(paraTool.get(CHECKPOINT_DIR))
-    // or
-    //    env.getCheckpointConfig.setCheckpointStorage(new FileSystemCheckpointStorage(paraTool.get(CHECKPOINT_DIR)))
   }
 
 }

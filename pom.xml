@@ -9,7 +9,7 @@
     <version>3.0</version>
 
     <properties>
-        <flink.version>1.13.0</flink.version>
+        <flink.version>1.11.3</flink.version>
         <scala.binary.version>2.11</scala.binary.version>
         <hadoop.version>2.7.7</hadoop.version>
         <elasticsearch.version>7.2.0</elasticsearch.version>
@@ -92,11 +92,11 @@
             <version>${flink.version}</version>
             <!-- <scope>provided</scope>-->
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-file-sink-common</artifactId>
             <version>${flink.version}</version>
-        </dependency>
+        </dependency>-->
         <!-- 会导致 SqlSumbit 在 IDEA 执行不能打印日志-->
         <!-- <dependency>
              <groupId>org.apache.flink</groupId>
@@ -207,7 +207,8 @@
                         </goals>
                         <configuration>
                             <artifactSet>
-                                link-statebackend-rocksdb<excludes>
+                                link-statebackend-rocksdb
+                                <excludes>
                                     <exclude>com.google.code.findbugs:jsr305</exclude>
                                     <exclude>org.slf4j:*</exclude>
                                     <exclude>log4j:*</exclude>
