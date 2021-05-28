@@ -9,7 +9,7 @@
     <version>3.0</version>
 
     <properties>
-        <flink.version>1.13.0</flink.version>
+        <flink.version>1.12.0</flink.version>
         <scala.binary.version>2.11</scala.binary.version>
         <hadoop.version>2.7.7</hadoop.version>
         <elasticsearch.version>7.2.0</elasticsearch.version>
@@ -207,7 +207,7 @@
                         </goals>
                         <configuration>
                             <artifactSet>
-                                link-statebackend-rocksdb<excludes>
+                                <excludes>
                                     <exclude>com.google.code.findbugs:jsr305</exclude>
                                     <exclude>org.slf4j:*</exclude>
                                     <exclude>log4j:*</exclude>

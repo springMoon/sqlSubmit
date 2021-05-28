@@ -3,7 +3,7 @@
 drop table if exists t_feature_source;
 CREATE TABLE t_feature_source (
   id bigint
-  ,code VARCHAR
+  ,location.code VARCHAR
   ,rms DOUBLE
   ,mean DOUBLE
   ,peak DOUBLE
@@ -17,6 +17,23 @@ CREATE TABLE t_feature_source (
   ,'properties.bootstrap.servers' = '10.201.0.39:9092'
   ,'properties.group.id' = 't_feature_source'
   ,'format' = 'json'
+  ,'value.format' = 'canal-json'
+--   ,'format.json-schema' = '{
+--         "type": "object",
+--         "properties": {
+--            "location":{type: "object",
+--                    "properties" : {
+--                        "code" : {type:"string"},
+--                        "send_time" : {type:"string", "format": "date-time"},
+--                        "rms":{type:"number"},
+--                        "mean":{type:"number"},
+--                        "peak":{type:"number"},
+--                        "kurtosis":{type:"number"},
+--                        "skewness":{type:"number"}
+--                    }
+--              }
+--         }
+--     }'
 );
 
 -- kafka sink
