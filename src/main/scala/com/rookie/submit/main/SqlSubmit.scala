@@ -4,7 +4,8 @@ import java.io.File
 
 import com.rookie.submit.common.{Common, Constant}
 import com.rookie.submit.common.Constant._
-import com.rookie.submit.util.{RegisterUdf, SqlFileUtil, TableConfUtil}
+import com.rookie.submit.udf.RegisterUdf
+import com.rookie.submit.util.{SqlFileUtil, TableConfUtil}
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend
 import org.apache.flink.runtime.state.StateBackend
