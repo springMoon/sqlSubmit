@@ -3,7 +3,8 @@ CREATE TABLE t_feature (
   ,readModule STRING
   ,checkPoint STRING
   ,operation STRING
-  ,location ROW(id BIGINT, code STRING, send_time STRING, rms  decimal(12, 8),mean decimal(12, 8),peak decimal(12, 8),kurtosis decimal(12, 8),skewness decimal(12, 8))
+  --,location ROW(id BIGINT, code STRING, send_time STRING, rms  decimal(12, 8),mean decimal(12, 8),peak decimal(12, 8),kurtosis decimal(12, 8),skewness decimal(12, 8))
+  ,location ROW(id BIGINT, code STRING)
   ,data ROW(meta STRING, `rows` ARRAY<STRING>)
   ,process_time as proctime()
 ) WITH (
