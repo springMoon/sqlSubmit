@@ -3,7 +3,7 @@ CREATE TABLE t_feature (
   ,readModule STRING
   ,checkPoint STRING
   ,operation STRING
-  ,location STRING
+  ,location ROW(id BIGINT, code STRING, send_time STRING, rms  decimal(12, 8),mean decimal(12, 8),peak decimal(12, 8),kurtosis decimal(12, 8),skewness decimal(12, 8))
   ,data ROW(meta STRING, `rows` ARRAY<STRING>)
   ,process_time as proctime()
 ) WITH (
@@ -16,7 +16,8 @@ CREATE TABLE t_feature (
 );
 
 CREATE TABLE t_sink (
-     id          bigint
+    operation    STRING
+    ,id          bigint
     ,code        STRING
     ,send_time   BIGINT
     ,rms         decimal(12, 8)
@@ -24,17 +25,20 @@ CREATE TABLE t_sink (
     ,peak        decimal(12, 8)
     ,kurtosis    decimal(12, 8)
     ,skewness    decimal(12, 8)
+    ,l_code      STRING
 ) WITH (
    'connector' = 'print'
 );
 
 INSERT INTO t_sink
-SELECT cast(data.`rows`[1] as bigint) id,
-    cast(data.`rows`[2] as string) code,
-    cast(data.`rows`[3] as BIGINT) send_time,
-    cast(data.`rows`[4] as decimal(12, 8)) rms,
-    cast(data.`rows`[5] as decimal(12, 8)) mean,
-    cast(data.`rows`[6] as decimal(12, 8)) peak,
-    cast(data.`rows`[7] as decimal(12, 8)) kurtosis,
-    cast(data.`rows`[8] as decimal(12, 8)) skewness
+SELECT operation
+    ,cast(data.`rows`[1] as bigint) id
+    ,cast(data.`rows`[2] as string) code
+    ,cast(data.`rows`[3] as BIGINT) send_time
+    ,cast(data.`rows`[4] as decimal(12, 8)) rms
+    ,cast(data.`rows`[5] as decimal(12, 8)) mean
+    ,cast(data.`rows`[6] as decimal(12, 8)) peak
+    ,cast(data.`rows`[7] as decimal(12, 8)) kurtosis
+    ,cast(data.`rows`[8] as decimal(12, 8)) skewness
+    ,location.code
 FROM t_feature
