@@ -4,8 +4,7 @@ CREATE TABLE t_feature (
   ,readModule STRING
   ,checkPoint STRING
   ,operation STRING
-  --,location ROW(id BIGINT, code STRING, send_time STRING, rms  decimal(12, 8),mean decimal(12, 8),peak decimal(12, 8),kurtosis decimal(12, 8),skewness decimal(12, 8))
-  ,location ROW(id BIGINT, code STRING, send_time STRING, rms  decimal(12, 8))
+  ,location ROW(id BIGINT, code STRING, send_time STRING, rms  decimal(12, 8),mean decimal(12, 8),peak decimal(12, 8),kurtosis decimal(12, 8),skewness decimal(12, 8))
   ,data ROW(meta STRING, `rows` ARRAY<STRING>)
   ,process_time as proctime()
 ) WITH (
@@ -17,30 +16,28 @@ CREATE TABLE t_feature (
   ,'format' = 'json'
 );
 
-CREATE TABLE t_sink (
-    operation    STRING
-    ,id          bigint
-    ,code        STRING
-    ,send_time   BIGINT
-    ,rms         decimal(12, 8)
-    ,mean        decimal(12, 8)
-    ,peak        decimal(12, 8)
-    ,kurtosis    decimal(12, 8)
-    ,skewness    decimal(12, 8)
-    ,l_code      STRING
-) WITH (
-   'connector' = 'print'
-);
-
-INSERT INTO t_sink
+create view v_t_feature as
 SELECT operation
     ,cast(data.`rows`[1] as bigint) id
     ,cast(data.`rows`[2] as string) code
-    ,cast(data.`rows`[3] as BIGINT) send_time
+    ,FROM_UNIXTIME(cast(data.`rows`[3] as bigint))  send_time
     ,cast(data.`rows`[4] as decimal(12, 8)) rms
     ,cast(data.`rows`[5] as decimal(12, 8)) mean
     ,cast(data.`rows`[6] as decimal(12, 8)) peak
     ,cast(data.`rows`[7] as decimal(12, 8)) kurtosis
     ,cast(data.`rows`[8] as decimal(12, 8)) skewness
     ,location.code
-FROM t_feature
+    ,process_time
+FROM t_feature;
+
+CREATE TABLE t_sink (
+    code        STRING
+    ,rms         decimal(12, 8)
+) WITH (
+   'connector' = 'print'
+);
+
+insert into t_sink
+SELECT code, rms min_rms FROM TABLE(
+   TUMBLE(TABLE v_t_feature, DESCRIPTOR(process_time), INTERVAL '1' MINUTES))
+;
