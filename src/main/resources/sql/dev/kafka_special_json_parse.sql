@@ -1,5 +1,3 @@
--- Lookup Source: Sync Mode
--- kafka source
 CREATE TABLE t_feature (
   header STRING
   ,readModule STRING
@@ -17,16 +15,7 @@ CREATE TABLE t_feature (
   ,'format' = 'json'
 );
 
----sinkTable
 CREATE TABLE t_sink (
---   header STRING
---   ,readModule STRING
---   ,checkPoint STRING
---   ,operation STRING
---   ,location STRING
---   ,data STRING
---       meta STRING
---       ,rows_value STRING
      id          bigint
     ,code        STRING
     ,send_time   BIGINT
@@ -40,7 +29,6 @@ CREATE TABLE t_sink (
 );
 
 INSERT INTO t_sink
--- SELECT header, readModule, checkPoint, operation, location, data
 SELECT cast(data.`rows`[1] as bigint) id,
     cast(data.`rows`[2] as string) code,
     cast(data.`rows`[3] as BIGINT) send_time,
