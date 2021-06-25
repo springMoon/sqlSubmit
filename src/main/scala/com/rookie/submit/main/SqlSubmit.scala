@@ -63,7 +63,7 @@ object SqlSubmit {
     var result: StatementSet = null
     for (sql <- sqlList) {
       try {
-        if (sql.startsWith("insert")) {
+        if (sql.toLowerCase.startsWith("insert")) {
           // ss
           result = statement.addInsertSql(sql)
         } else {
