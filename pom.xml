@@ -9,7 +9,7 @@
     <version>3.0</version>
 
     <properties>
-        <flink.version>1.12.0</flink.version>
+        <flink.version>1.12.2</flink.version>
         <scala.binary.version>2.11</scala.binary.version>
         <hadoop.version>2.7.7</hadoop.version>
         <elasticsearch.version>7.2.0</elasticsearch.version>
@@ -21,6 +21,7 @@
         <flink.cdc.version>1.4.0</flink.cdc.version>
         <gson.version>2.2.4</gson.version>
         <kudu.version>1.1-SNAPSHOT</kudu.version>
+        <hudi.version>0.9.0-SNAPSHOT</hudi.version>
         <slf4j.version>1.7.21</slf4j.version>
         <log4j.version>2.13.3</log4j.version>
     </properties>
@@ -85,12 +86,11 @@
             <version>${jackson.version}-${flink.shaded.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!--connector-->
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-kafka_${scala.binary.version}</artifactId>
             <version>${flink.version}</version>
-            <!-- <scope>provided</scope>-->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
@@ -160,6 +160,11 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-mapreduce-client-core</artifactId>
             <version>${hadoop.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hudi</groupId>
+            <artifactId>hudi-flink-bundle_2.11</artifactId>
+            <version>${hudi.version}</version>
         </dependency>
         <!--log-->
         <dependency>
