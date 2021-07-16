@@ -6,7 +6,7 @@
 
     <groupId>com.rookie</groupId>
     <artifactId>sqlSubmit</artifactId>
-    <version>3.0</version>
+    <version>2.0</version>
 
     <properties>
         <flink.version>1.12.2</flink.version>
@@ -22,6 +22,7 @@
         <gson.version>2.2.4</gson.version>
         <kudu.version>1.1-SNAPSHOT</kudu.version>
         <hudi.version>0.9.0-SNAPSHOT</hudi.version>
+        <kafka.version>2.4.1</kafka.version>
         <slf4j.version>1.7.21</slf4j.version>
         <log4j.version>2.13.3</log4j.version>
     </properties>
@@ -70,14 +71,12 @@
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-json</artifactId>
             <version>${flink.version}</version>
-            <scope>provided</scope>
         </dependency>
         <!--csv-->
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-csv</artifactId>
             <version>${flink.version}</version>
-            <scope>provided</scope>
         </dependency>
         <!--jackson-->
         <dependency>
@@ -90,7 +89,6 @@
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-kafka_${scala.binary.version}</artifactId>
             <version>${flink.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
@@ -126,6 +124,11 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql-connector.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${kafka.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hive</groupId>
