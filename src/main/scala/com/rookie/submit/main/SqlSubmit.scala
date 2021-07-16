@@ -38,7 +38,7 @@ object SqlSubmit {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.getConfig.setAutoWatermarkInterval(200l)
     // state backend and checkpoint
-    enableCheckpoint(env, paraTool)
+    //    enableCheckpoint(env, paraTool)
     // EnvironmentSettings
     val settings = EnvironmentSettings.newInstance()
       .useBlinkPlanner()
@@ -64,7 +64,7 @@ object SqlSubmit {
     var result: StatementSet = null
     for (sql <- sqlList) {
       try {
-        if (sql.startsWith("insert")) {
+        if (sql.toLowerCase.startsWith("insert")) {
           // ss
           result = statement.addInsertSql(sql)
         } else {
