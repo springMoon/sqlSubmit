@@ -114,3 +114,5 @@ CREATE TABLE hive_table_user_log_sink (
 Thanks for [JetBrains](https://www.jetbrains.com/?from=sqlSubmit) provide  opensource license.
 
 ## About
+
+Apologize, modifying the license, for protect this project is free.
