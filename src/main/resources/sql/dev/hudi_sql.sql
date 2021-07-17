@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 CREATE TABLE user_log (
   user_id VARCHAR
   ,item_id VARCHAR
@@ -12,7 +11,6 @@ CREATE TABLE user_log (
   ,'properties.group.id' = 'user_log'                   -- optional: required in Kafka consumer, specify consumer group
   ,'format' = 'json'                 -- required:  'csv', 'json' and 'avro'.
 );
-=======
 -- sets up the result mode to tableau to show the results directly in the CLI
 -- set execution.result-mode=tableau;
 -- set sql-client.execution.result-mode=tableau;
@@ -37,7 +35,6 @@ WITH (
 -- sets up the result mode to tableau to show the results directly in the CLI
 -- set execution.result-mode=tableau;
 -- set sql-client.execution.result-mode=tableau;
->>>>>>> 33f6f92ef88703ff136a650917f48758be4cfbd8
 
 CREATE TABLE user_log_sink(
   uuid VARCHAR
@@ -61,9 +58,6 @@ WITH (
 );
 
 -- insert data using values
-<<<<<<< HEAD
 INSERT INTO user_log_sink
 select /*+ OPTIONS('read.streaming.check-interval' = '4') */user_id as uuid, category_id, behavior, ts, item_id from user_log;
-=======
 INSERT INTO t1 VALUES  ('id1','Danny',23,TIMESTAMP '1970-01-01 00:00:01','par1');
->>>>>>> 33f6f92ef88703ff136a650917f48758be4cfbd8
