@@ -2,7 +2,7 @@
 
 SQL submission program base on flink
 
-Now just support flink 1.12.0
+Now just support flink 1.12.2
 
 Learn more about Flink https://flink.apache.org/
 
@@ -114,3 +114,5 @@ CREATE TABLE hive_table_user_log_sink (
 Thanks for [JetBrains](https://www.jetbrains.com/?from=sqlSubmit) provide  opensource license.
 
 ## About
+
+Apologize, modifying the license, for protect this project is free.

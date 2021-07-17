@@ -12,12 +12,11 @@
         <flink.version>1.12.2</flink.version>
         <scala.binary.version>2.11</scala.binary.version>
         <hadoop.version>2.7.7</hadoop.version>
-        <elasticsearch.version>7.2.0</elasticsearch.version>
         <jackson.version>2.12.1</jackson.version>
         <flink.shaded.version>13.0</flink.shaded.version>
-        <hbase.version>1.1.2</hbase.version>
-        <hive.version>2.3.6</hive.version>
-        <mysql-connector.version>8.0.21</mysql-connector.version>
+        <hbase.version>2.0.0</hbase.version>
+        <hive.version>2.1.1</hive.version>
+        <mysql-connector.version>5.1.47</mysql-connector.version>
         <flink.cdc.version>1.4.0</flink.cdc.version>
         <gson.version>2.2.4</gson.version>
         <kudu.version>1.1-SNAPSHOT</kudu.version>

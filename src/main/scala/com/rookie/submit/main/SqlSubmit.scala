@@ -60,6 +60,8 @@ object SqlSubmit {
 
     // execute sql
     val statement = tabEnv.createStatementSet()
+    result = statement.addInsertSql(sql).addInsert(sql1)
+    result.execute()
     var result: StatementSet = null
     for (sql <- sqlList) {
       try {
