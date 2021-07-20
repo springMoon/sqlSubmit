@@ -1,63 +1,72 @@
-CREATE TABLE user_log (
-  user_id VARCHAR
-  ,item_id VARCHAR
-  ,category_id VARCHAR
-  ,behavior VARCHAR
-  ,ts TIMESTAMP(3)
-) WITH (
-  'connector' = 'kafka'
-  ,'topic' = 'user_behavior'                            -- required: topic name from which the table is read
-  ,'properties.bootstrap.servers' = 'localhost:9092'    -- required: specify the Kafka server connection string
-  ,'properties.group.id' = 'user_log'                   -- optional: required in Kafka consumer, specify consumer group
-  ,'format' = 'json'                 -- required:  'csv', 'json' and 'avro'.
-);
--- sets up the result mode to tableau to show the results directly in the CLI
--- set execution.result-mode=tableau;
--- set sql-client.execution.result-mode=tableau;
-CREATE TABLE t1(
-  uuid VARCHAR(20), -- you can use 'PRIMARY KEY NOT ENFORCED' syntax to mark the field as record key
-  name VARCHAR(10),
-  age INT,
-  ts TIMESTAMP(3),
-  `partition` VARCHAR(20)
-)
-PARTITIONED BY (`partition`)
-WITH (
-  'connector' = 'hudi',
-  'path' = 'hdfs:///user/wuxu/hudi/t1',
---    'path' = 'file:///opt/data',
-  'write.tasks' = '1', -- default is 4 ,required more resource
-  'compaction.tasks' = '1', -- default is 10 ,required more resource
-  'table.type' = 'MERGE_ON_READ' -- this creates a MERGE_ON_READ table, by default is COPY_ON_WRITE
+-- test sync hudi metadata to hive metastore
+create table if not exists kafka_ods_user_info (
+    id        int
+    ,name     string
+    ,sex      string
+    ,age      int
+    ,birthday string
+) with (
+    'connector' = 'kafka',
+    'topic' = 'datalake_test_topic_1',
+    'properties.bootstrap.servers' = 'localhost:9092',
+    'properties.group.id' = 'testGroup',
+    'scan.startup.mode' = 'latest-offset',
+    'format' = 'csv'
 );
 
--- insert data using values
--- sets up the result mode to tableau to show the results directly in the CLI
--- set execution.result-mode=tableau;
--- set sql-client.execution.result-mode=tableau;
-
-CREATE TABLE user_log_sink(
-  uuid VARCHAR
-  ,category_id VARCHAR
-  ,behavior VARCHAR
-  ,ts TIMESTAMP(3)
-  ,item_id VARCHAR
-)
-PARTITIONED BY (`item_id`)
-WITH (
-  'connector' = 'hudi',
-  -- 'path' = 'hdfs:///user/root/hudi/ods_t1_mor',
-  'path' = 'file:///tmp/flink-hudi/ods_t1_mor',
-  'write.precombine.field' = 'ts',
-  'write.tasks' = '1', -- default is 4 ,required more resource
-  'compaction.tasks' = '1', -- default is 10 ,required more resource
-  'table.type' = 'MERGE_ON_READ', -- this creates a MERGE_ON_READ table, by default is COPY_ON_WRITE
-  'compaction.trigger.strategy' = 'num_or_time',
-  'compaction.delta_commits' = '5',
-  'compaction.delta_seconds' = '60'
+create table if not exists ods_user_info_4(
+    dl_uuid   string
+    ,id        int
+    ,name     string
+    ,sex      string
+    ,age      int
+    ,birthday string
+    ,`etl_create_time`     TIMESTAMP(3)   COMMENT 'ETL创建时间'
+    ,`etl_update_time`     TIMESTAMP(3)   COMMENT 'ETL更新时间'
+    ,`partition` string
+) with (
+    'connector' = 'hudi'
+   ,'is_generic' = 'true'
+   ,'path' = 'hdfs:///user/hive/warehouse/dl_ods.db/ods_user_info_4'
+   ,'hoodie.datasource.write.recordkey.field' = 'dl_uuid'
+   ,'hoodie.datasource.write.partitionpath.field' = 'partition'
+   ,'write.precombine.field' = 'etl_update_time'
+   ,'write.tasks' = '1'
+   ,'table.type' = 'MERGE_ON_READ'
+   ,'compaction.tasks' = '1'
+   ,'compaction.trigger.strategy' = 'num_or_time'
+   ,'compaction.delta_commits' = '30'
+   ,'compaction.delta_seconds' = '3600'
+   ,'hive_sync.enable' = 'true'
+   ,'hive_sync.db' = 'dl_ods'
+   ,'hive_sync.table' = 'ods_user_info'
+   ,'hive_sync.file_format' = 'PARQUET'
+   ,'hive_sync.support_timestamp' = 'true'
+   ,'hive_sync.use_jdbc' = 'true'
+   ,'hive_sync.jdbc_url' = 'jdbc:hive2://localhost:10000'
+   ,'hive_sync.metastore.uris' = 'thrift://thinkpad:9083'
+   ,'hoodie.datasource.hive_style_partition' = 'true'
+   ,'hive_sync.partition_fields' = 'partition'
+   ,'read.tasks' = '1'
+   ,'read.streaming.enabled' = 'true'
+   ,'hoodie.datasource.query.type' = 'snapshot'
+   ,'read.streaming.start-commit' = '20210101000000'
+   ,'read.streaming.check-interval' = '30'
+   ,'hoodie.datasource.merge.type' = 'payload_combine'
+   ,'read.utc-timezone' = 'false'
 );
 
--- insert data using values
-INSERT INTO user_log_sink
-select /*+ OPTIONS('read.streaming.check-interval' = '4') */user_id as uuid, category_id, behavior, ts, item_id from user_log;
-INSERT INTO t1 VALUES  ('id1','Danny',23,TIMESTAMP '1970-01-01 00:00:01','par1');
+-- set table.dynamic-table-options.enabled=true;
+-- set 'pipeline.name' = 'insert_ods_user_info';
+insert into ods_user_info_4
+select /*+ OPTIONS('pipeline.name'='insert_ods_user_info') */
+    cast(id as string) dl_uuid
+  ,id
+  ,name
+  ,sex
+  ,age
+  ,birthday
+  ,now() etl_create_time
+  ,now() etl_update_time
+  ,date_format(now(), 'yyyy/MM/dd') -- only support partition format
+from kafka_ods_user_info;
