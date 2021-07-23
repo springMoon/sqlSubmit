@@ -6,15 +6,17 @@ create table if not exists kafka_ods_user_info (
     ,age      int
     ,birthday string
 ) with (
-    'connector' = 'kafka',
-    'topic' = 'datalake_test_topic_1',
-    'properties.bootstrap.servers' = 'localhost:9092',
-    'properties.group.id' = 'testGroup',
-    'scan.startup.mode' = 'latest-offset',
-    'format' = 'csv'
+    'connector' = 'kafka'
+    ,'topic' = 'datalake_test_topic_1'
+    ,'properties.bootstrap.servers' = 'localhost:9092'
+    ,'properties.group.id' = 'testGroup'
+    ,'scan.startup.mode' = 'latest-offset'
+    ,'format' = 'csv'
 );
 
-create table if not exists ods_user_info_4(
+drop table ods_user_info_6;
+
+create table if not exists ods_user_info_6(
     dl_uuid   string
     ,id        int
     ,name     string
@@ -27,7 +29,7 @@ create table if not exists ods_user_info_4(
 ) with (
     'connector' = 'hudi'
    ,'is_generic' = 'true'
-   ,'path' = 'hdfs:///user/hive/warehouse/dl_ods.db/ods_user_info_4'
+   ,'path' = 'hdfs://thinkpad:8020/user/hive/warehouse/dl_ods.db/ods_user_info_6'
    ,'hoodie.datasource.write.recordkey.field' = 'dl_uuid'
    ,'hoodie.datasource.write.partitionpath.field' = 'partition'
    ,'write.precombine.field' = 'etl_update_time'
@@ -43,7 +45,7 @@ create table if not exists ods_user_info_4(
    ,'hive_sync.file_format' = 'PARQUET'
    ,'hive_sync.support_timestamp' = 'true'
    ,'hive_sync.use_jdbc' = 'true'
-   ,'hive_sync.jdbc_url' = 'jdbc:hive2://localhost:10000'
+   ,'hive_sync.jdbc_url' = 'jdbc:hive2://thinkpad:10000'
    ,'hive_sync.metastore.uris' = 'thrift://thinkpad:9083'
    ,'hoodie.datasource.hive_style_partition' = 'true'
    ,'hive_sync.partition_fields' = 'partition'
@@ -58,7 +60,7 @@ create table if not exists ods_user_info_4(
 
 -- set table.dynamic-table-options.enabled=true;
 -- set 'pipeline.name' = 'insert_ods_user_info';
-insert into ods_user_info_4
+insert into ods_user_info_6
 select /*+ OPTIONS('pipeline.name'='insert_ods_user_info') */
     cast(id as string) dl_uuid
   ,id
