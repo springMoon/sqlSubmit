@@ -2,7 +2,7 @@ package com.rookie.submit.main
 
 import java.io.File
 
-import com.rookie.submit.common.{Common, Constant}
+import com.rookie.submit.common.{Common}
 import com.rookie.submit.common.Constant._
 import com.rookie.submit.util.{RegisterUdf, SqlFileUtil, TableConfUtil}
 import org.apache.flink.api.java.utils.ParameterTool
@@ -50,9 +50,9 @@ object SqlSubmit {
 
     // register catalog, only in server
     if ("/".equals(File.separator)) {
-      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH))
-      tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
-      tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
+      val catalog = new HiveCatalog(paraTool.get(HIVE_CATALOG_NAME), paraTool.get(HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH))
+      tabEnv.registerCatalog(paraTool.get(HIVE_CATALOG_NAME), catalog)
+      tabEnv.useCatalog(paraTool.get(HIVE_CATALOG_NAME))
     }
 
     // load udf
