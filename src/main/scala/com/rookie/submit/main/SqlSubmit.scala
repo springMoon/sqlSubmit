@@ -38,7 +38,7 @@ object SqlSubmit {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.getConfig.setAutoWatermarkInterval(200l)
     // state backend and checkpoint
-    //    enableCheckpoint(env, paraTool)
+    enableCheckpoint(env, paraTool)
     // EnvironmentSettings
     val settings = EnvironmentSettings.newInstance()
       .useBlinkPlanner()

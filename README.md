@@ -104,6 +104,42 @@ CREATE TABLE hive_table_user_log_sink (
 
 ```
 
+## checkpoint configuration
+
+Config checkpoint use stream api
+```java
+
+var stateBackend: StateBackend = null
+  if ("rocksdb".equals(paraTool.get(STATE_BACKEND))) {
+    stateBackend = new EmbeddedRocksDBStateBackend(true)
+  } else {
+    stateBackend = new HashMapStateBackend()
+  }
+  env.setStateBackend(stateBackend)
+  // checkpoint
+  env.enableCheckpointing(paraTool.getLong(CHECKPOINT_INTERVAL) * 1000, CheckpointingMode.EXACTLY_ONCE)
+  env.getCheckpointConfig.setCheckpointTimeout(paraTool.getLong(CHECKPOINT_TIMEOUT) * 1000)
+  // Flink 1.11.0 new feature: Enables unaligned checkpoints
+  env.getCheckpointConfig.enableUnalignedCheckpoints()
+  // checkpoint dir
+  env.getCheckpointConfig.setCheckpointStorage(paraTool.get(CHECKPOINT_DIR))
+
+```
+
+## udf
+
+register udf
+```java
+
+// udf
+env.createTemporarySystemFunction("udf_decode", new Decode)
+
+// udtf
+env.createTemporarySystemFunction("udf_split", new SplitFunction)
+env.createTemporarySystemFunction("udf_parse_json", new ParseJson)
+
+```
+
 
 ## Support
 
