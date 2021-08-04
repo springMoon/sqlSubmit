@@ -14,9 +14,9 @@ create table if not exists kafka_ods_user_info (
     ,'format' = 'csv'
 );
 
-drop table ods_user_info_6;
+drop table ods_user_info_13;
 
-create table if not exists ods_user_info_6(
+create table if not exists ods_user_info_13(
     dl_uuid   string
     ,id        int
     ,name     string
@@ -28,8 +28,7 @@ create table if not exists ods_user_info_6(
     ,`partition` string
 ) with (
     'connector' = 'hudi'
-   ,'is_generic' = 'true'
-   ,'path' = 'hdfs://thinkpad:8020/user/hive/warehouse/dl_ods.db/ods_user_info_6'
+   ,'path' = 'hdfs://thinkpad:8020/user/hive/warehouse/dl_ods.db/ods_user_info_13'
    ,'hoodie.datasource.write.recordkey.field' = 'dl_uuid'
    ,'hoodie.datasource.write.partitionpath.field' = 'partition'
    ,'write.precombine.field' = 'etl_update_time'
@@ -37,18 +36,18 @@ create table if not exists ods_user_info_6(
    ,'table.type' = 'MERGE_ON_READ'
    ,'compaction.tasks' = '1'
    ,'compaction.trigger.strategy' = 'num_or_time'
-   ,'compaction.delta_commits' = '30'
-   ,'compaction.delta_seconds' = '3600'
-   ,'hive_sync.enable' = 'true'
-   ,'hive_sync.db' = 'dl_ods'
-   ,'hive_sync.table' = 'ods_user_info'
-   ,'hive_sync.file_format' = 'PARQUET'
-   ,'hive_sync.support_timestamp' = 'true'
-   ,'hive_sync.use_jdbc' = 'true'
-   ,'hive_sync.jdbc_url' = 'jdbc:hive2://thinkpad:10000'
-   ,'hive_sync.metastore.uris' = 'thrift://thinkpad:9083'
-   ,'hoodie.datasource.hive_style_partition' = 'true'
-   ,'hive_sync.partition_fields' = 'partition'
+   ,'compaction.delta_commits' = '5'
+   ,'compaction.delta_seconds' = '600'
+--   ,'hive_sync.enable' = 'true'
+--   ,'hive_sync.db' = 'dl_ods'
+--   ,'hive_sync.table' = 'ods_user_info_13'
+--   ,'hive_sync.file_format' = 'PARQUET'
+--   ,'hive_sync.support_timestamp' = 'true'
+--   ,'hive_sync.use_jdbc' = 'true'
+--   ,'hive_sync.jdbc_url' = 'jdbc:hive2://thinkpad:10000'
+--   ,'hive_sync.metastore.uris' = 'thrift://thinkpad:9083'
+--    ,'hoodie.datasource.hive_style_partition' = 'true'
+--   ,'hive_sync.partition_fields' = 'partition'
    ,'read.tasks' = '1'
    ,'read.streaming.enabled' = 'true'
    ,'hoodie.datasource.query.type' = 'snapshot'
@@ -56,12 +55,13 @@ create table if not exists ods_user_info_6(
    ,'read.streaming.check-interval' = '30'
    ,'hoodie.datasource.merge.type' = 'payload_combine'
    ,'read.utc-timezone' = 'false'
+--    ,'hoodie.memory.spillable.map.path' = '/tmp/hudi'
 );
 
 -- set table.dynamic-table-options.enabled=true;
 -- set 'pipeline.name' = 'insert_ods_user_info';
-insert into ods_user_info_6
-select /*+ OPTIONS('pipeline.name'='insert_ods_user_info') */
+insert into ods_user_info_13
+select /*+ OPTIONS('pipeline.name'='insert_ods_user_info') */  -- work on flink 1.13
     cast(id as string) dl_uuid
   ,id
   ,name
