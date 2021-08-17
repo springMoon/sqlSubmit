@@ -20,7 +20,10 @@ CREATE TABLE user_log (
 drop table if exists hbase_behavior_conf ;
 CREATE TEMPORARY TABLE hbase_behavior_conf (
    rowkey STRING
-  ,cf ROW(`c` STRING, v STRING)
+  ,cf ROW(item_id STRING
+  ,category_id STRING
+  ,behavior STRING
+  ,ts TIMESTAMP(3))
 ) WITH (
    'connector' = 'hbase-2.2'
    ,'zookeeper.quorum' = 'thinkpad:12181'
@@ -49,7 +52,7 @@ CREATE TABLE kakfa_join_mysql_demo (
 );
 
 INSERT INTO kakfa_join_mysql_demo(user_id, item_id, category_id, behavior, behavior_map, ts)
-SELECT a.user_id, a.item_id, a.category_id, a.behavior, c.cf.v, a.ts
+SELECT a.user_id, a.item_id, a.category_id, a.behavior, concat('map_', c.cf.item_id), a.ts
 FROM user_log a
   left join hbase_behavior_conf FOR SYSTEM_TIME AS OF a.process_time AS c
   ON a.user_id = rowkey
