@@ -28,9 +28,6 @@ CREATE TABLE hbase_behavior_conf (
    'connector' = 'hbase-2.2'
    ,'zookeeper.quorum' = 'thinkpad:12181'
    ,'table-name' = 'user_log'
-   ,'lookup.cache.max-rows' = '10000'
-   ,'lookup.cache.ttl' = '10 second' -- ttl time 超过这么长时间无数据才行
-   ,'lookup.async' = 'true'
 );
 
 ---sinkTable
