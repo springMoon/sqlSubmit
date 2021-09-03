@@ -15,7 +15,7 @@ public class SqlFileUtil {
         // list store return sql
         List<String> sqlList = new ArrayList<String>();
         // add widonw path
-        if (!new File(fileName).exists()) {
+        if ("\\".equals(File.separator) && !new File(fileName).exists()) {
             fileName = SqlFileUtil.class.getClassLoader().getResource("").getPath() + fileName;
         }
         File file = new File(fileName);

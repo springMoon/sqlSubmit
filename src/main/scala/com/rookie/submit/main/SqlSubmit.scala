@@ -108,7 +108,6 @@ object SqlSubmit {
     // checkpoint dir
     env.getCheckpointConfig.setCheckpointStorage(paraTool.get(CHECKPOINT_DIR))
     // or
-    //    env.getCheckpointConfig.setCheckpointStorage(new FileSystemCheckpointStorage(paraTool.get(CHECKPOINT_DIR)))
   }
 
 }
