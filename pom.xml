@@ -9,7 +9,7 @@
     <version>3.0</version>
 
     <properties>
-        <flink.version>1.13.1</flink.version>
+        <flink.version>1.13.2</flink.version>
         <scala.binary.version>2.11</scala.binary.version>
         <hadoop.version>2.7.7</hadoop.version>
         <elasticsearch.version>7.2.0</elasticsearch.version>
@@ -90,7 +90,7 @@
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-kafka_${scala.binary.version}</artifactId>
             <version>${flink.version}</version>
-            <!-- <scope>provided</scope>-->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
@@ -155,6 +155,7 @@
             <groupId>com.alibaba.ververica</groupId>
             <artifactId>flink-connector-mysql-cdc</artifactId>
             <version>${flink.cdc.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>

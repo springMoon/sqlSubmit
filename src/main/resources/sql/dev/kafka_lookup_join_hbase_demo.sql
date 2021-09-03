@@ -1,4 +1,4 @@
--- Lookup Source: Sync Mode
+-- Lookup Source: Sync Mode  -- todo test lookup join hbase function
 -- kafka source
 CREATE TABLE user_log (
   user_id STRING

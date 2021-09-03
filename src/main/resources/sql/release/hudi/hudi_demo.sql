@@ -14,13 +14,9 @@ create table if not exists kafka_ods_user_info (
     ,'format' = 'csv'
 );
 
-<<<<<<< Updated upstream
-drop table if exists ods_user_info_15;
-=======
--- drop table if exists ods_user_info_18;
->>>>>>> Stashed changes
+drop table ods_user_info_15;
 
-create table if not exists ods_user_info_18(
+create table if not exists ods_user_info_15(
     dl_uuid   string
     ,id        int
     ,name     string
@@ -29,22 +25,22 @@ create table if not exists ods_user_info_18(
     ,birthday string
     ,`etl_create_time`     TIMESTAMP(3)   COMMENT 'ETL创建时间'
     ,`etl_update_time`     TIMESTAMP(3)   COMMENT 'ETL更新时间'
-   -- ,`partition` string
+    ,`partition` string
 ) with (
     'connector' = 'hudi'
-   ,'path' = 'hdfs://thinkpad:8020/user/hive/warehouse/dl_ods.db/ods_user_info_18'
+   ,'path' = 'hdfs://thinkpad:8020/user/hive/warehouse/dl_ods.db/ods_user_info_15'
    ,'hoodie.datasource.write.recordkey.field' = 'dl_uuid'
-  -- ,'hoodie.datasource.write.partitionpath.field' = 'partition'
+   ,'hoodie.datasource.write.partitionpath.field' = 'partition'
    ,'write.precombine.field' = 'etl_update_time'
    ,'write.tasks' = '1'
    ,'table.type' = 'MERGE_ON_READ'
    ,'compaction.tasks' = '1'
    ,'compaction.trigger.strategy' = 'num_or_time'
-   ,'compaction.delta_commits' = '10'
-   ,'compaction.delta_seconds' = '60'
+   ,'compaction.delta_commits' = '100'
+   ,'compaction.delta_seconds' = '6000'
   ,'hive_sync.enable' = 'true'
   ,'hive_sync.db' = 'dl_ods'
-  ,'hive_sync.table' = 'ods_user_info_18'
+  ,'hive_sync.table' = 'ods_user_info_15'
   ,'hive_sync.file_format' = 'PARQUET'
   ,'hive_sync.support_timestamp' = 'true'
   ,'hive_sync.use_jdbc' = 'true'
@@ -55,7 +51,7 @@ create table if not exists ods_user_info_18(
    ,'read.tasks' = '1'
    ,'read.streaming.enabled' = 'true'
    ,'hoodie.datasource.query.type' = 'snapshot'
-   ,'read.streaming.start-commit' = '000'
+   ,'read.streaming.start-commit' = '20210101000000'
    ,'read.streaming.check-interval' = '1'
    ,'hoodie.datasource.merge.type' = 'payload_combine'
    ,'read.utc-timezone' = 'false'
@@ -64,7 +60,7 @@ create table if not exists ods_user_info_18(
 
 -- set table.dynamic-table-options.enabled=true;
 -- set 'pipeline.name' = 'insert_ods_user_info';
-insert into ods_user_info_18
+insert into ods_user_info_15
 select /*+ OPTIONS('pipeline.name'='insert_ods_user_info') */  -- work on flink 1.13
     cast(id as string) dl_uuid
   ,id
@@ -74,5 +70,5 @@ select /*+ OPTIONS('pipeline.name'='insert_ods_user_info') */  -- work on flink 
   ,birthday
   ,now() etl_create_time
   ,now() etl_update_time
---  ,date_format(now(), 'yyyy/MM/dd') -- only support partition format
+  ,date_format(now(), 'yyyy/MM/dd') -- only support partition format
 from kafka_ods_user_info;
