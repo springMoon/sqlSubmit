@@ -14,7 +14,7 @@ create table if not exists kafka_ods_user_info (
     ,'format' = 'csv'
 );
 
-drop table ods_user_info_15;
+drop table if exists ods_user_info_15;
 
 create table if not exists ods_user_info_15(
     dl_uuid   string

@@ -16,8 +16,6 @@ CREATE TABLE user_log (
   ,'connector.properties.group.id' = 'user_log'
   ,'connector.startup-mode' = 'group-offsets'
   ,'connector.sink-partitioner' = 'fixed'
-
-
   ,'format.type' = 'json'
 );
 
