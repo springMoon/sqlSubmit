@@ -1,4 +1,3 @@
--- Lookup Source: Sync Mode
 -- kafka source
 CREATE TABLE user_log (
   user_id STRING
@@ -10,10 +9,10 @@ CREATE TABLE user_log (
   , WATERMARK FOR ts AS ts - INTERVAL '5' SECOND
 ) WITH (
   'connector' = 'kafka'
-  ,'topic' = 'user_behavior'
+  ,'topic' = 'user_behavior1'
   ,'properties.bootstrap.servers' = 'localhost:9092'
   ,'properties.group.id' = 'user_log'
-  ,'scan.startup.mode' = 'group-offsets'
+  ,'scan.startup.mode' = 'latest-offset'
   ,'format' = 'json'
 );
 
@@ -29,6 +28,7 @@ CREATE TABLE hbase_user_log_sink (
    ,'zookeeper.quorum' = 'localhost:12181'
    ,'zookeeper.znode.parent' = '/hbase'
    ,'table-name' = 'user_log'
+   ,'null-string-literal' = '--'
    -- ,'lookup.cache.max-rows' = '10000'
    -- ,'lookup.cache.ttl' = '10 minute' -- ttl time 超过这么长时间无数据才行
    -- ,'lookup.async' = 'true'
