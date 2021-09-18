@@ -1,0 +1,134 @@
+package com.rookie.submit.udf
+
+
+import org.apache.commons.lang3.StringUtils
+import org.apache.flink.table.annotation.DataTypeHint
+import org.apache.flink.table.annotation.FunctionHint
+import org.apache.flink.table.functions.{FunctionContext, TableFunction}
+import org.apache.flink.types.{Row, RowKind}
+import org.apache.hadoop.hbase.{CompareOperator, HBaseConfiguration, TableName}
+import org.apache.hadoop.hbase.client.{Connection, ConnectionFactory, Result, ResultScanner, Scan, Table}
+import org.apache.hadoop.hbase.filter.{BinaryComparator, Filter, QualifierFilter, SingleColumnValueFilter, ValueFilter}
+import org.slf4j.{Logger, LoggerFactory}
+
+import scala.collection.mutable.ListBuffer
+
+/**
+ * udtf join hbase with non rowkey: no cache, connect hbase every event
+ */
+class JoinHbaseNonRowkey1(familyString: String, qualifierString: String) extends TableFunction[Row] {
+
+  val LOG: Logger = LoggerFactory.getLogger(classOf[JoinHbaseNonRowkey1])
+  var table: Table = _
+  var family: Array[Byte] = _
+  var qualifier: ListBuffer[Array[Byte]] = _
+  var filterColumn: BinaryComparator = _
+
+
+  override def open(context: FunctionContext): Unit = {
+
+    val conf = HBaseConfiguration.create
+    conf.set("hbase.zookeeper.quorum", "thinkpad")
+    conf.set("hbase.htable.threads.keepalivetime", "20")
+    conf.set("zookeeper.znode.parent", "/hbase")
+
+    val connection: Connection = ConnectionFactory.createConnection(conf)
+    table = connection.getTable(TableName.valueOf("user_info"))
+
+    if (StringUtils.isEmpty(familyString)) {
+      LOG.error("hbase udtf family is empty")
+      System.exit(-1)
+    }
+    if (StringUtils.isEmpty(qualifierString)) {
+      LOG.error("hbase udtf qualifier is empty")
+      System.exit(-1)
+    }
+    family = familyString.getBytes("UTF8")
+    val arr = qualifierString.split(",")
+    qualifier = new ListBuffer[Array[Byte]]()
+    arr.foreach(item => qualifier.+=(item.getBytes("UTF8")))
+
+    filterColumn = new BinaryComparator(qualifier.head)
+    LOG.info("hbase udtf join family: " + familyString + ", qualifier: " + qualifierString)
+
+  }
+
+  @FunctionHint(output = new DataTypeHint("ROW<arr ARRAY<STRING>>"))
+  def eval(key: String): Unit = {
+    if (key == null || key.length == 0) {
+      return
+    }
+    val scan: Scan = new Scan();
+    qualifier.foreach(item => scan.addColumn(family, item))
+
+    val filter = new SingleColumnValueFilter(family, qualifier.head, CompareOperator.EQUAL, key.getBytes("UTF8"))
+    scan.setFilter(filter)
+
+    val resultScanner = table.getScanner(scan)
+    val it = resultScanner.iterator()
+
+    //    val rowKind = RowKind.fromByteValue(0.toByte)
+    //    val row = new Row(rowKind, 1)
+    while (it.hasNext) {
+
+      val result = it.next()
+      val arr = new ListBuffer[String]
+      var i = 0
+      qualifier.foreach(item => {
+        val value = result.getColumnCells(family, item)
+        if (value != null) {
+          arr.+=(String.valueOf(value, "UTF8"))
+        }
+
+        println(arr)
+        //        row.setField(0, arr)
+        //        collect(row)
+      })
+
+    }
+
+    LOG.info("finish join key : " + key)
+  }
+
+
+  override def close(): Unit = {
+    if (table != null) {
+      table.close()
+    }
+  }
+
+
+  def main(args: Array[String]): Unit = {
+
+    val joinHbase = new JoinHbaseNonRowkey1("cf", "col,col1,col2,col3,col4")
+
+    val conf = HBaseConfiguration.create
+    conf.set("hbase.zookeeper.quorum", "thinkpad")
+    conf.set("hbase.htable.threads.keepalivetime", "20")
+    conf.set("zookeeper.znode.parent", "/hbase")
+
+    val connection: Connection = ConnectionFactory.createConnection(conf)
+    table = connection.getTable(TableName.valueOf("user_info"))
+
+    if (StringUtils.isEmpty(familyString)) {
+      LOG.error("hbase udtf family is empty")
+      System.exit(-1)
+    }
+    if (StringUtils.isEmpty(qualifierString)) {
+      LOG.error("hbase udtf qualifier is empty")
+      System.exit(-1)
+    }
+    family = familyString.getBytes("UTF8")
+    val arr = qualifierString.split(",")
+    qualifier = new ListBuffer[Array[Byte]]()
+    arr.foreach(item => qualifier.+=(item.getBytes("UTF8")))
+
+    filterColumn = new BinaryComparator(qualifier.head)
+    LOG.info("hbase udtf join family: " + familyString + ", qualifier: " + qualifierString)
+
+
+    joinHbase.eval("aa")
+
+
+  }
+}
