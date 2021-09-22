@@ -2,19 +2,20 @@ package com.rookie.submit.udf
 
 
 import org.apache.commons.lang3.StringUtils
-import org.apache.flink.table.annotation.DataTypeHint
-import org.apache.flink.table.annotation.FunctionHint
+import org.apache.flink.table.annotation.{DataTypeHint, FunctionHint}
 import org.apache.flink.table.functions.{FunctionContext, TableFunction}
 import org.apache.flink.types.{Row, RowKind}
+import org.apache.hadoop.hbase.client.{Connection, ConnectionFactory, Scan, Table}
+import org.apache.hadoop.hbase.filter.{BinaryComparator, SingleColumnValueFilter}
 import org.apache.hadoop.hbase.{CompareOperator, HBaseConfiguration, TableName}
-import org.apache.hadoop.hbase.client.{Connection, ConnectionFactory, Result, ResultScanner, Scan, Table}
-import org.apache.hadoop.hbase.filter.{BinaryComparator, Filter, QualifierFilter, SingleColumnValueFilter, ValueFilter}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.mutable.ListBuffer
 
 /**
  * udtf join hbase with non rowkey: no cache, connect hbase every event
+ * hbase 表: 10000 条数据，非主键关联测试
+ * 笔记本测试 TPS： 40
  */
 class JoinHbaseNonRowkey1(familyString: String, qualifierString: String) extends TableFunction[Row] {
 
@@ -28,7 +29,7 @@ class JoinHbaseNonRowkey1(familyString: String, qualifierString: String) extends
   override def open(context: FunctionContext): Unit = {
 
     val conf = HBaseConfiguration.create
-    conf.set("hbase.zookeeper.quorum", "thinkpad")
+    conf.set("hbase.zookeeper.quorum", "thinkpad:12181")
     conf.set("hbase.htable.threads.keepalivetime", "20")
     conf.set("zookeeper.znode.parent", "/hbase")
 
@@ -67,27 +68,29 @@ class JoinHbaseNonRowkey1(familyString: String, qualifierString: String) extends
     val resultScanner = table.getScanner(scan)
     val it = resultScanner.iterator()
 
-    //    val rowKind = RowKind.fromByteValue(0.toByte)
-    //    val row = new Row(rowKind, 1)
+    // insert
+    val rowKind = RowKind.fromByteValue(0.toByte)
+    val row = new Row(rowKind, 1)
     while (it.hasNext) {
 
       val result = it.next()
-      val arr = new ListBuffer[String]
-      var i = 0
+      val arr = new Array[String](qualifier.length + 1)
+      var index = 0
+      val rowkey = new String(result.getRow)
+      arr(index) = rowkey
       qualifier.foreach(item => {
-        val value = result.getColumnCells(family, item)
+        val value = result.getValue(family, item)
         if (value != null) {
-          arr.+=(String.valueOf(value, "UTF8"))
+          index += 1
+          arr(index) = new String(value, "UTF8")
         }
 
-        println(arr)
-        //        row.setField(0, arr)
-        //        collect(row)
       })
+      row.setField(0, arr)
+      collect(row)
 
     }
-
-    LOG.info("finish join key : " + key)
+    //    LOG.info("finish join key : " + key)
   }
 
 
