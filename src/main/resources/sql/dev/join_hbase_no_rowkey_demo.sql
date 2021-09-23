@@ -41,5 +41,6 @@ CREATE TABLE join_hbbase_sink (
 INSERT INTO join_hbbase_sink
 SELECT a.user_id, a.item_id, a.category_id, a.behavior, a.ts, col[1], col[2], col[3], col[4], col[5]
 FROM user_log a
-left join lateral table(udf_join_hbase_non_rowkey1(item_id)) as t2(col) on true
+-- left join lateral table(udf_join_hbase_non_rowkey_no_cache(item_id)) as t2(col) on true
+left join lateral table(udf_join_hbase_non_rowkey_cache(item_id)) as t2(col) on true
 where a.item_id is not null;
