@@ -27,7 +27,6 @@ class JoinHbaseNonRowkeyNoCache(familyString: String, qualifierString: String) e
   var qualifier: ListBuffer[Array[Byte]] = _
   var filterColumn: BinaryComparator = _
 
-
   override def open(context: FunctionContext): Unit = {
 
     val conf = HBaseConfiguration.create

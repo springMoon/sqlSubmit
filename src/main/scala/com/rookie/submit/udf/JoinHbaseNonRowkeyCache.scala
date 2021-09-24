@@ -21,13 +21,12 @@ import scala.collection.mutable.ListBuffer
  * 笔记本 on yarn 测试 TPS： 900+ (基本可用，服务器环境应该会好很多，不够还可以加并行度)
  *
  */
-class JoinHbaseNonRowkeyCache(familyString: String, qualifierString: String) extends TableFunction[Row] {
+class JoinHbaseNonRowkeyCache(familyString: String, qualifierString: String, timeOut: Long, cacheSize: Long) extends TableFunction[Row] {
 
   val LOG: Logger = LoggerFactory.getLogger(classOf[JoinHbaseNonRowkeyCache])
   var table: Table = _
   var family: Array[Byte] = _
   var qualifier: ListBuffer[Array[Byte]] = _
-  var filterColumn: BinaryComparator = _
   var cache: Cache[String, ListBuffer[Array[String]]] = _
 
 
@@ -54,13 +53,12 @@ class JoinHbaseNonRowkeyCache(familyString: String, qualifierString: String) ext
     qualifier = new ListBuffer[Array[Byte]]()
     arr.foreach(item => qualifier.+=(item.getBytes("UTF8")))
 
-    filterColumn = new BinaryComparator(qualifier.head)
     LOG.info("hbase udtf join family: " + familyString + ", qualifier: " + qualifierString)
 
     cache = CacheBuilder
       .newBuilder
-      .expireAfterWrite(600, TimeUnit.SECONDS)
-      .maximumSize(10000)
+      .expireAfterWrite(timeOut, TimeUnit.SECONDS)
+      .maximumSize(cacheSize)
       .build[String, ListBuffer[Array[String]]]
 
   }
@@ -98,7 +96,12 @@ class JoinHbaseNonRowkeyCache(familyString: String, qualifierString: String) ext
     //    LOG.info("finish join key : " + key)
   }
 
-
+  /**
+   * query hbase
+   *
+   * @param key join key
+   * @return query result row
+   */
   private def queryHbase(key: String): ListBuffer[Array[String]] = {
     val scan: Scan = new Scan();
     qualifier.foreach(item => scan.addColumn(family, item))
