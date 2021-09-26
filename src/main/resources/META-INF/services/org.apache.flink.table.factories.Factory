@@ -1,3 +1,3 @@
 com.rookie.submit.cust.source.socket.SocketDynamicTableFactory
 com.rookie.submit.cust.source.http.HttpDynamicTableFactory
-com.rookie.submit.cust.format.ChangelogCsvFormatFactory
+com.rookie.submit.cust.format.changelog.csv.ChangelogCsvFormatFactory

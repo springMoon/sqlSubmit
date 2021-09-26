@@ -1,4 +1,4 @@
-package com.rookie.submit.cust.format;
+package com.rookie.submit.cust.format.changelog.csv;
 
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.configuration.ConfigOption;
