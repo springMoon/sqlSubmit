@@ -1,8 +1,6 @@
 package com.rookie.submit.main
 
-import java.io.File
-
-import com.rookie.submit.common.{Common, Constant}
+import com.rookie.submit.common.Common
 import com.rookie.submit.common.Constant._
 import com.rookie.submit.udf.RegisterUdf
 import com.rookie.submit.util.{SqlFileUtil, TableConfUtil}
@@ -14,7 +12,6 @@ import org.apache.flink.streaming.api.CheckpointingMode
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
 import org.apache.flink.table.api.{EnvironmentSettings, SqlDialect, StatementSet}
-import org.apache.flink.table.catalog.hive.HiveCatalog
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
@@ -41,7 +38,6 @@ object SqlSubmit {
     enableCheckpoint(env, paraTool)
     // EnvironmentSettings
     val settings = EnvironmentSettings.newInstance()
-      .useBlinkPlanner()
       .inStreamingMode()
       .build()
     // create table enviroment

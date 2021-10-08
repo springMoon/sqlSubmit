@@ -1,7 +1,6 @@
 package scala.com.rookie.submit.udf;
 
 import com.rookie.submit.udf.JoinHbaseNonRowkeyNoCache;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
