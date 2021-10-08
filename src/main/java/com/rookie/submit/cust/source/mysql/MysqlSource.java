@@ -8,7 +8,7 @@ import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.apache.flink.table.data.RowData;
 
 /**
- * http source
+ * mysql source todo
  */
 public class MysqlSource extends RichSourceFunction<RowData> {
 
