@@ -13,6 +13,10 @@ import org.apache.flink.types.RowKind;
 
 import java.util.List;
 
+/**
+ *
+ * provide decode object
+ */
 public class ChangelogCsvFormat implements DecodingFormat<DeserializationSchema<RowData>> {
 
     private final String columnDelimiter;
@@ -21,6 +25,12 @@ public class ChangelogCsvFormat implements DecodingFormat<DeserializationSchema<
         this.columnDelimiter = columnDelimiter;
     }
 
+    /**
+     *
+     * @param context
+     * @param producedDataType
+     * @return
+     */
     @Override
     @SuppressWarnings("unchecked")
     public DeserializationSchema<RowData> createRuntimeDecoder(

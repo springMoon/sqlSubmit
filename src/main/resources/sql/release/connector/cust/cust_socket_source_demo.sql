@@ -6,16 +6,16 @@ create table cust_socket_source(
  'connector' = 'socket'
  ,'hostname' = 'localhost'
  ,'port' = '8888'
- ,'byte-delimiter' = '10'
- ,'format' = 'csv'
---  ,'changelog-csv.column-delimiter' = ','
+--  ,'byte-delimiter' = '10'
+ ,'format' = 'changelog-csv'
+ ,'changelog-csv.column-delimiter' = ','
 )
 ;
 
 create table cust_socket_sink(
-id string
-,name string
-,sex string
+    id string
+    ,name string
+    ,sex string
 )WITH(
     'connector' = 'print'
 )
