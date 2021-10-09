@@ -9,7 +9,6 @@ import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.connector.source.LookupTableSource;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
-import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.LogicalType;
 import org.apache.flink.table.types.logical.RowType;
@@ -23,19 +22,20 @@ import java.util.List;
 
 /**
  * mysql table source
+ * query mysql data
  */
 public class MysqlSource extends RichSourceFunction<RowData> implements LookupTableSource {
 
     private volatile boolean isRunning = true;
-    private String url;
-    private String username;
-    private String password;
-    private String database;
-    private String table;
+    private final String url;
+    private final String username;
+    private final String password;
+    private final String database;
+    private final String table;
     //    private DeserializationSchema<RowData> deserializer;
     private transient Counter counter;
     private transient Connection conn;
-    private DataType producedDataType;
+    private final DataType producedDataType;
 
     public MysqlSource(String url, String username, String password, String database, String table, DataType producedDataType) {
         this.url = url;
@@ -43,7 +43,6 @@ public class MysqlSource extends RichSourceFunction<RowData> implements LookupTa
         this.password = password;
         this.database = database;
         this.table = table;
-//        this.deserializer = deserializer;
         this.producedDataType = producedDataType;
     }
 
@@ -97,71 +96,13 @@ public class MysqlSource extends RichSourceFunction<RowData> implements LookupTa
                 Object fieldValue = RowDataConverterBase.createConverter(type, value);
 
                 result.setField(i, fieldValue);
-
-                // parse result to RowData
-//            if (deserializer instanceof CsvRowDataDeserializationSchema) {
-//                // csv
-//                result = getCSVRowData(fieldCount, resultSet);
-//            } else if (deserializer instanceof JsonRowDataDeserializationSchema) {
-//                // json
-//                result = getJsonRowData(fieldCount, fieldNames, resultSet);
-//            }
-
-            }
-            // out result
-            if (result != null) {
+                // out result
                 ctx.collect(result);
                 this.counter.inc();
             }
         }
-
     }
 
-//    /**
-//     * parse result to csv, then deserializer to RowData
-//     *
-//     * @param fieldCount result column count
-//     * @param resultSet  result
-//     * @return RowData result
-//     */
-//    private RowData getJsonRowData(int fieldCount, List<String> fieldNames, ResultSet resultSet) throws
-//            SQLException, IOException {
-//        JsonObject jsonObject = new JsonObject();
-//        for (int i = 0; i < fieldCount; i++) {
-//            String value = resultSet.getString(i + 1);
-//            jsonObject.addProperty(fieldNames.get(i), value);
-//        }
-//
-//        RowData result = deserializer.deserialize(jsonObject.toString().getBytes());
-//        result.setRowKind(RowKind.INSERT);
-//        return result;
-//    }
-
-//    /**
-//     * parse result to csv, then deserializer to RowData
-//     *
-//     * @param fieldCount result column count
-//     * @param resultSet  result
-//     * @return RowData result
-//     */
-//    private RowData getCSVRowData(int fieldCount, ResultSet resultSet) throws SQLException, java.io.IOException {
-//        StringBuilder builder = new StringBuilder();
-//        GenericRowData result = new GenericRowData(fieldCount);
-//        result.setRowKind(RowKind.INSERT);
-//        for (int i = 0; i < fieldCount; i++) {
-//            String value = resultSet.getString(i + 1);
-//            if (i == fieldCount - 1) {
-//                builder.append(value);
-//            } else {
-//                builder.append(value).append(",");
-//            }
-//            result.setField(i, StringData.fromString(value));
-//        }
-//        // java.lang.String cannot be cast to org.apache.flink.table.data.StringData
-////        RowData result = deserializer.deserialize(builder.toString().getBytes());
-////        result.setRowKind(RowKind.INSERT);
-//        return result;
-//    }
     @Override
     public void cancel() {
         isRunning = false;
