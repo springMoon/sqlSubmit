@@ -67,9 +67,9 @@ public class MysqlDynamicTableFactory implements DynamicTableSourceFactory {
         final FactoryUtil.TableFactoryHelper helper = FactoryUtil.createTableFactoryHelper(this, context);
 
         // discover a suitable decoding format
-        final DecodingFormat<DeserializationSchema<RowData>> decodingFormat = helper.discoverDecodingFormat(
-                DeserializationFormatFactory.class,
-                FactoryUtil.FORMAT);
+//        final DecodingFormat<DeserializationSchema<RowData>> decodingFormat = helper.discoverDecodingFormat(
+//                DeserializationFormatFactory.class,
+//                FactoryUtil.FORMAT);
 
         // validate all options
         helper.validate();
@@ -87,6 +87,6 @@ public class MysqlDynamicTableFactory implements DynamicTableSourceFactory {
                 context.getCatalogTable().getResolvedSchema().toPhysicalRowDataType();
 
         // create and return dynamic table source
-        return new MysqlDynamicTableSource(url, username, password, database, table, decodingFormat, producedDataType);
+        return new MysqlDynamicTableSource(url, username, password, database, table, producedDataType);
     }
 }
