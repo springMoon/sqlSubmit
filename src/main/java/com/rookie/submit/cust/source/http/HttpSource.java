@@ -8,7 +8,7 @@ import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.apache.flink.table.data.RowData;
 
 /**
- * http source
+ * http table source
  */
 public class HttpSource extends RichSourceFunction<RowData> {
 

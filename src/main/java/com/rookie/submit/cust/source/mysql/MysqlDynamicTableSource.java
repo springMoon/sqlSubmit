@@ -12,18 +12,27 @@ import org.apache.flink.table.types.DataType;
 
 public class MysqlDynamicTableSource implements ScanTableSource {
 
-    private final String url;
-    private final long interval;
+    private String url;
+    private String username;
+    private String password;
+    private String database;
+    private String table;
     private final DecodingFormat<DeserializationSchema<RowData>> decodingFormat;
     private final DataType producedDataType;
 
     public MysqlDynamicTableSource(
-            String hostname,
-            long interval,
+            String url,
+            String username,
+            String password,
+            String database,
+            String table,
             DecodingFormat<DeserializationSchema<RowData>> decodingFormat,
             DataType producedDataType) {
-        this.url = hostname;
-        this.interval = interval;
+        this.url = url;
+        this.username = username;
+        this.password = password;
+        this.database = database;
+        this.table = table;
         this.decodingFormat = decodingFormat;
         this.producedDataType = producedDataType;
     }
@@ -43,14 +52,16 @@ public class MysqlDynamicTableSource implements ScanTableSource {
                 runtimeProviderContext,
                 producedDataType);
 
-        final SourceFunction<RowData> sourceFunction = new MysqlSource(url, interval, deserializer);
+
+        final SourceFunction<RowData> sourceFunction
+                = new MysqlSource(url, username, password, database, table, deserializer, producedDataType);
 
         return SourceFunctionProvider.of(sourceFunction, false);
     }
 
     @Override
     public DynamicTableSource copy() {
-        return new MysqlDynamicTableSource(url, interval, decodingFormat, producedDataType);
+        return new MysqlDynamicTableSource(url, username, password, database, table, decodingFormat, producedDataType);
     }
 
     @Override

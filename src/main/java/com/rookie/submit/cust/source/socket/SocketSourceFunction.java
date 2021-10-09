@@ -13,6 +13,9 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+/**
+ * socket table source
+ */
 public class SocketSourceFunction extends RichSourceFunction<RowData> implements ResultTypeQueryable<RowData> {
 
   private final String hostname;
