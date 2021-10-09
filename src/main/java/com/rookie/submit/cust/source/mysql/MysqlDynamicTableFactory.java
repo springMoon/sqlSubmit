@@ -48,6 +48,7 @@ public class MysqlDynamicTableFactory implements DynamicTableSourceFactory {
         options.add(DATABASE);
         options.add(TABLE);
         options.add(FactoryUtil.FORMAT); // use pre-defined option for format
+
         return options;
     }
 

@@ -15,6 +15,7 @@ create table cust_mysql_source(
  ,'mysql.database' = 'venn'
  ,'mysql.table' = 't_feature'
  ,'format' = 'csv'
+--  ,'format' = 'json'
 )
 ;
 
