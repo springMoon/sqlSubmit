@@ -94,7 +94,7 @@ public class MysqlDynamicTableSource implements ScanTableSource, LookupTableSour
         final RowType rowType = (RowType) physicalSchema.toRowDataType().getLogicalType();
 
         MysqlRowDataLookUpFunction lookUpFunction
-                = new MysqlRowDataLookUpFunction(url, username, password, table, fieldNames, keyNames, fieldTypes, lookupOption, rowType);
+                = new MysqlRowDataLookUpFunction(url, username, password, table, fieldNames, keyNames, producedDataType, lookupOption, rowType);
 
         return TableFunctionProvider.of(lookUpFunction);
     }

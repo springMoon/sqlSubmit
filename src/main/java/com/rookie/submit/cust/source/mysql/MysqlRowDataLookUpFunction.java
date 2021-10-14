@@ -11,6 +11,7 @@ import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.functions.FunctionContext;
 import org.apache.flink.table.functions.TableFunction;
+import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.LogicalType;
 import org.apache.flink.table.types.logical.RowType;
 import org.apache.flink.table.types.logical.VarCharType;
@@ -38,7 +39,7 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
     private static final Logger LOG = LoggerFactory.getLogger(MysqlRowDataLookUpFunction.class);
 
     private transient Connection dbConn;
-    private final TypeInformation[] keyTypes;
+    private final DataType producedDataType;
 
     private final String url;
     private final String username;
@@ -59,7 +60,7 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
 
     public MysqlRowDataLookUpFunction(String url, String username, String password,
                                       String table, String[] fieldNames, String[] keyNames,
-                                      TypeInformation[] fieldTypes, MysqlLookupOption mysqlLookupOption, RowType rowType) {
+                                      DataType producedDataType, MysqlLookupOption mysqlLookupOption, RowType rowType) {
         this.url = url;
         this.username = username;
         this.password = password;
@@ -67,34 +68,23 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
         this.cacheExpireMs = mysqlLookupOption.getCacheExpireMs();
         this.maxRetryTimes = mysqlLookupOption.getMaxRetryTimes();
         this.mysqlLookupOption = mysqlLookupOption;
+        this.producedDataType = producedDataType;
 
         this.keyNames = keyNames;
-
-        List<String> nameList = Arrays.asList(fieldNames);
-        this.keyTypes =
-                Arrays.stream(keyNames)
-                        .map(
-                                s -> {
-                                    checkArgument(
-                                            nameList.contains(s),
-                                            "keyName %s can't find in fieldNames %s.",
-                                            s,
-                                            nameList);
-                                    return fieldTypes[nameList.indexOf(s)];
-                                })
-                        .toArray(TypeInformation[]::new);
 
         MySQLDialect mySQLDialect = new MySQLDialect();
         this.query =
                 mySQLDialect
                         .getSelectFromStatement(table, fieldNames, keyNames);
 
+        List<String> list = Arrays.asList(fieldNames);
 
         this.jdbcRowConverter = mySQLDialect.getRowConverter(rowType);
-        int keyLength = keyTypes.length;
+        int keyLength = keyNames.length;
         LogicalType[] logicalTypes = new LogicalType[keyLength];
         for (int i = 0; i < keyLength; i++) {
-            logicalTypes[i] = new VarCharType(true, 200);
+            //  通过 名字找 对应类型
+            logicalTypes[i] = producedDataType.getLogicalType().getChildren().get(list.indexOf(keyNames[i]));
         }
 
         this.lookupKeyRowConverter = mySQLDialect.getRowConverter(RowType.of(logicalTypes));
