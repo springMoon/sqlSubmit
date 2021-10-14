@@ -126,44 +126,4 @@ public class MysqlSource extends RichSourceFunction<RowData>  {
         isRunning = false;
     }
 
-//    @Override
-//    public LookupRuntimeProvider getLookupRuntimeProvider(LookupContext context) {
-//
-//        if (lookupOption == null) {
-//            lookupOption = new MysqlLookupOption.Builder()
-//                    .setCacheMaxSize(options.get(MysqlOption.CACHE_MAX_SIZE))
-//                    .setCacheExpireMs(options.get(MysqlOption.CACHE_EXPIRE_MS))
-//                    .setMaxRetryTimes(options.get(MysqlOption.MAX_RETRY_TIMES))
-//                    .build();
-//        }
-//
-//        final RowTypeInfo rowTypeInfo = (RowTypeInfo) fromDataTypeToLegacyInfo(producedDataType);
-//
-//        String[] fieldNames = rowTypeInfo.getFieldNames();
-//        TypeInformation[] fieldTypes = rowTypeInfo.getFieldTypes();
-//
-//        int[] lookupKeysIndex = context.getKeys()[0];
-//        int keyCount = lookupKeysIndex.length;
-//        String[] keyNames = new String[keyCount];
-//        for (int i = 0; i < keyCount; i++) {
-//            keyNames[i] = fieldNames[lookupKeysIndex[i]];
-//        }
-//
-//        final RowType rowType = (RowType) physicalSchema.toRowDataType().getLogicalType();
-//
-//        MysqlRowDataLookUpFunction lookUpFunction
-//                = new MysqlRowDataLookUpFunction(url, username, password, database, table, fieldNames, keyNames, fieldTypes, lookupOption);
-//
-//        return TableFunctionProvider.of(lookUpFunction);
-//    }
-//
-//    @Override
-//    public DynamicTableSource copy() {
-//        return null;
-//    }
-
-//    @Override
-//    public String asSummaryString() {
-//        return "customize mysql source, support lookup function";
-//    }
 }

@@ -84,16 +84,6 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
                                 })
                         .toArray(TypeInformation[]::new);
 
-//        this.keySqlTypes =
-//                Arrays.stream(keyTypes).mapToInt(JdbcTypeUtil::typeInformationToSqlType).toArray();
-
-
-//        query = FieldNamedPreparedStatementImpl.parseNamedStatement(
-//                new MySQLDialect()
-//                        .getSelectFromStatement(
-//                                table, fieldNames, keyNames),
-//                new HashMap<>());
-
         MySQLDialect mySQLDialect = new MySQLDialect();
         this.query =
                 mySQLDialect
@@ -108,12 +98,6 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
         }
 
         this.lookupKeyRowConverter = mySQLDialect.getRowConverter(RowType.of(logicalTypes));
-
-//                mySQLDialect.getRowConverter(
-//                        RowType.of(
-//                                Arrays.stream(keyTypes)
-//                                        .map(DataType::getLogicalType)
-//                                        .toArray(LogicalType[]::new)));
 
     }
 
