@@ -19,7 +19,6 @@ public class MysqlLookupOption {
     // second
     private final int timeOut;
 
-
     public MysqlLookupOption(
             long cacheMaxSize, long cacheExpireMs, int maxRetryTimes, boolean lookupAsync, int timeOut) {
         this.cacheMaxSize = cacheMaxSize;

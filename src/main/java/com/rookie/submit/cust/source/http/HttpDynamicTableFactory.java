@@ -1,6 +1,5 @@
 package com.rookie.submit.cust.source.http;
 
-import com.rookie.submit.cust.source.socket.SocketDynamicTableSource;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;

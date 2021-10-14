@@ -1,38 +1,19 @@
 package com.rookie.submit.cust.source.mysql;
 
-import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.configuration.ConfigOption;
-import org.apache.flink.configuration.ConfigOptions;
 import org.apache.flink.configuration.ReadableConfig;
-import org.apache.flink.table.connector.format.DecodingFormat;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.connector.source.DynamicTableSource;
-import org.apache.flink.table.data.RowData;
-import org.apache.flink.table.factories.DeserializationFormatFactory;
 import org.apache.flink.table.factories.DynamicTableSourceFactory;
 import org.apache.flink.table.factories.FactoryUtil;
 import org.apache.flink.table.types.DataType;
+import org.apache.flink.table.utils.TableSchemaUtils;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class MysqlDynamicTableFactory implements DynamicTableSourceFactory {
 
-    public static final ConfigOption<String> URL = ConfigOptions.key("mysql.url")
-            .stringType()
-            .noDefaultValue();
-
-    public static final ConfigOption<String> USERNAME = ConfigOptions.key("mysql.username")
-            .stringType()
-            .noDefaultValue();
-    public static final ConfigOption<String> PASSWORD = ConfigOptions.key("mysql.password")
-            .stringType()
-            .noDefaultValue();
-    public static final ConfigOption<String> DATABASE = ConfigOptions.key("mysql.database")
-            .stringType()
-            .noDefaultValue();
-    public static final ConfigOption<String> TABLE = ConfigOptions.key("mysql.table")
-            .stringType()
-            .noDefaultValue();
 
     @Override
     public String factoryIdentifier() {
@@ -42,11 +23,11 @@ public class MysqlDynamicTableFactory implements DynamicTableSourceFactory {
     @Override
     public Set<ConfigOption<?>> requiredOptions() {
         final Set<ConfigOption<?>> options = new HashSet<>();
-        options.add(URL);
-        options.add(USERNAME);
-        options.add(PASSWORD);
-        options.add(DATABASE);
-        options.add(TABLE);
+        options.add(MysqlOption.URL);
+        options.add(MysqlOption.USERNAME);
+        options.add(MysqlOption.PASSWORD);
+        options.add(MysqlOption.DATABASE);
+        options.add(MysqlOption.TABLE);
         options.add(FactoryUtil.FORMAT); // use pre-defined option for format
 
         return options;
@@ -56,7 +37,10 @@ public class MysqlDynamicTableFactory implements DynamicTableSourceFactory {
     public Set<ConfigOption<?>> optionalOptions() {
         final Set<ConfigOption<?>> options = new HashSet<>();
         // no optional option
-//        options.add(BYTE_DELIMITER);
+        options.add(MysqlOption.CACHE_MAX_SIZE);
+        options.add(MysqlOption.CACHE_EXPIRE_MS);
+        options.add(MysqlOption.MAX_RETRY_TIMES);
+        options.add(MysqlOption.TIME_OUT);
         return options;
     }
 
@@ -76,17 +60,20 @@ public class MysqlDynamicTableFactory implements DynamicTableSourceFactory {
 
         // get the validated options
         final ReadableConfig options = helper.getOptions();
-        final String url = options.get(URL);
-        final String username = options.get(USERNAME);
-        final String password = options.get(PASSWORD);
-        final String database = options.get(DATABASE);
-        final String table = options.get(TABLE);
+        final String url = options.get(MysqlOption.URL);
+        final String username = options.get(MysqlOption.USERNAME);
+        final String password = options.get(MysqlOption.PASSWORD);
+        final String database = options.get(MysqlOption.DATABASE);
+        final String table = options.get(MysqlOption.TABLE);
 
         // derive the produced data type (excluding computed columns) from the catalog table
         final DataType producedDataType =
                 context.getCatalogTable().getResolvedSchema().toPhysicalRowDataType();
 
+        TableSchema physicalSchema =
+                TableSchemaUtils.getPhysicalSchema(context.getCatalogTable().getSchema());
+
         // create and return dynamic table source
-        return new MysqlDynamicTableSource(url, username, password, database, table, producedDataType);
+        return new MysqlDynamicTableSource(url, username, password, database, table, producedDataType, options, physicalSchema);
     }
 }

@@ -16,6 +16,7 @@ public class HttpSource extends RichSourceFunction<RowData> {
     private String url;
     private long requestInterval;
     private DeserializationSchema<RowData> deserializer;
+    // count out event
     private transient Counter counter;
 
     public HttpSource(String url, long requestInterval, DeserializationSchema<RowData> deserializer) {
@@ -31,17 +32,16 @@ public class HttpSource extends RichSourceFunction<RowData> {
         this.counter = getRuntimeContext()
                 .getMetricGroup()
                 .counter("myCounter");
-
     }
 
     @Override
     public void run(SourceContext<RowData> ctx) throws Exception {
         while (isRunning) {
             try {
-                String messge = HttpClientUtil.doGet(url);
-
-                // deserializer messge, http ignore
-                ctx.collect(deserializer.deserialize(messge.getBytes()));
+                // receive http message, csv format
+                String message = HttpClientUtil.doGet(url);
+                // deserializer csv message
+                ctx.collect(deserializer.deserialize(message.getBytes()));
                 this.counter.inc();
 
                 Thread.sleep(requestInterval);

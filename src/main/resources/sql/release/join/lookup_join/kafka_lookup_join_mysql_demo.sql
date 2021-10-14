@@ -13,7 +13,7 @@ CREATE TABLE user_log (
   ,'topic' = 'user_behavior'
   ,'properties.bootstrap.servers' = 'localhost:9092'
   ,'properties.group.id' = 'user_log'
-  ,'scan.startup.mode' = 'group-offsets'
+  ,'scan.startup.mode' = 'latest-offset'
   ,'format' = 'json'
 );
 
@@ -25,7 +25,7 @@ drop table if exists mysql_behavior_conf ;
 CREATE TEMPORARY TABLE mysql_behavior_conf (
    id int
   ,code STRING
-  ,map_val STRING
+  ,`value` STRING
   ,update_time TIMESTAMP(3)
 --   ,primary key (id) not enforced
 --   ,WATERMARK FOR update_time AS update_time - INTERVAL '5' SECOND
@@ -65,7 +65,7 @@ CREATE TABLE kakfa_join_mysql_demo (
 -- where a.behavior is not null;
 
 INSERT INTO kakfa_join_mysql_demo(user_id, item_id, category_id, behavior, behavior_map, ts)
-SELECT a.user_id, a.item_id, a.category_id, a.behavior, c.map_val, a.ts
+SELECT a.user_id, a.item_id, a.category_id, a.behavior, c.`value`, a.ts
 FROM user_log a
   left join mysql_behavior_conf FOR SYSTEM_TIME AS OF a.process_time AS c
   ON a.behavior = c.code
