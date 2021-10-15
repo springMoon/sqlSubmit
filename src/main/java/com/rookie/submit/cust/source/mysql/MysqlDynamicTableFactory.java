@@ -14,10 +14,10 @@ import java.util.Set;
 
 public class MysqlDynamicTableFactory implements DynamicTableSourceFactory {
 
-
     @Override
     public String factoryIdentifier() {
-        return "cust-mysql"; // used for matching to `connector = '...'`
+        // used for matching to `connector = '...'`
+        return "cust-mysql";
     }
 
     @Override
@@ -50,21 +50,22 @@ public class MysqlDynamicTableFactory implements DynamicTableSourceFactory {
         // or use the provided helper utility
         final FactoryUtil.TableFactoryHelper helper = FactoryUtil.createTableFactoryHelper(this, context);
 
-        // discover a suitable decoding format
-//        final DecodingFormat<DeserializationSchema<RowData>> decodingFormat = helper.discoverDecodingFormat(
-//                DeserializationFormatFactory.class,
-//                FactoryUtil.FORMAT);
-
         // validate all options
         helper.validate();
 
         // get the validated options
-        final ReadableConfig options = helper.getOptions();
-        final String url = options.get(MysqlOption.URL);
-        final String username = options.get(MysqlOption.USERNAME);
-        final String password = options.get(MysqlOption.PASSWORD);
-        final String database = options.get(MysqlOption.DATABASE);
-        final String table = options.get(MysqlOption.TABLE);
+        final ReadableConfig config = helper.getOptions();
+        MysqlOption option = new MysqlOption.Builder()
+                .setUrl(config.get(MysqlOption.URL))
+                .setDatabase(config.get(MysqlOption.DATABASE))
+                .setTable(config.get(MysqlOption.TABLE))
+                .setUsername(config.get(MysqlOption.USERNAME))
+                .setPassword(config.get(MysqlOption.PASSWORD))
+                .setCacheMaxSize(config.get(MysqlOption.CACHE_MAX_SIZE))
+                .setCacheExpireMs(config.get(MysqlOption.CACHE_EXPIRE_MS))
+                .setMaxRetryTimes(config.get(MysqlOption.MAX_RETRY_TIMES))
+                .setTimeOut(config.get(MysqlOption.TIME_OUT))
+                .build();
 
         // derive the produced data type (excluding computed columns) from the catalog table
         final DataType producedDataType =
@@ -74,6 +75,6 @@ public class MysqlDynamicTableFactory implements DynamicTableSourceFactory {
                 TableSchemaUtils.getPhysicalSchema(context.getCatalogTable().getSchema());
 
         // create and return dynamic table source
-        return new MysqlDynamicTableSource(url, username, password, database, table, producedDataType, options, physicalSchema);
+        return new MysqlDynamicTableSource(producedDataType, option, physicalSchema);
     }
 }

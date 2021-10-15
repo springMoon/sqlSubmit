@@ -1,10 +1,8 @@
 package com.rookie.submit.cust.source.mysql;
 
-import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.connector.jdbc.dialect.MySQLDialect;
 import org.apache.flink.connector.jdbc.internal.converter.JdbcRowConverter;
 import org.apache.flink.connector.jdbc.statement.FieldNamedPreparedStatement;
-import org.apache.flink.connector.jdbc.utils.JdbcTypeUtil;
 import org.apache.flink.shaded.guava30.com.google.common.cache.Cache;
 import org.apache.flink.shaded.guava30.com.google.common.cache.CacheBuilder;
 import org.apache.flink.table.data.GenericRowData;
@@ -14,7 +12,6 @@ import org.apache.flink.table.functions.TableFunction;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.LogicalType;
 import org.apache.flink.table.types.logical.RowType;
-import org.apache.flink.table.types.logical.VarCharType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,8 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.flink.util.Preconditions.checkArgument;
-
 /**
  * The MysqlRowDataLookUpFunction is a standard user-defined table function, it can be used in
  * tableAPI and also useful for temporal table join plan in SQL. It looks up the result as {@link
@@ -38,13 +33,8 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
     private static final long serialVersionUID = 1008611L;
     private static final Logger LOG = LoggerFactory.getLogger(MysqlRowDataLookUpFunction.class);
 
-    private transient Connection dbConn;
-    private final DataType producedDataType;
-
-    private final String url;
-    private final String username;
-    private final String password;
-    private final transient MysqlLookupOption mysqlLookupOption;
+    private Connection dbConn;
+    private final MysqlOption options;
     private final long cacheMaxSize;
     private final long cacheExpireMs;
     private final int maxRetryTimes;
@@ -58,41 +48,37 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
     private final String query;
 
 
-    public MysqlRowDataLookUpFunction(String url, String username, String password,
-                                      String table, String[] fieldNames, String[] keyNames,
-                                      DataType producedDataType, MysqlLookupOption mysqlLookupOption, RowType rowType) {
-        this.url = url;
-        this.username = username;
-        this.password = password;
-        this.cacheMaxSize = mysqlLookupOption.getCacheMaxSize();
-        this.cacheExpireMs = mysqlLookupOption.getCacheExpireMs();
-        this.maxRetryTimes = mysqlLookupOption.getMaxRetryTimes();
-        this.mysqlLookupOption = mysqlLookupOption;
-        this.producedDataType = producedDataType;
+    public MysqlRowDataLookUpFunction(String[] fieldNames, String[] keyNames,
+                                      DataType producedDataType, MysqlOption options, RowType rowType) {
 
+        this.cacheMaxSize = options.getCacheMaxSize();
+        this.cacheExpireMs = options.getCacheExpireMs();
+        this.maxRetryTimes = options.getMaxRetryTimes();
+        this.options = options;
         this.keyNames = keyNames;
 
+        // generate lookup query sql
         MySQLDialect mySQLDialect = new MySQLDialect();
         this.query =
                 mySQLDialect
-                        .getSelectFromStatement(table, fieldNames, keyNames);
+                        .getSelectFromStatement(options.getTable(), fieldNames, keyNames);
 
         List<String> list = Arrays.asList(fieldNames);
-
+        // get jdbc row converter
         this.jdbcRowConverter = mySQLDialect.getRowConverter(rowType);
         int keyLength = keyNames.length;
         LogicalType[] logicalTypes = new LogicalType[keyLength];
         for (int i = 0; i < keyLength; i++) {
-            //  通过 名字找 对应类型
+            // find query key type by key name
             logicalTypes[i] = producedDataType.getLogicalType().getChildren().get(list.indexOf(keyNames[i]));
         }
 
+        // get lookup key row converter
         this.lookupKeyRowConverter = mySQLDialect.getRowConverter(RowType.of(logicalTypes));
-
     }
 
     @Override
-    public void open(FunctionContext context) throws Exception {
+    public void open(FunctionContext context) {
         try {
             establishConnectionAndStatement();
             this.cache =
@@ -104,15 +90,11 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
                             .build();
         } catch (SQLException sqe) {
             throw new IllegalArgumentException("open() failed.", sqe);
-        } catch (ClassNotFoundException cnfe) {
-            throw new IllegalArgumentException("JDBC driver class not found.", cnfe);
         }
-
-
     }
 
-    private void establishConnectionAndStatement() throws SQLException, ClassNotFoundException {
-        dbConn = DriverManager.getConnection(url, username, password);
+    private void establishConnectionAndStatement() throws SQLException {
+        dbConn = DriverManager.getConnection(options.getUrl(), options.getUsername(), options.getPassword());
         statement = FieldNamedPreparedStatement.prepareStatement(dbConn, query, keyNames);
     }
 
@@ -163,12 +145,12 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
                 }
 
                 try {
-                    if (!dbConn.isValid(mysqlLookupOption.getTimeOut())) {
+                    if (!dbConn.isValid(options.getTimeOut())) {
                         statement.close();
                         dbConn.close();
                         establishConnectionAndStatement();
                     }
-                } catch (SQLException | ClassNotFoundException exception) {
+                } catch (SQLException exception) {
                     LOG.error(
                             "JDBC connection is not valid, and reestablish connection failed",
                             exception);

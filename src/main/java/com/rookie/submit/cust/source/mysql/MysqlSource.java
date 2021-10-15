@@ -1,71 +1,44 @@
 package com.rookie.submit.cust.source.mysql;
 
 import com.rookie.submit.cust.source.base.RowDataConverterBase;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.ReadableConfig;
-import org.apache.flink.connector.jdbc.internal.options.JdbcLookupOptions;
 import org.apache.flink.metrics.Counter;
 import org.apache.flink.metrics.SimpleCounter;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
-import org.apache.flink.table.connector.source.DynamicTableSource;
-import org.apache.flink.table.connector.source.LookupTableSource;
-import org.apache.flink.table.connector.source.SourceFunctionProvider;
-import org.apache.flink.table.connector.source.TableFunctionProvider;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.LogicalType;
 import org.apache.flink.table.types.logical.RowType;
 import org.apache.flink.types.RowKind;
-import scala.math.Ordering;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Arrays;
 import java.util.List;
-
-import static org.apache.flink.table.types.utils.TypeConversions.fromDataTypeToLegacyInfo;
 
 /**
  * mysql table source
  * query mysql data
  */
-public class MysqlSource extends RichSourceFunction<RowData>  {
+public class MysqlSource extends RichSourceFunction<RowData> {
 
     private volatile boolean isRunning = true;
-    private final String url;
-    private final String username;
-    private final String password;
-    private final String database;
-    private final String table;
-    //    private DeserializationSchema<RowData> deserializer;
     private transient Counter counter;
     private transient Connection conn;
-    private final DataType producedDataType;
     private final String[] fieldNames;
     private final int fieldCount;
     private final RowType rowType;
-    private MysqlLookupOption lookupOption;
-    private final ReadableConfig options;
+    private final MysqlOption options;
 
-    public MysqlSource(String url, String username, String password, String database, String table, DataType producedDataType, ReadableConfig options) {
-        this.url = url;
-        this.username = username;
-        this.password = password;
-        this.database = database;
-        this.table = table;
-        this.producedDataType = producedDataType;
+    public MysqlSource(DataType producedDataType, MysqlOption options) {
         rowType = (RowType) producedDataType.getLogicalType();
 
         fieldCount = rowType.getFieldCount();
         List<String> nameList = rowType.getFieldNames();
         fieldNames = nameList.toArray(new String[fieldCount]);
         this.options = options;
-
     }
 
     @Override
@@ -75,9 +48,8 @@ public class MysqlSource extends RichSourceFunction<RowData>  {
         this.counter = getRuntimeContext()
                 .getMetricGroup()
                 .counter("myCounter");
-
         // jdbc connection
-        conn = DriverManager.getConnection(this.url, this.username, this.password);
+        conn = DriverManager.getConnection(this.options.getUrl(), this.options.getUsername(), this.options.getPassword());
 
     }
 
@@ -95,8 +67,8 @@ public class MysqlSource extends RichSourceFunction<RowData>  {
             }
         }
         builder.append("from ");
-        builder.append(database).append(".");
-        builder.append(table);
+        builder.append(this.options.getDatabase()).append(".");
+        builder.append(this.options.getTable());
         String sql = builder.toString();
 
         PreparedStatement ps = conn.prepareStatement(sql);
