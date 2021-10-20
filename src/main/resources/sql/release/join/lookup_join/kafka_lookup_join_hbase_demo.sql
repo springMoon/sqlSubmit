@@ -13,7 +13,7 @@ CREATE TABLE user_log (
   ,'topic' = 'user_behavior'
   ,'properties.bootstrap.servers' = 'localhost:9092'
   ,'properties.group.id' = 'user_log'
-  ,'scan.startup.mode' = 'group-offsets'
+  ,'scan.startup.mode' = 'latest-offset'
   ,'format' = 'json'
 );
 

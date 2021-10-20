@@ -30,8 +30,7 @@ create temporary table mysql_behavior_conf(
  ,'mysql.password' = '123456'
  ,'mysql.database' = 'venn'
  ,'mysql.table' = 'lookup_join_config'
- ,'format' = 'csv'
- ,'mysql.lookup.cache.max.size' = '1'
+ ,'mysql.lookup.cache.max.size' = '100'
  ,'mysql.lookup.cache.expire.ms' = '600000'
  ,'mysql.lookup.max.retry.times' = '3'
  ,'mysql.timeout' = '10'
@@ -55,5 +54,5 @@ INSERT INTO kakfa_join_mysql_demo(user_id, item_id, category_id, behavior, behav
 SELECT a.user_id, a.item_id, a.category_id, a.behavior, c.`value`, a.ts
 FROM user_log a
   left join mysql_behavior_conf FOR SYSTEM_TIME AS OF a.process_time AS c
-  ON a.behavior = c.code
+  ON a.behavior = c.code  -- and a.item_id = c.code
 where a.behavior is not null;

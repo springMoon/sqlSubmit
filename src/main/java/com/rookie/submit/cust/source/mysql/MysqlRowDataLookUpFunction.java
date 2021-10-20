@@ -44,13 +44,10 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
     private transient FieldNamedPreparedStatement statement;
     private transient Cache<RowData, List<RowData>> cache;
     private final String[] keyNames;
-
     private final String query;
-
 
     public MysqlRowDataLookUpFunction(String[] fieldNames, String[] keyNames,
                                       DataType producedDataType, MysqlOption options, RowType rowType) {
-
         this.cacheMaxSize = options.getCacheMaxSize();
         this.cacheExpireMs = options.getCacheExpireMs();
         this.maxRetryTimes = options.getMaxRetryTimes();
@@ -81,6 +78,7 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
     public void open(FunctionContext context) {
         try {
             establishConnectionAndStatement();
+            // cache, if not set "mysql.lookup.cache.max.size" and "mysql.lookup.cache.expire.ms", do not use cache
             this.cache =
                     cacheMaxSize == -1 || cacheExpireMs == -1
                             ? null
@@ -107,6 +105,7 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
      */
     public void eval(Object... keys) {
         RowData keyRow = GenericRowData.of(keys);
+        // get row from cache
         if (cache != null) {
             List<RowData> cachedRows = cache.getIfPresent(keyRow);
             if (cachedRows != null) {
@@ -123,10 +122,12 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
                 statement = lookupKeyRowConverter.toExternal(keyRow, statement);
                 try (ResultSet resultSet = statement.executeQuery()) {
                     if (cache == null) {
+                        // if cache is null, loop to collect result
                         while (resultSet.next()) {
                             collect(jdbcRowConverter.toInternal(resultSet));
                         }
                     } else {
+                        // cache is not null, loop to collect result, and save result to cache
                         ArrayList<RowData> rows = new ArrayList<>();
                         while (resultSet.next()) {
                             RowData row = jdbcRowConverter.toInternal(resultSet);
@@ -152,11 +153,9 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
                     }
                 } catch (SQLException exception) {
                     LOG.error(
-                            "JDBC connection is not valid, and reestablish connection failed",
-                            exception);
+                            "JDBC connection is not valid, and reestablish connection failed", exception);
                     throw new RuntimeException("Reestablish JDBC connection failed", exception);
                 }
-
                 try {
                     Thread.sleep(1000 * retry);
                 } catch (InterruptedException e1) {
@@ -164,7 +163,6 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
                 }
             }
         }
-
     }
 
     @Override

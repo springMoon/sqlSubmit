@@ -30,10 +30,10 @@ public class MysqlOption implements Serializable {
             .noDefaultValue();
     public static final ConfigOption<Long> CACHE_MAX_SIZE = ConfigOptions.key("mysql.lookup.cache.max.size")
             .longType()
-            .defaultValue(100l);
+            .defaultValue(-1l);
     public static final ConfigOption<Long> CACHE_EXPIRE_MS = ConfigOptions.key("mysql.lookup.cache.expire.ms")
             .longType()
-            .defaultValue(1000l);
+            .defaultValue(-1l);
     public static final ConfigOption<Integer> MAX_RETRY_TIMES = ConfigOptions.key("mysql.lookup.max.retry.times")
             .intType()
             .defaultValue(3);
@@ -141,8 +141,8 @@ public class MysqlOption implements Serializable {
         private String table;
         private String username;
         private String password;
-        private long cacheMaxSize = -1L;
-        private long cacheExpireMs = 0L;
+        private long cacheMaxSize = -1l;
+        private long cacheExpireMs = -1l;
         private int maxRetryTimes = DEFAULT_MAX_RETRY_TIMES;
         private boolean lookupAsync = false;
         private int timeOut = 60;
