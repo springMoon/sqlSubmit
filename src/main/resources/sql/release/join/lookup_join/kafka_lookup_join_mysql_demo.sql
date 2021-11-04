@@ -68,5 +68,5 @@ INSERT INTO kakfa_join_mysql_demo(user_id, item_id, category_id, behavior, behav
 SELECT a.user_id, a.item_id, a.category_id, a.behavior, c.`value`, a.ts
 FROM user_log a
   left join mysql_behavior_conf FOR SYSTEM_TIME AS OF a.process_time AS c
-  ON a.behavior = c.code
+  ON  a.behavior = c.code and a.item_id = c.`value`
 where a.behavior is not null;

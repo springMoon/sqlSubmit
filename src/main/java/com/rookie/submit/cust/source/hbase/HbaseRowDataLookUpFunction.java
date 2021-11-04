@@ -65,9 +65,9 @@ public class HbaseRowDataLookUpFunction extends TableFunction<RowData> {
         String lookupKeyConfig = options.getLookupKey();
         lookupKey = new LinkedHashMap<>();
         for (String key : lookupKeyConfig.split(",")) {
-            String[] tmp = key.split(";");
+            String[] tmp = key.split(":");
             byte[] family = tmp[0].getBytes("UTF-8");
-            byte[] qualify = tmp[0].getBytes("UTF-8");
+            byte[] qualify = tmp[1].getBytes("UTF-8");
             if (lookupKey.containsKey(family)) {
                 lookupKey.get(family).add(qualify);
             } else {
@@ -125,10 +125,13 @@ public class HbaseRowDataLookUpFunction extends TableFunction<RowData> {
      * search cache first
      * if cache not exit, query third system
      *
-     * @param keys query parameter
+     * @param input query parameter
      */
-    public void eval(Object... keys) {
-        RowData keyRow = GenericRowData.of(keys);
+    public void eval(Object... input) {
+
+        String[] keys = input[0].toString().split(",");
+
+        RowData keyRow = GenericRowData.of(input);
         if (cache != null) {
             List<RowData> cachedRows = cache.getIfPresent(keyRow);
             if (cachedRows != null) {
@@ -146,8 +149,12 @@ public class HbaseRowDataLookUpFunction extends TableFunction<RowData> {
                 for (Map.Entry<byte[], List<byte[]>> entry : lookupKey.entrySet()) {
                     byte[] family = entry.getKey();
                     for (byte[] by : entry.getValue()) {
-                        Filter filter = new SingleColumnValueFilter(family, by, CompareOperator.EQUAL, keys[i].toString().getBytes("UTF8"));
+                        Filter filter = new SingleColumnValueFilter(family, by, CompareOperator.EQUAL, keys[i].getBytes("UTF8"));
                         scan.setFilter(filter);
+                        // todo tmp for avoid cann't get all condition column in keys
+                        if (i == keys.length - 1) {
+                            break;
+                        }
                         ++i;
                     }
                 }

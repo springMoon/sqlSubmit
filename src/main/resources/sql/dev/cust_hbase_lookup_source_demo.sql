@@ -56,6 +56,8 @@ SELECT a.user_id, a.item_id, a.category_id, a.behavior,c.rowkey, c.cf.`value`, c
 FROM user_log a
   left join hbase_table_config FOR SYSTEM_TIME AS OF a.process_time AS c
   -- 必须要一个key 做关联条件，实际上不会用这个做关联
-  -- lookup join 不能 join 两个字段 。。。。。吐血
-  ON a.behavior = c.rowkey -- and a.category_id = c.rowkey
+  -- lookup join may hive multiple join condition
+  -- 流输入端的字段使用 ',' 拼接的方式传入参数
+  -- hbase 端通过参数 'hbase.lookup.key' = 'cf:code,cf2:code' 传入过滤的字段，两边必须的数量必须匹配
+  ON concat(a.user_id,',',a.item_id)  = c.rowkey --and a.item_id = c.cf.`code`
 where a.behavior is not null;
