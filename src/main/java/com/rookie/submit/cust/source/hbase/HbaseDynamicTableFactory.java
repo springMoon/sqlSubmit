@@ -15,12 +15,14 @@ import java.util.Set;
 public class HbaseDynamicTableFactory implements DynamicTableSourceFactory {
 
     @Override
+    // connector 标识
     public String factoryIdentifier() {
         // used for matching to `connector = '...'`
         return "cust-hbase";
     }
 
     @Override
+    // 必填参数
     public Set<ConfigOption<?>> requiredOptions() {
         final Set<ConfigOption<?>> options = new HashSet<>();
         options.add(HbaseOption.ZOOKEEPER_QUORUM);
@@ -34,6 +36,7 @@ public class HbaseDynamicTableFactory implements DynamicTableSourceFactory {
     }
 
     @Override
+    // 选填参数
     public Set<ConfigOption<?>> optionalOptions() {
         final Set<ConfigOption<?>> options = new HashSet<>();
         // no optional option
@@ -45,6 +48,7 @@ public class HbaseDynamicTableFactory implements DynamicTableSourceFactory {
     }
 
     @Override
+    // 从执行上下文获取参数, 创建 HbaseDynamicTableSource
     public DynamicTableSource createDynamicTableSource(Context context) {
         // either implement your custom validation logic here ...
         // or use the provided helper utility
