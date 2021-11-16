@@ -45,28 +45,17 @@ public class HbaseDynamicTableSource implements LookupTableSource {
 
     @Override
     public String asSummaryString() {
-        return "Mysql Table Source, support Lookup function";
+        return "Hbase Table Source, support Lookup function";
     }
 
     @Override
     public LookupRuntimeProvider getLookupRuntimeProvider(LookupContext context) {
 
-        final RowTypeInfo rowTypeInfo = (RowTypeInfo) fromDataTypeToLegacyInfo(producedDataType);
-
-        String[] fieldNames = rowTypeInfo.getFieldNames();
-
-        // get rowkey
-        String family = fieldNames[1];
-        // todo
-        physicalSchema.getTableColumn(family);
         HBaseTableSchema hbaseSchema = HBaseTableSchema.fromTableSchema(physicalSchema);
 
-        final RowType rowType = (RowType) physicalSchema.toRowDataType().getLogicalType();
-
-        HbaseRowDataLookUpFunction lookUpFunction
-                = null;
+        HbaseRowDataLookUpFunction lookUpFunction = null;
         try {
-            lookUpFunction = new HbaseRowDataLookUpFunction(hbaseSchema, fieldNames, producedDataType, options, rowType);
+            lookUpFunction = new HbaseRowDataLookUpFunction(hbaseSchema, options);
         } catch (UnsupportedEncodingException e) {
             LOG.error("table schema encoding must by UTF-8", e);
         }

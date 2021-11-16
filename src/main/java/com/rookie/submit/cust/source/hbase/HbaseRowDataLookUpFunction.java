@@ -1,7 +1,6 @@
 package com.rookie.submit.cust.source.hbase;
 
 
-import com.rookie.submit.cust.source.base.RowDataConverterBase;
 import org.apache.flink.connector.hbase.util.HBaseSerde;
 import org.apache.flink.connector.hbase.util.HBaseTableSchema;
 import org.apache.flink.shaded.guava30.com.google.common.cache.Cache;
@@ -10,10 +9,6 @@ import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.functions.FunctionContext;
 import org.apache.flink.table.functions.TableFunction;
-import org.apache.flink.table.types.DataType;
-import org.apache.flink.table.types.logical.LogicalType;
-import org.apache.flink.table.types.logical.RowType;
-import org.apache.flink.types.RowKind;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.CompareOperator;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -26,7 +21,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,8 +50,7 @@ public class HbaseRowDataLookUpFunction extends TableFunction<RowData> {
     private LinkedHashMap<byte[], List<byte[]>> lookupKey;
     private LinkedHashMap<byte[], List<byte[]>> resultColumn;
 
-    public HbaseRowDataLookUpFunction(HBaseTableSchema hbaseSchema, String[] fieldNames,
-                                      DataType producedDataType, HbaseOption options, RowType rowType) throws UnsupportedEncodingException {
+    public HbaseRowDataLookUpFunction(HBaseTableSchema hbaseSchema, HbaseOption options) throws UnsupportedEncodingException {
 
         this.hbaseSchema = hbaseSchema;
         this.cacheMaxSize = options.getCacheMaxSize();
@@ -61,7 +58,7 @@ public class HbaseRowDataLookUpFunction extends TableFunction<RowData> {
         this.maxRetryTimes = options.getMaxRetryTimes();
         this.options = options;
 
-        // format lookup filter
+        // format lookup filter column
         String lookupKeyConfig = options.getLookupKey();
         lookupKey = new LinkedHashMap<>();
         for (String key : lookupKeyConfig.split(",")) {
@@ -144,14 +141,17 @@ public class HbaseRowDataLookUpFunction extends TableFunction<RowData> {
         // query mysql, retry maxRetryTimes count
         for (int retry = 0; retry <= maxRetryTimes; retry++) {
             try {
-                Scan scan = new Scan();
+                // create scan, add return column
+                Scan scan = getScan();
                 int i = 0;
+                // add SingleColumnValueFilter
                 for (Map.Entry<byte[], List<byte[]>> entry : lookupKey.entrySet()) {
                     byte[] family = entry.getKey();
-                    for (byte[] by : entry.getValue()) {
-                        Filter filter = new SingleColumnValueFilter(family, by, CompareOperator.EQUAL, keys[i].getBytes("UTF8"));
+                    for (byte[] qualifier : entry.getValue()) {
+                        Filter filter = new SingleColumnValueFilter(family, qualifier, CompareOperator.EQUAL, keys[i].getBytes("UTF8"));
                         scan.setFilter(filter);
-                        // todo tmp for avoid cann't get all condition column in keys
+                        // Avoid can't get all condition column in keys
+                        // if have two filter column, but only get one key, just use first column as filter
                         if (i == keys.length - 1) {
                             break;
                         }
@@ -159,13 +159,7 @@ public class HbaseRowDataLookUpFunction extends TableFunction<RowData> {
                     }
                 }
 
-                for (Map.Entry<byte[], List<byte[]>> entry : resultColumn.entrySet()) {
-                    byte[] family = entry.getKey();
-                    for (byte[] by : entry.getValue()) {
-                        scan.addColumn(family, by);
-                    }
-                }
-
+                // scan&parse result
                 try (ResultScanner resultSet = table.getScanner(scan)) {
                     Result result;
                     if (cache == null) {
@@ -213,6 +207,18 @@ public class HbaseRowDataLookUpFunction extends TableFunction<RowData> {
             }
         }
 
+    }
+
+    private Scan getScan() {
+        Scan scan = new Scan();
+        // add result column
+        for (Map.Entry<byte[], List<byte[]>> entry : resultColumn.entrySet()) {
+            byte[] family = entry.getKey();
+            for (byte[] qualifier : entry.getValue()) {
+                scan.addColumn(family, qualifier);
+            }
+        }
+        return scan;
     }
 
     @Override
