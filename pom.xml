@@ -97,6 +97,13 @@
             <version>${jackson.version}-${flink.shaded.version}</version>
             <scope>provided</scope>
         </dependency>
+        <!-- cep-->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-cep_${scala.binary.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>provided</scope>
+        </dependency>
         <!--connector-->
         <dependency>
             <groupId>org.apache.flink</groupId>
