@@ -10,7 +10,7 @@
 
     <properties>
         <flink.version>1.14.0</flink.version>
-        <scala.binary.version>2.11</scala.binary.version>
+        <scala.binary.version>2.12</scala.binary.version>
         <hadoop.version>2.7.7</hadoop.version>
         <elasticsearch.version>7.2.0</elasticsearch.version>
         <jackson.version>2.12.1</jackson.version>
@@ -95,6 +95,13 @@
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-shaded-jackson</artifactId>
             <version>${jackson.version}-${flink.shaded.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- cep-->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-cep_${scala.binary.version}</artifactId>
+            <version>${flink.version}</version>
             <scope>provided</scope>
         </dependency>
         <!--connector-->
