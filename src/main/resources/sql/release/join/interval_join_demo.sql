@@ -40,7 +40,7 @@ CREATE TABLE t_product (
 --订单表 关联 产品表 成订购表
 CREATE TABLE order_detail (
     order_id VARCHAR,
-    producer_id VARCHAR ,
+    producer_id VARCHAR,
     price DECIMAL(38,18),
     order_create_time VARCHAR,
     product_create_time VARCHAR

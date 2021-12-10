@@ -56,10 +56,10 @@ INSERT INTO kakfa_join_mysql_demo(user_id, item_id, category_id, behavior,rowkey
 SELECT a.user_id, a.item_id, a.category_id, a.behavior,c.rowkey, c.cf.`value`, c.cf2.`value`,a.ts
 FROM user_log a
   left join hbase_table_config FOR SYSTEM_TIME AS OF a.process_time AS c
-  on a.user_id = c.cf.code
+  -- on a.user_id = c.cf.code and a.item_id = c.cf2.code
   -- 必须要一个key 做关联条件，实际上不会用这个做关联条件
   -- 流输入端的字段使用 ',' 拼接的方式传入参数
   -- hbase 端通过参数 'hbase.lookup.key' = 'cf:code,cf2:code' 传入过滤的字段，两边必须的数量必须匹配
 --   ON  a.behavior = c.rowkey
---   ON  concat(a.behavior,',',a.category_id) = c.rowkey --and a.item_id = c.cf.`code`
+  ON  concat(a.behavior,',',a.category_id) = c.rowkey --and a.item_id = c.cf.`code`
 where a.behavior is not null;
