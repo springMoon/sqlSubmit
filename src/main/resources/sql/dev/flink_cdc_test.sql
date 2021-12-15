@@ -1,14 +1,12 @@
 -- mysql cdc to print
 -- creates a mysql table source
-drop table if exists t_tb_user_behavior;
-CREATE TABLE t_tb_user_behavior (
+CREATE TABLE t_user_behavior (
   id bigint
-  ,user_id VARCHAR
-  ,item_id VARCHAR
-  ,behavior_type CHAR
-  ,user_geohash VARCHAR
-  ,item_category varchar
-  ,`time` varchar
+  ,user_id bigint
+  ,item_id bigint
+  ,category_id bigint
+  ,behavior varchar
+  ,ts timestamp(3)
   ,proc_time as PROCTIME()
   ,PRIMARY KEY (id) NOT ENFORCED
 ) WITH (
@@ -18,24 +16,23 @@ CREATE TABLE t_tb_user_behavior (
  ,'username' = 'root'
  ,'password' = '123456'
  ,'database-name' = 'venn'
- ,'table-name' = 'tb_user_behavior'
+ ,'table-name' = 'user_behavior'
  ,'server-id' = '12345678'
- ,'scan.startup.mode' = 'specific-offset'
+ ,'scan.startup.mode' = 'initial'
 --  ,'scan.startup.mode' = 'specific-offset'
- ,'scan.startup.specific-offset.file' = 'mysql-bin.000001'
- ,'scan.startup.specific-offset.pos' = '1'
+--  ,'scan.startup.specific-offset.file' = 'mysql-bin.000001'
+--  ,'scan.startup.specific-offset.pos' = '1'
 );
 
 -- kafka sink
-drop table if exists t_tb_user_behavior_sink;
-CREATE TABLE t_tb_user_behavior_sink (
+drop table if exists t_user_behavior_sink;
+CREATE TABLE t_user_behavior_sink (
   id bigint
-  ,user_id VARCHAR
-  ,item_id VARCHAR
-  ,behavior_type CHAR
-  ,user_geohash VARCHAR
-  ,item_category varchar
-  ,`time` varchar
+  ,user_id bigint
+  ,item_id bigint
+  ,category_id bigint
+  ,behavior varchar
+  ,ts timestamp(3)
   ,PRIMARY KEY (id) NOT ENFORCED
 ) WITH (
    'connector' = 'upsert-kafka'
@@ -49,9 +46,9 @@ CREATE TABLE t_tb_user_behavior_sink (
   ,'value.fields-include' = 'ALL'
 );
 
-insert into t_tb_user_behavior_sink
-select id,user_id,item_id,behavior_type,user_geohash,item_category,`time`
-from t_tb_user_behavior;
+insert into t_user_behavior_sink
+select id, user_id, item_id, category_id, behavior, ts
+from t_user_behavior;
 
 
 
