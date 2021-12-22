@@ -1,10 +1,17 @@
 package com.rookie.submit.udf;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.table.annotation.DataTypeHint;
+import org.apache.flink.table.annotation.FunctionHint;
+import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.catalog.DataTypeFactory;
 import org.apache.flink.table.functions.ScalarFunction;
 import org.apache.flink.table.types.inference.TypeInference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.flink.table.types.inference.TypeStrategies.explicit;
 
 public class Decode extends ScalarFunction {
 
@@ -26,13 +33,14 @@ public class Decode extends ScalarFunction {
         }
         return obj[size - 1];
     }
-    /*public TypeInformation<?> getResultType(Class<?>[] signature) {
-        return Types.STRING;
-    }*/
+
 
     @Override
     public TypeInference getTypeInference(DataTypeFactory typeFactory) {
-        return TypeInference.newBuilder().build();
+        return TypeInference
+                .newBuilder()
+                .outputTypeStrategy(explicit(DataTypes.STRING()))
+                .build();
     }
 
     public static void main(String[] args) throws Exception {
