@@ -102,18 +102,18 @@
             <version>${flink.version}</version>
         </dependency>
         <!-- 会导致 SqlSumbit 在 IDEA 执行不能打印日志-->
-         <!--<dependency>
-             <groupId>org.apache.flink</groupId>
-             <artifactId>flink-connector-hbase-2.2_${scala.binary.version}</artifactId>
-             <version>${flink.version}</version>
-             <scope>provided</scope>
-             <exclusions>
-                 <exclusion>
-                     <groupId>org.apache.hadoop</groupId>
-                     <artifactId>hadoop-common</artifactId>
-                 </exclusion>
-             </exclusions>
-         </dependency>-->
+        <!--<dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-hbase-2.2_${scala.binary.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-common</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>-->
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-hive_${scala.binary.version}</artifactId>
@@ -182,11 +182,6 @@
             <artifactId>hadoop-mapreduce-client-core</artifactId>
             <version>${hadoop.version}</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hudi</groupId>
-            <artifactId>hudi-flink-bundle_2.11</artifactId>
-            <version>${hudi.version}</version>
         </dependency>
         <!--log-->
         <dependency>
