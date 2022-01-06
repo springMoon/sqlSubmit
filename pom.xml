@@ -154,8 +154,8 @@
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
-                    <groupId></groupId>
-                    <artifactId></artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
