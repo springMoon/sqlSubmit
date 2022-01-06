@@ -315,13 +315,12 @@ public class KafkaDynamicSource
                 int defaultParallelism = execEnv.getParallelism();
 
                 // add by venn for custom source parallelism
+                //
                 if (parallelism != null && parallelism > 0 && parallelism != defaultParallelism) {
                     dataDataStreamSource.setParallelism(parallelism);
                     // todo check need this
 //                    dataDataStreamSource.disableChaining();
                 }
-//                return execEnv.fromSource(
-//                        kafkaSource, watermarkStrategy, "KafkaSource-" + tableIdentifier);
                 return dataDataStreamSource;
             }
 

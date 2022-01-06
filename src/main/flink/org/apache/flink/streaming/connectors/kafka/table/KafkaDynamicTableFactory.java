@@ -185,6 +185,7 @@ public class KafkaDynamicTableFactory
         final int[] valueProjection = createValueFormatProjection(tableOptions, physicalDataType);
 
         final String keyPrefix = tableOptions.getOptional(KEY_FIELDS_PREFIX).orElse(null);
+        // 字段值可能为空，所以类型为 Integer
         final Integer parallelism = tableOptions.getOptional(SOURCE_PARALLELISM).orElse(null);
 
         return createKafkaTableSource(
