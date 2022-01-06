@@ -16,13 +16,14 @@
         <flink.shaded.version>13.0</flink.shaded.version>
         <hive.version>2.3.6</hive.version>
         <hbase.version>2.1.0</hbase.version>
-        <mysql-connector.version>8.0.21</mysql-connector.version>
+        <mysql-connector.version>8.0.27</mysql-connector.version>
         <elasticsearch.version>7.2.0</elasticsearch.version>
         <flink.cdc.version>2.0.0</flink.cdc.version>
         <gson.version>2.2.4</gson.version>
 
         <kudu.version>1.1-SNAPSHOT</kudu.version>
         <iceberg.version>0.13.0-SNAPSHOT.jar</iceberg.version>
+        <common.io>2.7</common.io>
         <slf4j.version>1.7.21</slf4j.version>
         <log4j.version>2.17.0</log4j.version>
     </properties>
@@ -157,6 +158,18 @@
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-databind</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.aggregate</groupId>
+                    <artifactId>jetty-all</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.thrift</groupId>
+                    <artifactId>libthrift</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.jcraft</groupId>
+                    <artifactId>jsch</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -200,6 +213,11 @@
             <artifactId>hadoop-mapreduce-client-core</artifactId>
             <version>${hadoop.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${common.io}</version>
         </dependency>
         <!--log-->
         <dependency>
