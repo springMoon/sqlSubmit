@@ -13,7 +13,7 @@ CREATE CATALOG iceberg WITH (
 ### iceberg catalog: catalog-type
 ```sql
 drop catalog ice;
-CREATE CATALOG ice1 WITH (
+CREATE CATALOG ice WITH (
   'type'='iceberg',
   'catalog-type'='hive',
   'uri'='thrift://thinkpad:9083',
@@ -111,7 +111,8 @@ SELECT * FROM sample       ;
 ## read
 ```sql
 -- Submit the flink job in streaming mode for current session.
-SET execution.type = streaming ;
+SET execution.runtime-mode = streaming ;
+SET execution.runtime-mode = batch ;
 
 -- Enable this switch because streaming read SQL will provide few job options in flink SQL hint options.
 SET table.dynamic-table-options.enabled=true;
@@ -129,7 +130,7 @@ SELECT * FROM sample /*+ OPTIONS('streaming'='true', 'monitor-interval'='1s', 's
 ## table
 ```sql
 
-CREATE TABLE flink_table (
+CREATE TABLE ice.ice.flink_table (
     id   BIGINT,
     data STRING
     ,PRIMARY KEY (id) NOT ENFORCED
@@ -138,15 +139,65 @@ CREATE TABLE flink_table (
     'catalog-name'='hive_prod',
     'catalog-database'='ice',
     'uri'='thrift://thinkpad:9083',
-    'warehouse'='hdfs://thinkpad:8020/user/hive/datalake/ice'
+    'warehouse'='hdfs://thinkpad:8020/user/hive/datalake/ice',
+    'format-version' = '2'
 );
 
 
+insert into flink_table values(1, 'data1_0');
 insert into flink_table values(1, 'data1_1');
-insert into flink_table values(2, 'data2_1');
-insert into flink_table values(3, 'data3_1');
-insert into flink_table values(4, 'data4_1');
+insert into flink_table values(1, 'data1_2');
+insert into flink_table values(1, 'data1_3');
 
 
 
+```
+
+## new
+```sql
+
+CREATE CATALOG ice WITH (
+  'type'='iceberg',
+  'catalog-type'='hive',
+  'uri'='thrift://thinkpad:9083',
+  'clients'='5',
+  'property-version'='2',
+  'warehouse'='hdfs://thinkpad:8020/user/hive/datalake/ice.db'
+);
+
+CREATE TABLE flink_table_source (
+  id BIGINT
+  ,data VARCHAR
+) WITH (
+  'connector' = 'kafka'
+  ,'topic' = 'flink_table'
+  ,'properties.bootstrap.servers' = 'thinkpad:9092'
+  ,'properties.group.id' = 'user_log_x'
+  ,'scan.startup.mode' = 'group-offsets'
+  ,'format' = 'json'
+);
+
+{"id":1,"data":"data1_0"}
+{"id":1,"data":"data1_1"}
+{"id":1,"data":"data1_2"}
+{"id":1,"data":"data1_3"}
+{"id":1,"data":"data1_4"}
+{"id":2,"data":"data1_0"}
+
+drop table ice.ice.flink_table;
+CREATE TABLE ice.ice.flink_table (
+    id   BIGINT,
+    data STRING
+    ,PRIMARY KEY (id) NOT ENFORCED
+) WITH (
+    'format-version' = '2'
+    ,'write.upsert.enabled' = 'true'
+);
+
+
+select * from ice.ice.flink_table /*+ OPTIONS('streaming'='true', 'monitor-interval'='1s', 'start-snapshot-id'='-1')*/;
+
+select * from ice.ice.flink_table /*+ OPTIONS('streaming'='true', 'monitor-interval'='1s')*/;
+
+insert into ice.ice.flink_table select id,data from flink_table_source;
 ```

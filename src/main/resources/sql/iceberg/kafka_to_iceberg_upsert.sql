@@ -39,6 +39,10 @@ CREATE TABLE ice.ice.user_log_sink (
   ,category_id STRING
   ,behavior STRING
   ,ts timestamp(3)
+  ,PRIMARY KEY (user_id) NOT ENFORCED
+)WITH (
+    'format-version' = '2'
+    ,'write.upsert.enabled' = 'true'
 );
 
 
@@ -50,4 +54,9 @@ FROM user_log;
 
 -- read
 SET table.dynamic-table-options.enabled=true;
+
+SET execution.runtime-mode = streaming ;
 SELECT * FROM ice.ice.user_log_sink /*+ OPTIONS('streaming'='true', 'monitor-interval'='1s')*/ ;
+
+SET execution.runtime-mode = batch ;
+SELECT * FROM ice.ice.user_log_sink;
