@@ -25,6 +25,7 @@ import org.apache.flink.configuration.DescribedEnum;
 import org.apache.flink.configuration.description.Description;
 import org.apache.flink.configuration.description.InlineElement;
 import org.apache.flink.connector.base.DeliveryGuarantee;
+import org.apache.flink.table.api.config.ExecutionConfigOptions;
 import org.apache.flink.table.factories.FactoryUtil;
 
 import java.time.Duration;
@@ -33,7 +34,9 @@ import java.util.List;
 import static org.apache.flink.configuration.description.TextElement.text;
 import static org.apache.flink.table.factories.FactoryUtil.FORMAT_SUFFIX;
 
-/** Options for the Kafka connector. */
+/**
+ * Options for the Kafka connector.
+ */
 @PublicEvolving
 public class KafkaConnectorOptions {
 
@@ -107,7 +110,6 @@ public class KafkaConnectorOptions {
                                     .build());
 
     public static final ConfigOption<Integer> SOURCE_PARALLELISM = ConfigOptions.key("source.parallelism").intType().noDefaultValue().withDescription("Defines a custom parallelism for the source. By default, if this option is not defined, the planner will derive the parallelism for each statement individually by also considering the global configuration.");
-
 
     public static final ConfigOption<Integer> SINK_PARALLELISM = FactoryUtil.SINK_PARALLELISM;
 
@@ -256,13 +258,17 @@ public class KafkaConnectorOptions {
     // Enums
     // --------------------------------------------------------------------------------------------
 
-    /** Strategies to derive the data type of a value format by considering a key format. */
+    /**
+     * Strategies to derive the data type of a value format by considering a key format.
+     */
     public enum ValueFieldsStrategy {
         ALL,
         EXCEPT_KEY
     }
 
-    /** Startup mode for the Kafka consumer, see {@link #SCAN_STARTUP_MODE}. */
+    /**
+     * Startup mode for the Kafka consumer, see {@link #SCAN_STARTUP_MODE}.
+     */
     public enum ScanStartupMode implements DescribedEnum {
         EARLIEST_OFFSET("earliest-offset", text("Start from the earliest offset possible.")),
         LATEST_OFFSET("latest-offset", text("Start from the latest offset.")),
@@ -294,5 +300,6 @@ public class KafkaConnectorOptions {
         }
     }
 
-    private KafkaConnectorOptions() {}
+    private KafkaConnectorOptions() {
+    }
 }

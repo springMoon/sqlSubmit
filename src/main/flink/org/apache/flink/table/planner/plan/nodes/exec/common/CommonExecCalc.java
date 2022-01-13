@@ -108,12 +108,13 @@ public abstract class CommonExecCalc extends ExecNodeBase<RowData>
                         retainHeader,
                         getClass().getSimpleName());
 
+        // break chain between source and next operator
+        boolean chainBreak = planner.getConfiguration().get(ExecutionConfigOptions.TABLE_EXEC_SOURCE_FORCE_BREAK_CHAIN).booleanValue();
         // add by venn for custom source parallelism
         int parallelism = inputTransform.getParallelism();
-        int defaultParallelism = ExecutionConfig.PARALLELISM_DEFAULT;
-        if (parallelism != defaultParallelism) {
+        if (chainBreak) {
             // update calc operator parallelism to default parallelism
-            parallelism = defaultParallelism;
+            parallelism = ExecutionConfig.PARALLELISM_DEFAULT;
         }
 
         return new OneInputTransformation<>(

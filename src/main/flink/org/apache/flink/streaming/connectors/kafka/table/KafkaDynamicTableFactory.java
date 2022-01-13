@@ -31,6 +31,7 @@ import org.apache.flink.streaming.connectors.kafka.config.StartupMode;
 import org.apache.flink.streaming.connectors.kafka.internals.KafkaTopicPartition;
 import org.apache.flink.streaming.connectors.kafka.partitioner.FlinkKafkaPartitioner;
 import org.apache.flink.table.api.ValidationException;
+import org.apache.flink.table.api.config.ExecutionConfigOptions;
 import org.apache.flink.table.catalog.CatalogTable;
 import org.apache.flink.table.catalog.ObjectIdentifier;
 import org.apache.flink.table.connector.format.DecodingFormat;
@@ -339,39 +340,6 @@ public class KafkaDynamicTableFactory
                     tableOptions.get(SINK_SEMANTIC).toUpperCase().replace("-", "_"));
         }
         return tableOptions.get(DELIVERY_GUARANTEE);
-    }
-
-    // --------------------------------------------------------------------------------------------
-
-    protected KafkaDynamicSource createKafkaTableSource(
-            DataType physicalDataType,
-            @Nullable DecodingFormat<DeserializationSchema<RowData>> keyDecodingFormat,
-            DecodingFormat<DeserializationSchema<RowData>> valueDecodingFormat,
-            int[] keyProjection,
-            int[] valueProjection,
-            @Nullable String keyPrefix,
-            @Nullable List<String> topics,
-            @Nullable Pattern topicPattern,
-            Properties properties,
-            StartupMode startupMode,
-            Map<KafkaTopicPartition, Long> specificStartupOffsets,
-            long startupTimestampMillis,
-            String tableIdentifier) {
-        return new KafkaDynamicSource(
-                physicalDataType,
-                keyDecodingFormat,
-                valueDecodingFormat,
-                keyProjection,
-                valueProjection,
-                keyPrefix,
-                topics,
-                topicPattern,
-                properties,
-                startupMode,
-                specificStartupOffsets,
-                startupTimestampMillis,
-                false,
-                tableIdentifier);
     }
 
     protected KafkaDynamicSource createKafkaTableSource(

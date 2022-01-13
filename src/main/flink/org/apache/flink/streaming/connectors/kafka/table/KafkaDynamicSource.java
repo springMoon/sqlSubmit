@@ -97,7 +97,7 @@ public class KafkaDynamicSource
     protected @Nullable
     WatermarkStrategy<RowData> watermarkStrategy;
     protected @Nullable
-    Integer parallelism;
+    Integer sourceParallelism;
 
     // --------------------------------------------------------------------------------------------
     // Format attributes
@@ -180,6 +180,7 @@ public class KafkaDynamicSource
 
     protected final String tableIdentifier;
 
+
     public KafkaDynamicSource(
             DataType physicalDataType,
             @Nullable DecodingFormat<DeserializationSchema<RowData>> keyDecodingFormat,
@@ -195,7 +196,7 @@ public class KafkaDynamicSource
             long startupTimestampMillis,
             boolean upsertMode,
             String tableIdentifier,
-            Integer parallelism) {
+            Integer sourceParallelism) {
         // Format attributes
         this.physicalDataType =
                 Preconditions.checkNotNull(
@@ -230,59 +231,11 @@ public class KafkaDynamicSource
         this.upsertMode = upsertMode;
         this.tableIdentifier = tableIdentifier;
 
-        this.parallelism = parallelism;
+        Preconditions.checkArgument(sourceParallelism == null || sourceParallelism >= 1,
+                "source.parallelism must be at least 1.");
+        this.sourceParallelism = sourceParallelism;
     }
 
-    public KafkaDynamicSource(
-            DataType physicalDataType,
-            @Nullable DecodingFormat<DeserializationSchema<RowData>> keyDecodingFormat,
-            DecodingFormat<DeserializationSchema<RowData>> valueDecodingFormat,
-            int[] keyProjection,
-            int[] valueProjection,
-            @Nullable String keyPrefix,
-            @Nullable List<String> topics,
-            @Nullable Pattern topicPattern,
-            Properties properties,
-            StartupMode startupMode,
-            Map<KafkaTopicPartition, Long> specificStartupOffsets,
-            long startupTimestampMillis,
-            boolean upsertMode,
-            String tableIdentifier) {
-        // Format attributes
-        this.physicalDataType =
-                Preconditions.checkNotNull(
-                        physicalDataType, "Physical data type must not be null.");
-        this.keyDecodingFormat = keyDecodingFormat;
-        this.valueDecodingFormat =
-                Preconditions.checkNotNull(
-                        valueDecodingFormat, "Value decoding format must not be null.");
-        this.keyProjection =
-                Preconditions.checkNotNull(keyProjection, "Key projection must not be null.");
-        this.valueProjection =
-                Preconditions.checkNotNull(valueProjection, "Value projection must not be null.");
-        this.keyPrefix = keyPrefix;
-        // Mutable attributes
-        this.producedDataType = physicalDataType;
-        this.metadataKeys = Collections.emptyList();
-        this.watermarkStrategy = null;
-        // Kafka-specific attributes
-        Preconditions.checkArgument(
-                (topics != null && topicPattern == null)
-                        || (topics == null && topicPattern != null),
-                "Either Topic or Topic Pattern must be set for source.");
-        this.topics = topics;
-        this.topicPattern = topicPattern;
-        this.properties = Preconditions.checkNotNull(properties, "Properties must not be null.");
-        this.startupMode =
-                Preconditions.checkNotNull(startupMode, "Startup mode must not be null.");
-        this.specificStartupOffsets =
-                Preconditions.checkNotNull(
-                        specificStartupOffsets, "Specific offsets must not be null.");
-        this.startupTimestampMillis = startupTimestampMillis;
-        this.upsertMode = upsertMode;
-        this.tableIdentifier = tableIdentifier;
-
-    }
 
     @Override
     public ChangelogMode getChangelogMode() {
@@ -312,12 +265,12 @@ public class KafkaDynamicSource
 
                 DataStreamSource<RowData> dataDataStreamSource = execEnv.fromSource(
                         kafkaSource, watermarkStrategy, "KafkaSource-" + tableIdentifier);
-                int defaultParallelism = execEnv.getParallelism();
+                int parallelism = execEnv.getParallelism();
 
                 // add by venn for custom source parallelism
                 //
-                if (parallelism != null && parallelism > 0 && parallelism != defaultParallelism) {
-                    dataDataStreamSource.setParallelism(parallelism);
+                if (sourceParallelism != null && sourceParallelism != parallelism) {
+                    dataDataStreamSource.setParallelism(sourceParallelism);
                     // todo check need this
 //                    dataDataStreamSource.disableChaining();
                 }
@@ -404,7 +357,7 @@ public class KafkaDynamicSource
                         upsertMode,
                         tableIdentifier,
                         // add by venn
-                        parallelism);
+                        sourceParallelism);
         copy.producedDataType = producedDataType;
         copy.metadataKeys = metadataKeys;
         copy.watermarkStrategy = watermarkStrategy;
@@ -443,7 +396,7 @@ public class KafkaDynamicSource
                 && Objects.equals(tableIdentifier, that.tableIdentifier)
                 && Objects.equals(watermarkStrategy, that.watermarkStrategy)
                 // add by venn
-                && Objects.equals(parallelism, that.parallelism);
+                && Objects.equals(sourceParallelism, that.sourceParallelism);
     }
 
     @Override
@@ -467,7 +420,7 @@ public class KafkaDynamicSource
                 tableIdentifier,
                 watermarkStrategy,
                 // add by venn
-                parallelism);
+                sourceParallelism);
     }
 
     // --------------------------------------------------------------------------------------------

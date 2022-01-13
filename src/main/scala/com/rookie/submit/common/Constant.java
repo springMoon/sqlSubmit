@@ -18,6 +18,7 @@ public class Constant {
 
     public final static String TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM = "table.exec.resource.default-parallelism";
     public final static String JOB_NAME = "job.name";
+    public final static String TABLE_EXEC_SOURCE_FORCE_BREAK_CHAIN = "table.exec.source.force-break-chain";
 
     public final static String STATE_BACKEND = "state.backend";
     public final static String CHECKPOINT_DIR = "checkpoint.dir";
