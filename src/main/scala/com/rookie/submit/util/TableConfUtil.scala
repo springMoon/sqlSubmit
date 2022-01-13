@@ -37,7 +37,9 @@ object TableConfUtil {
     // for disable kafka sql source chain
     if (paraTool.get(Constant.TABLE_EXEC_SOURCE_FORCE_BREAK_CHAIN) != null) {
       conf.setString("table.exec.source.force-break-chain", paraTool.get(Constant.TABLE_EXEC_SOURCE_FORCE_BREAK_CHAIN))
+      tabConf.addJobParameter("table.exec.source.force-break-chain", paraTool.get(Constant.TABLE_EXEC_SOURCE_FORCE_BREAK_CHAIN))
     }
+
 
   }
 

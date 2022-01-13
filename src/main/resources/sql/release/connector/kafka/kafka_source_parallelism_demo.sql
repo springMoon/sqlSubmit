@@ -1,3 +1,4 @@
+-- execute config: 'table.exec.source.force-break-chain' = 'true'
 -- kafka source
 CREATE TABLE user_log (
   user_id STRING
@@ -16,7 +17,6 @@ CREATE TABLE user_log (
   ,'format' = 'json'
   --,'source.parallelism' = '-2'
   ,'source.parallelism' = '2'
---   ,'table.exec.source.force-break-chain' = 'true'
 );
 
 CREATE TABLE user_log_sink (

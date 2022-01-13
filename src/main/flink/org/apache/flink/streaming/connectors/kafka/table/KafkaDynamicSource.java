@@ -271,8 +271,11 @@ public class KafkaDynamicSource
                 //
                 if (sourceParallelism != null && sourceParallelism != parallelism) {
                     dataDataStreamSource.setParallelism(sourceParallelism);
-                    // todo check need this
-//                    dataDataStreamSource.disableChaining();
+                }
+                // break chain between kafka source and next operator
+                boolean breakChain = Boolean.parseBoolean(execEnv.getConfig().getGlobalJobParameters().toMap().get("table.exec.source.force-break-chain"));
+                if (breakChain) {
+                    dataDataStreamSource.disableChaining();
                 }
                 return dataDataStreamSource;
             }
