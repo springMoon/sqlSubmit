@@ -72,6 +72,8 @@ object SqlSubmit {
           logger.info("dialect : " + tabEnv.getConfig.getSqlDialect)
           println("dialect : " + tabEnv.getConfig.getSqlDialect)
           tabEnv.executeSql(sql)
+
+
         }
         logger.info("execute success : " + sql)
         println("execute success : " + sql)

@@ -1,6 +1,6 @@
 -- mysql cdc to print
 -- creates a mysql table source
-CREATE TABLE t_user_behavior (
+CREATE TABLE t_user_log (
   id bigint
   ,user_id bigint
   ,item_id bigint
@@ -16,7 +16,7 @@ CREATE TABLE t_user_behavior (
  ,'username' = 'root'
  ,'password' = '123456'
  ,'database-name' = 'venn'
- ,'table-name' = 'user_behavior'
+ ,'table-name' = 'user_log'
  ,'server-id' = '12345678'
  ,'scan.startup.mode' = 'initial'
 --  ,'scan.startup.mode' = 'specific-offset'
@@ -25,8 +25,8 @@ CREATE TABLE t_user_behavior (
 );
 
 -- kafka sink
-drop table if exists t_user_behavior_sink;
-CREATE TABLE t_user_behavior_sink (
+drop table if exists t_user_log_sink;
+CREATE TABLE t_user_log_sink (
   id bigint
   ,user_id bigint
   ,item_id bigint
@@ -35,20 +35,21 @@ CREATE TABLE t_user_behavior_sink (
   ,ts timestamp(3)
   ,PRIMARY KEY (id) NOT ENFORCED
 ) WITH (
-   'connector' = 'upsert-kafka'
-  ,'topic' = 'user_behavior_sink'
-  ,'properties.bootstrap.servers' = 'localhost:9092'
-  ,'properties.group.id' = 'user_log'
-  ,'key.format' = 'json'
-  ,'key.json.ignore-parse-errors' = 'true'
-  ,'value.format' = 'json'
-  ,'value.json.fail-on-missing-field' = 'false'
-  ,'value.fields-include' = 'ALL'
+    'connector' = 'print'
+--    'connector' = 'upsert-kafka'
+--   ,'topic' = 'user_log_sink'
+--   ,'properties.bootstrap.servers' = 'localhost:9092'
+--   ,'properties.group.id' = 'user_log'
+--   ,'key.format' = 'json'
+--   ,'key.json.ignore-parse-errors' = 'true'
+--   ,'value.format' = 'json'
+--   ,'value.json.fail-on-missing-field' = 'false'
+--   ,'value.fields-include' = 'ALL'
 );
 
-insert into t_user_behavior_sink
+insert into t_user_log_sink
 select id, user_id, item_id, category_id, behavior, ts
-from t_user_behavior;
+from t_user_log;
 
 
 

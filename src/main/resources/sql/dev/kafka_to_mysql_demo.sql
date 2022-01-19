@@ -26,14 +26,13 @@ CREATE TABLE mysql_table_venn_user_log_sink (
   ,behavior STRING
   ,ts timestamp(3)
 ) WITH (
-  'connector' = 'jdbc'
-  ,'url' = 'jdbc:mysql://localhost:3306/venn'
-  ,'table-name' = 'user_behavior'
-  ,'username' = 'root'
-  ,'password' = '123456'
-  ,'sink.buffer-flush.max-rows' = '1000' -- default
-  ,'sink.buffer-flush.interval' = '10s'
-  ,'sink.max-retries' = '3'
+  'connector' = 'kafka'
+  ,'topic' = 'user_log_sink'
+  ,'properties.bootstrap.servers' = 'localhost:9092'
+  ,'properties.group.id' = 'user_log'
+  ,'scan.startup.mode' = 'latest-offset'
+  ,'format' = 'json'
+  ,'sink.parallelism' = '2'
 );
 
 
