@@ -18,7 +18,7 @@
         <hbase.version>2.1.0</hbase.version>
         <hive.version>2.3.6</hive.version>
         <mysql-connector.version>8.0.21</mysql-connector.version>
-        <flink.cdc.version>2.0.0</flink.cdc.version>
+        <flink.cdc.version>2.1.1</flink.cdc.version>
         <gson.version>2.2.4</gson.version>
         <kudu.version>1.1-SNAPSHOT</kudu.version>
         <slf4j.version>1.7.21</slf4j.version>
