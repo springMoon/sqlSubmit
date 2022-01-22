@@ -10,7 +10,7 @@
 
     <properties>
         <flink.version>1.13.3</flink.version>
-        <scala.binary.version>2.11</scala.binary.version>
+        <scala.binary.version>2.12</scala.binary.version>
         <hadoop.version>2.7.7</hadoop.version>
         <elasticsearch.version>7.2.0</elasticsearch.version>
         <jackson.version>2.12.1</jackson.version>
