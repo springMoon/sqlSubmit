@@ -9,7 +9,7 @@ CREATE TABLE user_log (
   ,WATERMARK FOR ts AS ts - INTERVAL '5' SECOND
 ) WITH (
   'connector' = 'kafka'
-  ,'topic' = 'user_log'
+  ,'topic' = 'user_log;user_log1'
   ,'properties.bootstrap.servers' = 'localhost:9092'
   ,'properties.group.id' = 'user_log'
   ,'scan.startup.mode' = 'latest-offset'
