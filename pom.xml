@@ -155,7 +155,7 @@
             <groupId>com.ververica</groupId>
             <artifactId>flink-connector-mysql-cdc</artifactId>
             <version>${flink.cdc.version}</version>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>

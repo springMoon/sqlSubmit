@@ -139,17 +139,19 @@ object CdcWindow {
               counter = new LongCounter()
               countState.update(counter)
             } else {
-              countState.update(allCountState.value())
+              counter = allCountState.value()
+              countState.update(counter)
             }
           } else {
             counter = countState.value()
           }
           if (amount == null) {
-            if (allAmountState.value() != null) {
+            if (allAmountState.value() == null) {
               amount = 0
               amountState.update(0)
             } else {
-              amountState.update(allAmountState.value())
+              amount = allAmountState.value()
+              amountState.update(amount)
             }
           } else {
             amount = amountState.value()
