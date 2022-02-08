@@ -74,6 +74,9 @@ object CdcWindow {
         var countState: ValueState[LongCounter] = _
         var amountState: ValueState[BigDecimal] = _
 
+        // long time state
+        var allCountState: ValueState[LongCounter] = _
+        var allAmountState: ValueState[BigDecimal] = _
         // tmp var for save amount
         var beforeAmount: BigDecimal = 0
         var afterAmount: BigDecimal = 0
@@ -82,22 +85,32 @@ object CdcWindow {
 
           LOG.info("window process open")
           jsonParser = new JsonParser()
-          // ttl
-          val ttl = StateTtlConfig.newBuilder(org.apache.flink.api.common.time.Time.hours(1))
-            .setStateVisibility(StateVisibility.NeverReturnExpired)
-            .setUpdateType(UpdateType.OnCreateAndWrite)
-            .build()
 
+          // tmp state for a window
           // counter
           val countStateDescriptor = new ValueStateDescriptor[LongCounter]("count", TypeInformation.of(new TypeHint[LongCounter]() {}))
-          countStateDescriptor.enableTimeToLive(ttl)
           countState = getRuntimeContext.getState(countStateDescriptor)
 
           // amount
           val amountStateDescriptor = new ValueStateDescriptor[BigDecimal]("amount", TypeInformation.of(new TypeHint[BigDecimal]() {}))
-          amountStateDescriptor.enableTimeToLive(ttl)
           amountState = getRuntimeContext.getState(amountStateDescriptor)
 
+          // ttl for window gap, if long time no data trigger window, clear all state
+          val ttl = StateTtlConfig.newBuilder(org.apache.flink.api.common.time.Time.minutes(10))
+            .setStateVisibility(StateVisibility.NeverReturnExpired)
+            .setUpdateType(UpdateType.OnCreateAndWrite)
+            .build()
+
+          // all state for job life cycle
+          // counter
+          val allCountStateDescriptor = new ValueStateDescriptor[LongCounter]("allCount", TypeInformation.of(new TypeHint[LongCounter]() {}))
+          allCountStateDescriptor.enableTimeToLive(ttl)
+          allCountState = getRuntimeContext.getState(countStateDescriptor)
+
+          // amount
+          val allAmountStateDescriptor = new ValueStateDescriptor[BigDecimal]("allAmount", TypeInformation.of(new TypeHint[BigDecimal]() {}))
+          allAmountStateDescriptor.enableTimeToLive(ttl)
+          allAmountState = getRuntimeContext.getState(allAmountStateDescriptor)
         }
 
         // parse before and after amount
@@ -122,14 +135,22 @@ object CdcWindow {
           var counter = countState.value()
           var amount = amountState.value()
           if (counter == null) {
-            counter = new LongCounter()
-            countState.update(counter)
+            if (allCountState.value() == null) {
+              counter = new LongCounter()
+              countState.update(counter)
+            } else {
+              countState.update(allCountState.value())
+            }
           } else {
             counter = countState.value()
           }
           if (amount == null) {
-            amount = 0
-            amountState.update(0)
+            if (allAmountState.value() != null) {
+              amount = 0
+              amountState.update(0)
+            } else {
+              amountState.update(allAmountState.value())
+            }
           } else {
             amount = amountState.value()
           }
@@ -171,13 +192,39 @@ object CdcWindow {
           }
 
           // temp print
-          println("key : " + key + ", counter : " + counter + ", amount : " + amount)
+          LOG.debug("key : " + key + ", counter : " + counter + ", amount : " + amount)
           // update state
           countState.update(counter)
           amountState.update(amount)
 
+          val window = context.window
 
-          out.collect(key + "," + counter.getLocalValue + "," + amount)
+          out.collect(key + "," + window.getStart + "," + window.getEnd + "," + counter.getLocalValue + "," + amount)
+        }
+
+        override def clear(context: Context): Unit = {
+          LOG.info("acc window counter and amount state")
+          if (allCountState.value() == null) {
+            // first init
+            allCountState.update(countState.value())
+          } else {
+            // next window
+            val allCounter = allCountState.value()
+            allCounter.add(countState.value().getLocalValue)
+            allCountState.update(allCounter)
+          }
+
+          if (allAmountState.value() == null) {
+            // first init
+            allAmountState.update(amountState.value())
+          } else {
+            // next window
+            allAmountState.update(allAmountState.value() + amountState.value())
+          }
+          LOG.info("window clear, clear window state")
+          countState.clear()
+          amountState.clear()
+          LOG.info("countState : " + countState.value() + ", amountState : " + amountState.value())
         }
       })
       .name("process")
