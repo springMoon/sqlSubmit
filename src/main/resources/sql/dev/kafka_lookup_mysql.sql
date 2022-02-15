@@ -79,23 +79,23 @@ CREATE TABLE print_sink (
 );
 
 
--- streaming sql, insert into mysql table
-INSERT INTO print_sink(user_id, item_id, category_id, behavior, behavior_map, behavior_map2, ts)
-SELECT a.user_id, a.item_id, a.category_id, a.behavior, c.`value`, d.`value`, a.ts
-FROM user_log a
-  left join mysql_behavior_conf FOR SYSTEM_TIME AS OF a.process_time AS
-     c ON  a.behavior = c.code
-  left join mysql_behavior_conf_2 FOR SYSTEM_TIME AS OF a.process_time AS
-     d ON  a.behavior = d.code
-where a.behavior is not null;
-
--- 非 lookup join 不能关联到数据
+-- streaming sql
 -- INSERT INTO print_sink(user_id, item_id, category_id, behavior, behavior_map, behavior_map2, ts)
 -- SELECT a.user_id, a.item_id, a.category_id, a.behavior, c.`value`, d.`value`, a.ts
 -- FROM user_log a
---   left join mysql_behavior_conf --FOR SYSTEM_TIME AS OF a.process_time AS
+--   left join mysql_behavior_conf FOR SYSTEM_TIME AS OF a.process_time AS
 --      c ON  a.behavior = c.code
---   left join mysql_behavior_conf_2 --FOR SYSTEM_TIME AS OF a.process_time AS
+--   left join mysql_behavior_conf_2 FOR SYSTEM_TIME AS OF a.process_time AS
 --      d ON  a.behavior = d.code
 -- where a.behavior is not null;
+
+-- -- 非 lookup join 不能关联到数据
+INSERT INTO print_sink(user_id, item_id, category_id, behavior, behavior_map, behavior_map2, ts)
+SELECT a.user_id, a.item_id, a.category_id, a.behavior, c.`value`, d.`value`, a.ts
+FROM user_log a
+  left join mysql_behavior_conf --FOR SYSTEM_TIME AS OF a.process_time AS
+     c ON  a.behavior = c.code
+  left join mysql_behavior_conf_2 --FOR SYSTEM_TIME AS OF a.process_time AS
+     d ON  a.behavior = d.code
+where a.behavior is not null;
 
