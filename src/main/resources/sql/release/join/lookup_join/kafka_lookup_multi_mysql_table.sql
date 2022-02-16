@@ -35,10 +35,10 @@ CREATE TEMPORARY TABLE mysql_behavior_conf (
    ,'password' = '123456'
    ,'scan.partition.column' = 'id'
    ,'scan.partition.num' = '5'
-   ,'scan.partition.lower-bound' = '5'
+   ,'scan.partition.lower-bound' = '0'
    ,'scan.partition.upper-bound' = '99999'
-   ,'lookup.cache.max-rows' = '28'
-   ,'lookup.cache.ttl' = '5555' -- ttl time 超过这么长时间无数据才行
+--    ,'lookup.cache.max-rows' = '28'
+--    ,'lookup.cache.ttl' = '5555' -- ttl time 超过这么长时间无数据才行
 );
 
 drop table if exists mysql_behavior_conf_2 ;
@@ -57,10 +57,10 @@ CREATE TEMPORARY TABLE mysql_behavior_conf_2 (
    ,'password' = '123456'
    ,'scan.partition.column' = 'id'
    ,'scan.partition.num' = '5'
-   ,'scan.partition.lower-bound' = '5'
+   ,'scan.partition.lower-bound' = '0'
    ,'scan.partition.upper-bound' = '99999'
-   ,'lookup.cache.max-rows' = '28'
-   ,'lookup.cache.ttl' = '5555' -- ttl time 超过这么长时间无数据才行
+--    ,'lookup.cache.max-rows' = '28'
+--    ,'lookup.cache.ttl' = '5555' -- ttl time 超过这么长时间无数据才行
 );
 
 -- set table.sql-dialect=hive;
