@@ -1,11 +1,14 @@
 package com.rookie.submit.common
 
 import java.io.File
+
 import org.apache.flink.api.java.utils.ParameterTool
 import com.rookie.submit.common.Constant._
+import org.slf4j.LoggerFactory
 
 object Common {
 
+  val LOG = LoggerFactory.getLogger("Common")
   var path: String = DEFAULT_CONFIG_FILE
   var jobName: String = _
 
@@ -27,6 +30,7 @@ object Common {
     }
     // load properties
     if (!new File(path).exists()) {
+      LOG.info(DEFAULT_CONFIG_FILE + " not exists, load class path")
       path = Common.getClass.getClassLoader.getResource(DEFAULT_CONFIG_FILE).getPath //.substring(1)
     }
 
