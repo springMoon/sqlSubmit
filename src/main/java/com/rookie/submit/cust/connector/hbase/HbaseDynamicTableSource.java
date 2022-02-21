@@ -1,6 +1,5 @@
-package com.rookie.submit.cust.source.hbase;
+package com.rookie.submit.cust.connector.hbase;
 
-import com.rookie.submit.cust.source.mysql.MysqlSource;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.connector.hbase.util.HBaseTableSchema;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;

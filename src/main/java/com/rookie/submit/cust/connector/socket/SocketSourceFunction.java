@@ -1,4 +1,4 @@
-package com.rookie.submit.cust.source.socket;
+package com.rookie.submit.cust.connector.socket;
 
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.serialization.RuntimeContextInitializationContextAdapters;
@@ -53,7 +53,7 @@ public class SocketSourceFunction extends RichSourceFunction<RowData> implements
       // open and consume from socket
       try (final Socket socket = new Socket()) {
         currentSocket = socket;
-        socket.connect(new InetSocketAddress(hostname, port), 0);
+        socket.connect(new InetSocketAddress(hostname, port), 1000);
         try (InputStream stream = socket.getInputStream()) {
           ByteArrayOutputStream buffer = new ByteArrayOutputStream();
           int b;

@@ -1,5 +1,6 @@
-package com.rookie.submit.cust.source.mysql;
+package com.rookie.submit.cust.connector.mysql;
 
+import com.rookie.submit.cust.connector.mysql.MysqlOption;
 import org.apache.flink.connector.jdbc.dialect.MySQLDialect;
 import org.apache.flink.connector.jdbc.internal.converter.JdbcRowConverter;
 import org.apache.flink.connector.jdbc.statement.FieldNamedPreparedStatement;

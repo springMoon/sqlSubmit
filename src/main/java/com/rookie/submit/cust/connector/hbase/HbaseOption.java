@@ -1,4 +1,4 @@
-package com.rookie.submit.cust.source.hbase;
+package com.rookie.submit.cust.connector.hbase;
 
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;

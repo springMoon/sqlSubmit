@@ -1,4 +1,4 @@
-package com.rookie.submit.cust.sink.socket;
+package com.rookie.submit.cust.connector.socket;
 
 import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.configuration.Configuration;

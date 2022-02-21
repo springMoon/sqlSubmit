@@ -1,4 +1,4 @@
-package com.rookie.submit.cust.source.mysql;
+package com.rookie.submit.cust.connector.mysql;
 
 import com.rookie.submit.cust.source.base.RowDataConverterBase;
 import org.apache.flink.configuration.Configuration;

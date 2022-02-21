@@ -1,4 +1,4 @@
-package com.rookie.submit.cust.source.mysql;
+package com.rookie.submit.cust.connector.mysql;
 
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;

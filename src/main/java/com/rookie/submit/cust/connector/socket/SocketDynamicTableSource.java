@@ -1,4 +1,4 @@
-package com.rookie.submit.cust.source.socket;
+package com.rookie.submit.cust.connector.socket;
 
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
@@ -42,16 +42,12 @@ public class SocketDynamicTableSource implements ScanTableSource {
   public ScanRuntimeProvider getScanRuntimeProvider(ScanContext runtimeProviderContext) {
 
     // create runtime classes that are shipped to the cluster
-
+    // create deserializer
     final DeserializationSchema<RowData> deserializer = decodingFormat.createRuntimeDecoder(
       runtimeProviderContext,
       producedDataType);
 
-    final SourceFunction<RowData> sourceFunction = new SocketSourceFunction(
-      hostname,
-      port,
-      byteDelimiter,
-      deserializer);
+    final SourceFunction<RowData> sourceFunction = new SocketSourceFunction(hostname, port, byteDelimiter, deserializer);
 
     return SourceFunctionProvider.of(sourceFunction, false);
   }

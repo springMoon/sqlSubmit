@@ -1,5 +1,5 @@
-com.rookie.submit.cust.source.socket.SocketDynamicTableFactory
-com.rookie.submit.cust.source.http.HttpDynamicTableFactory
-com.rookie.submit.cust.source.mysql.MysqlDynamicTableFactory
-com.rookie.submit.cust.source.hbase.HbaseDynamicTableFactory
+com.rookie.submit.cust.connector.socket.SocketDynamicTableFactory
+com.rookie.submit.cust.connector.http.HttpDynamicTableFactory
+com.rookie.submit.cust.connector.mysql.MysqlDynamicTableFactory
+com.rookie.submit.cust.connector.hbase.HbaseDynamicTableFactory
 com.rookie.submit.cust.format.changelog.csv.ChangelogCsvFormatFactory

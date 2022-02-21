@@ -1,4 +1,4 @@
-package com.rookie.submit.cust.source.http;
+package com.rookie.submit.cust.connector.http;
 
 import java.io.BufferedReader;
 import java.io.IOException;

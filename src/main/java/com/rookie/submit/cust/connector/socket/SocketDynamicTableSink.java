@@ -1,4 +1,4 @@
-package com.rookie.submit.cust.sink.socket;
+package com.rookie.submit.cust.connector.socket;
 
 import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.table.connector.ChangelogMode;
@@ -8,7 +8,9 @@ import org.apache.flink.table.connector.sink.SinkFunctionProvider;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
 
-
+/**
+ * socket table sink
+ */
 public class SocketDynamicTableSink implements DynamicTableSink {
 
     private final String hostname;

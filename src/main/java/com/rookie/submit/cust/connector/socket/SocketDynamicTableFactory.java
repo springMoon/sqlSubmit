@@ -1,6 +1,5 @@
-package com.rookie.submit.cust.source.socket;
+package com.rookie.submit.cust.connector.socket;
 
-import com.rookie.submit.cust.sink.socket.SocketDynamicTableSink;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.configuration.ConfigOption;
@@ -18,6 +17,9 @@ import org.apache.flink.util.Preconditions;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * socket dynamic table souce/sink factory
+ */
 public class SocketDynamicTableFactory implements DynamicTableSourceFactory, DynamicTableSinkFactory {
 
     // define all options statically
@@ -66,6 +68,11 @@ public class SocketDynamicTableFactory implements DynamicTableSourceFactory, Dyn
         return options;
     }
 
+    /**
+     * create socket table source
+     * @param context
+     * @return
+     */
     @Override
     public DynamicTableSource createDynamicTableSource(Context context) {
         // either implement your custom validation logic here ...
@@ -83,7 +90,7 @@ public class SocketDynamicTableFactory implements DynamicTableSourceFactory, Dyn
         // get the validated options
         final ReadableConfig options = helper.getOptions();
         final String hostname = options.get(HOSTNAME);
-        final int port = options.get(MAX_RETRY);
+        final int port = options.get(PORT);
         final byte byteDelimiter = (byte) (int) options.get(BYTE_DELIMITER);
 
         // derive the produced data type (excluding computed columns) from the catalog table
@@ -95,6 +102,11 @@ public class SocketDynamicTableFactory implements DynamicTableSourceFactory, Dyn
     }
 
 
+    /**
+     * create socket table sink
+     * @param context
+     * @return
+     */
     @Override
     public DynamicTableSink createDynamicTableSink(Context context) {
 
