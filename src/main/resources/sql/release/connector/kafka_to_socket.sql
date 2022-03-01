@@ -8,11 +8,12 @@ CREATE TABLE user_log (
   ,ts TIMESTAMP(3)
   ,WATERMARK FOR ts AS ts - INTERVAL '5' SECOND
 ) WITH (
-   'connector' = 'socket'
-  ,'hostname' = 'thinkpad'
-  ,'port' = '12345'
+  'connector' = 'kafka'
+  ,'topic' = 'user_log'
+  ,'properties.bootstrap.servers' = 'localhost:9092'
+  ,'properties.group.id' = 'user_log'
+  ,'scan.startup.mode' = 'latest-offset'
   ,'format' = 'json'
---   ,'format' = 'csv'
 );
 
 -- set table.sql-dialect=hive;
@@ -29,8 +30,8 @@ CREATE TABLE socket_sink (
   ,'hostname' = 'localhost'
   ,'max.retry' = '2'
 --   ,'retry.interval' = '2'
-  ,'port' = '12346'
-  ,'format' = 'csv'
+  ,'port' = '19870'
+  ,'format' = 'json'
 );
 
 

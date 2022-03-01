@@ -25,12 +25,12 @@ object Common {
     // input parameter
     val inputPara = ParameterTool.fromArgs(args)
     if (!inputPara.has(INPUT_SQL_FILE_PARA)) {
-      println("please input sql file. like : --sql sql/demo.sql")
+      LOG.info("please input sql file. like : --sql sql/demo.sql")
       System.exit(-1)
     }
     // load properties
     if (!new File(path).exists()) {
-      LOG.info(DEFAULT_CONFIG_FILE + " not exists, load class path")
+      LOG.info(DEFAULT_CONFIG_FILE + " not exists, find in class path")
       path = Common.getClass.getClassLoader.getResource(DEFAULT_CONFIG_FILE).getPath //.substring(1)
     }
 

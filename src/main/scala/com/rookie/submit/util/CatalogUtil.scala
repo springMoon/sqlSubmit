@@ -5,8 +5,8 @@ import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
 import org.apache.flink.table.catalog.hive.HiveCatalog
 
 /**
-  * hive catalog util
-  */
+ * hive catalog util
+ */
 object CatalogUtil {
 
   def initCatalog(tableEnv: StreamTableEnvironment): Unit = {

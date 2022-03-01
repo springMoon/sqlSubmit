@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 /**
  * socket table source
@@ -77,6 +78,7 @@ public class SocketSinkFunction<RowData> extends RichSinkFunction<RowData> {
         while (retryTime <= maxRetry) {
             try {
                 os.write(message);
+                os.write("\n".getBytes(StandardCharsets.UTF_8));
                 os.flush();
                 return;
             } catch (Exception e) {

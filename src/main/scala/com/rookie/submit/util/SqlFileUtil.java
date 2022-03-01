@@ -1,6 +1,8 @@
 package com.rookie.submit.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,16 +11,23 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.rookie.submit.common.Constant.DEFAULT_CONFIG_FILE;
+
 public class SqlFileUtil {
+   private final static Logger LOG = LoggerFactory.getLogger(SqlFileUtil.class);
+
 
     public static List<String> readFile(String fileName) throws IOException {
         // list store return sql
-        List<String> sqlList = new ArrayList<String>();
-        // add widonw path
-        if ("\\".equals(File.separator) && !new File(fileName).exists()) {
+        List<String> sqlList = new ArrayList<>();
+        // if file not exists, find in classpath
+        File file = new File(fileName);
+        if(!file.exists()){
+            // find sql file in classpath
+            LOG.info(fileName + " not exists, find in class path");
             fileName = SqlFileUtil.class.getClassLoader().getResource("").getPath() + fileName;
         }
-        File file = new File(fileName);
+        file = new File(fileName);
         // check file exists
         if (!file.exists()) {
             System.out.println("File not found: " + fileName);
