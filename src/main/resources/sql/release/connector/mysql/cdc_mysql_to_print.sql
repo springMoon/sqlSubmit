@@ -17,7 +17,7 @@ CREATE TABLE cdc_mysql_venn_user_log (
  'username' = 'root',
  'password' = '123456',
  'database-name' = 'venn',
- 'table-name' = 't_feature'
+ 'table-name' = 'user_log'
 );
 
 -- kafka sink
