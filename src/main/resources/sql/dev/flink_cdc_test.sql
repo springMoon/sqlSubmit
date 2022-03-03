@@ -17,7 +17,7 @@ CREATE TABLE t_user_log (
  ,'password' = '123456'
  ,'database-name' = 'venn'
  ,'table-name' = 'user_log'
- ,'server-id' = '12345678'
+ ,'server-id' = '5400-5440'
  ,'scan.startup.mode' = 'initial'
 --  ,'scan.startup.mode' = 'specific-offset'
 --  ,'scan.startup.specific-offset.file' = 'mysql-bin.000001'
@@ -47,9 +47,20 @@ CREATE TABLE t_user_log_sink (
 --   ,'value.fields-include' = 'ALL'
 );
 
-insert into t_user_log_sink
-select id, user_id, item_id, category_id, behavior, ts
+-- insert into t_user_log_sink
+-- select id, user_id, item_id, category_id, behavior, ts
+-- from t_user_log;
+
+create table t_user_log_sink_2(
+    ts timestamp(3)
+    ,min_id bigint
+    ,max_id bigint
+    ,coun bigint
+)with (
+    'connector' = 'print'
+);
+
+insert into t_user_log_sink_2
+select max(ts),min(id),max(id),count(id)
 from t_user_log;
-
-
 
