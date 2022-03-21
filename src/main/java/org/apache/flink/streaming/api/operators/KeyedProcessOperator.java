@@ -76,7 +76,6 @@ public class KeyedProcessOperator<K, IN, OUT>
     @Override
     public void onProcessingTime(InternalTimer<K, VoidNamespace> timer) throws Exception {
         collector.eraseTimestamp();
-        System.out.println("onProcessIngTime : " + timer.getTimestamp());
         invokeUserFunction(TimeDomain.PROCESSING_TIME, timer);
     }
 
