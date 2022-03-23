@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export FLINK_HOME=/opt/flink-1.12.0
+export FLINK_HOME=/opt/flink-1.13.2
 export PATH=$PATH:$FLINK_HOME/bin
 export HADOOP_CLASSPATH=`hadoop classpath`
 
