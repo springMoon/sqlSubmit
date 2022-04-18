@@ -7,7 +7,7 @@ import org.apache.flink.table.functions.ScalarFunction;
 
 import java.util.Date;
 
-public class DateAddNew extends ScalarFunction {
+public class DateAdd extends ScalarFunction {
 
     @FunctionHint(output = @DataTypeHint("STRING"))
     public String eval(String tar, int num) {

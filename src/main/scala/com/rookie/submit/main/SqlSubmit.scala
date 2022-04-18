@@ -53,7 +53,8 @@ object SqlSubmit {
     //    }
 
     // load udf
-    RegisterUdf.registerUdf(tabEnv)
+    RegisterUdf.registerUdf(tabEnv, paraTool)
+
 
     // execute sql
     val statement = tabEnv.createStatementSet()

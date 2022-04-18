@@ -32,4 +32,8 @@ public class Constant {
     public final static String URL = "jdbc:mysql://localhost:3306/venn";
     public final static String USERNAME = "root";
     public final static String PASSWORD = "123456";
+
+    // redis
+    public final static String REDIS_URL = "redis.url";
+
 }

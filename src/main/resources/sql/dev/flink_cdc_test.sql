@@ -64,3 +64,4 @@ insert into t_user_log_sink_2
 select max(ts),min(id),max(id),count(id)
 from t_user_log;
 
+o
