@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 
 /**
- * udaf for query redis only get value(window fire)
+ * use jedis
  */
 public class JedisRedisUv extends AggregateFunction<Integer, CountAcc> {
 

@@ -1,6 +1,7 @@
 -- flink cumulate window tvf calc pv&uv, only current day data + history, uv
 -- bloom filter cal uv
--- redis udf
+-- 失败，布隆过滤器无法直接获取 uv 数量，cumulate 窗口中使用 agg function 又不能获取窗口结束状态，无法在窗口结束的时候累加 uv 数
+-- 无法解决任务重启，历史 userId 丢失的问题（第4版，用 redis 了）
 drop table if exists user_log;
 CREATE TABLE user_log
 (
@@ -77,16 +78,17 @@ from(
      ,max(ts) ts
      ,max(proc_time) proc_time
      ,count(user_id) pv
-     ,udaf_redis_uv_count('user_log_uv', user_id) uv
+     ,udaf_uv_count(user_id) uv
     FROM TABLE(
         CUMULATE(TABLE user_log, DESCRIPTOR(ts), INTERVAL '10' minute, INTERVAL '1' day))
       GROUP BY window_start, window_end, behavior
         )a
         left join user_log_lookup_join FOR SYSTEM_TIME AS OF a.proc_time AS c
                   ON  a.behavior = c.behavior
---                          and udf_date_add(a.proc_time, 1) = c.cal_day
                       and udf_date_add_new(date_format(a.proc_time, 'yyyy-MM-dd HH:mm:ss'), -1) = c.cal_day
---                       and a.cal_day = c.cal_day
 ;
 
--- 这样写是比较精确，但是比较耗时
+-- 直接 lookup join 加上昨天的 pv. uv use bloom filter count
+-- select behavior,pv,uv
+-- from pv_uv
+-- group by behavior

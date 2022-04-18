@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
  * todo acc cannot agg over window
  */
 
-public class BloomFilter extends AggregateFunction< Integer, CountAcc > {
+public class BloomFilter extends AggregateFunction<Integer, CountAcc > {
 
     private final static Logger LOG = LoggerFactory.getLogger(BloomFilter.class);
     private com.google.common.hash.BloomFilter<byte[]> filter;
@@ -30,7 +30,6 @@ public class BloomFilter extends AggregateFunction< Integer, CountAcc > {
 
     public void accumulate(CountAcc acc, String userId) {
 
-        LOG.info("userId : " + userId + ", acc count : " + acc.count + ", acc " + acc.toString());
         if (userId == null || userId.length() == 0) {
             return;
         }
@@ -48,36 +47,28 @@ public class BloomFilter extends AggregateFunction< Integer, CountAcc > {
 
     @Override
     public void close() throws Exception {
-        LOG.info("bloom filter udf exit");
     }
 
     @Override
     public Integer getValue(CountAcc acc) {
+        LOG.info("filter : " + (filter == null));
         // get
-        LOG.info("get acc count : " + acc.count);
         return acc.count;
     }
 
     @Override
     public CountAcc createAccumulator() {
         CountAcc acc = new CountAcc();
-        LOG.info("create acc"  + ", acc " + acc.toString());
         return acc;
     }
 
     public void merge(CountAcc acc, Iterable<CountAcc> it) {
-//        LOG.info("count 1 : " + acc.count);
-//        it.forEach(item -> acc.count += item.count);
-//        LOG.info("count 2 : " + acc.count);
-
         int last = acc.count;
         StringBuilder builder = new StringBuilder();
         for (CountAcc a : it) {
 //            LOG.info("last value : " + a.count);
-            builder.append(a.count).append(",").append("acc : " + a.toString());
             acc.count += a.count;
         }
-        LOG.info("last : " + last + ", last acc " + acc.toString() + ", result : " + acc.count + ", m : " + builder);
     }
 
 

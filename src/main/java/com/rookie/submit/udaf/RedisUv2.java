@@ -9,22 +9,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * accumulate add user_id to redis
- * getValue: get all redis user_id, count the uv
+ * udaf for query redis only get value(window fire)
  */
-public class RedisUv extends AggregateFunction<Integer, Integer> {
+public class RedisUv2 extends AggregateFunction<Integer, Integer> {
 
-    private final static Logger LOG = LoggerFactory.getLogger(RedisUv.class);
+    private final static Logger LOG = LoggerFactory.getLogger(RedisUv2.class);
     // "redis://localhost"
     private String url;
     private StatefulRedisConnection<String, String> connection;
     private RedisClient redisClient;
     private RedisCommands<String, String> sync;
-    private volatile String key;
+    private String key;
 
-    public RedisUv(String url, String key ) {
+    public RedisUv2(String url, String key ) {
         this.url = url;
-//        this.key = key;
+        this.key = key;
     }
 
     @Override
@@ -41,10 +40,9 @@ public class RedisUv extends AggregateFunction<Integer, Integer> {
 
     public void accumulate(Integer acc, String key, String userId) {
 
-        System.out.println("acc :" + Thread.currentThread().getName());
-        if (this.key == null) {
-            this.key = key;
-        }
+//        if (this.key == null) {
+//            this.key = key;
+//        }
         int retry = 3;
         while (retry >= 1) {
             try {
@@ -61,8 +59,6 @@ public class RedisUv extends AggregateFunction<Integer, Integer> {
 
     @Override
     public Integer getValue(Integer accumulator) {
-
-        System.out.println("get :" + Thread.currentThread().getName());
         long start = System.currentTimeMillis();
         int size = 0;
         if (this.key == null) {
