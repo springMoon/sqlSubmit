@@ -22,17 +22,17 @@ public class RedisOption implements Serializable {
     public static final ConfigOption<String> TYPE = ConfigOptions.key("key.type")
             .stringType()
             .noDefaultValue();
-    public static final ConfigOption<Long> CACHE_MAX_SIZE = ConfigOptions.key("redis.lookup.cache.max.size")
+    public static final ConfigOption<Long> CACHE_MAX_SIZE = ConfigOptions.key("lookup.cache.max.size")
             .longType()
             .defaultValue(-1l);
-    public static final ConfigOption<Long> CACHE_EXPIRE_MS = ConfigOptions.key("redis.lookup.cache.expire.ms")
+    public static final ConfigOption<Long> CACHE_EXPIRE_MS = ConfigOptions.key("lookup.cache.expire.ms")
             .longType()
             .defaultValue(-1l);
-    public static final ConfigOption<Integer> MAX_RETRY_TIMES = ConfigOptions.key("redis.lookup.max.retry.times")
+    public static final ConfigOption<Integer> MAX_RETRY_TIMES = ConfigOptions.key("lookup.max.retry.times")
             .intType()
             .defaultValue(3);
 
-    public static final ConfigOption<Integer> TIME_OUT = ConfigOptions.key("mysql.timeout")
+    public static final ConfigOption<Integer> TIME_OUT = ConfigOptions.key("redis.timeout")
             .intType()
 
             .defaultValue(10);

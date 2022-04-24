@@ -2,4 +2,5 @@ com.rookie.submit.cust.connector.socket.SocketDynamicTableFactory
 com.rookie.submit.cust.connector.http.HttpDynamicTableFactory
 com.rookie.submit.cust.connector.mysql.MysqlDynamicTableFactory
 com.rookie.submit.cust.connector.hbase.HbaseDynamicTableFactory
+com.rookie.submit.cust.connector.redis.RedisDynamicTableFactory
 com.rookie.submit.cust.format.changelog.csv.ChangelogCsvFormatFactory

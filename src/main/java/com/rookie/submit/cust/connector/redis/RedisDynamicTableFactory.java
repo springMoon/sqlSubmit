@@ -17,14 +17,13 @@ public class RedisDynamicTableFactory implements DynamicTableSourceFactory {
     @Override
     public String factoryIdentifier() {
         // used for matching to `connector = '...'`
-        return "cust-mysql";
+        return "cust-redis";
     }
 
     @Override
     public Set<ConfigOption<?>> requiredOptions() {
         final Set<ConfigOption<?>> options = new HashSet<>();
         options.add(RedisOption.REDIS_URL);
-        options.add(RedisOption.TYPE);
 //        options.add(FactoryUtil.FORMAT); // use pre-defined option for format
 
         return options;
@@ -34,6 +33,7 @@ public class RedisDynamicTableFactory implements DynamicTableSourceFactory {
     public Set<ConfigOption<?>> optionalOptions() {
         final Set<ConfigOption<?>> options = new HashSet<>();
         // no optional option
+        options.add(RedisOption.TYPE);
         options.add(RedisOption.PASSWORD);
         options.add(RedisOption.CACHE_MAX_SIZE);
         options.add(RedisOption.CACHE_EXPIRE_MS);

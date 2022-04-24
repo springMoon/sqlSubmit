@@ -10,6 +10,7 @@ import org.apache.flink.shaded.guava30.com.google.common.cache.Cache;
 import org.apache.flink.shaded.guava30.com.google.common.cache.CacheBuilder;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
+import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.functions.FunctionContext;
 import org.apache.flink.table.functions.TableFunction;
 import org.apache.flink.table.types.DataType;
@@ -29,9 +30,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The MysqlRowDataLookUpFunction is a standard user-defined table function, it can be used in
- * tableAPI and also useful for temporal table join plan in SQL. It looks up the result as {@link
- * RowData}.
+ * lookup join redis source
  */
 public class RedisRowDataLookUpFunction extends TableFunction<RowData> {
     private static final long serialVersionUID = 1008611L;
@@ -113,14 +112,27 @@ public class RedisRowDataLookUpFunction extends TableFunction<RowData> {
             }
         }
 
-        String result = command.get(keys[0].toString());
+        String result;
 
-        if (result == null) {
+        if (keys.length == 2) {
+            result = command.hget(keys[0].toString(), keys[1].toString());
+        } else {
+            result = command.get(keys[0].toString());
+        }
 
-            RowData rows = GenericRowData.of(result);
-            rows.setRowKind(RowKind.INSERT);
-            collect(rows);
-            cache.put(keyRow, rows);
+        if (result != null) {
+            GenericRowData row = new GenericRowData(keys.length + 1);
+            row.setField(0, StringData.fromString(keys[0].toString()));
+            if (keys.length == 2) {
+                row.setField(1, StringData.fromString(keys[0].toString()));
+                row.setField(2, StringData.fromString(result));
+            } else {
+                row.setField(1, StringData.fromString(result));
+            }
+
+            row.setRowKind(RowKind.INSERT);
+            collect(row);
+            cache.put(keyRow, row);
         }
     }
 
