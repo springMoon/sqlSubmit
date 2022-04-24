@@ -42,5 +42,5 @@ CREATE TABLE user_log_sink
 
 -- streaming sql, insert into mysql table
 insert into user_log_sink
-SELECT '1',user_id, item_id, category_id, behavior, ts, now()
+SELECT '1',user_id, item_id, category_id, date_add('2022-04-24 00:00:00', -1), ts, now()
 FROM user_log;

@@ -84,7 +84,7 @@ from(
         )a
         left join user_log_lookup_join FOR SYSTEM_TIME AS OF a.proc_time AS c
                   ON  a.behavior = c.behavior
-                      and udf_date_add_new(date_format(a.proc_time, 'yyyy-MM-dd HH:mm:ss'), -1) = c.cal_day
+                      and udf_date_add(date_format(a.proc_time, 'yyyy-MM-dd HH:mm:ss'), -1) = c.cal_day
 ;
 
 -- 这样写是比较精确，但是比较耗时

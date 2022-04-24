@@ -14,6 +14,7 @@ import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
 import org.apache.flink.table.api.{EnvironmentSettings, SqlDialect, StatementSet}
 import org.slf4j.LoggerFactory
 
+import java.time.{ZoneId, ZoneOffset}
 import scala.collection.JavaConversions._
 
 /**
@@ -56,6 +57,8 @@ object SqlSubmit {
     RegisterUdf.registerUdf(tabEnv, paraTool)
 
 
+    tabEnv.getConfig.setLocalTimeZone(ZoneId.of("Asia/Shanghai"));
+
     // execute sql
     val statement = tabEnv.createStatementSet()
     var result: StatementSet = null
@@ -73,8 +76,6 @@ object SqlSubmit {
           logger.info("dialect : " + tabEnv.getConfig.getSqlDialect)
           println("dialect : " + tabEnv.getConfig.getSqlDialect)
           tabEnv.executeSql(sql)
-
-
         }
         logger.info("execute success : " + sql)
         println("execute success : " + sql)

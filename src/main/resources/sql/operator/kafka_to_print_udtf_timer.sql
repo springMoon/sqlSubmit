@@ -33,5 +33,6 @@ CREATE TABLE user_log_sink (
 
 -- streaming sql, insert into mysql table
 insert into user_log_sink
-SELECT a.user_id, item_id, category_id, behavior, ts
-;
+SELECT a.user_id, item_id, category_id, cast( t.`size` as string) sizee, ts
+FROM user_log a
+         LEFT JOIN LATERAL TABLE(udf_timer(a.user_id))  AS t(user_id, `size`) ON TRUE ;
