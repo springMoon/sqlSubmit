@@ -85,14 +85,18 @@
             <scope>provided</scope>
         </dependency>
         <!--flink format-->
-        <!--json-->
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-json</artifactId>
             <version>${flink.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!--csv-->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-parquet_${scala.binary.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-csv</artifactId>
@@ -210,6 +214,18 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-mapreduce-client-core</artifactId>
+            <version>${hadoop.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${hadoop.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
             <version>${hadoop.version}</version>
             <scope>provided</scope>
         </dependency>

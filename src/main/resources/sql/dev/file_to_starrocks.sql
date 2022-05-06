@@ -1,4 +1,4 @@
-create table if not exists ods_sap_afpo_start (
+create table if not exists ods_sap_afpo (
                                                `aufnr` string
     ,`mandt` string
     ,`posnr` string
@@ -110,14 +110,12 @@ create table if not exists ods_sap_afpo_start (
     ,`source_db` string
 ) WITH (
       'connector' = 'filesystem',
-      'path' = 'hdfs://nameservice1/user/hive/warehouse/bigdata.db/ods_sap_afpo_start',
-      'format' = 'csv',
-      'csv.ignore-parse-errors' = 'true',
-        'csv.field-delimiter' = '^'
+      'path' = 'hdfs:////user/venn/ods_sap_afpo',
+      'format' = 'parquet'
       );
 
 create table if not exists stg_sap_afpo_sink (
-    ,`source_db` string
+    `source_db` string
     ,`posnr` string
     ,`mandt` string
     ,`aufnr` string
@@ -232,4 +230,4 @@ create table if not exists stg_sap_afpo_sink (
       );
 
 insert into stg_sap_afpo_sink
-select * from stg_sap_afpo
+select * from ods_sap_afpo
