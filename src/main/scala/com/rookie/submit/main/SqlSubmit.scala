@@ -15,6 +15,7 @@ import org.apache.flink.table.api.{EnvironmentSettings, SqlDialect, StatementSet
 import org.slf4j.LoggerFactory
 
 import java.time.{ZoneId, ZoneOffset}
+import javax.security.auth.login.Configuration
 import scala.collection.JavaConversions._
 
 /**

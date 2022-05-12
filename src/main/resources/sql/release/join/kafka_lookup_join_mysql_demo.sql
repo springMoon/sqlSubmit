@@ -10,11 +10,12 @@ CREATE TABLE user_log (
   , WATERMARK FOR ts AS ts - INTERVAL '5' SECOND
 ) WITH (
   'connector' = 'kafka'
-  ,'topic' = 'user_behavior'
+  ,'topic' = 'user_log'
   ,'properties.bootstrap.servers' = 'localhost:9092'
   ,'properties.group.id' = 'user_log'
   ,'scan.startup.mode' = 'latest-offset'
   ,'format' = 'json'
+  ,'source.parallelism' = '1'
 );
 
 -- mysql source

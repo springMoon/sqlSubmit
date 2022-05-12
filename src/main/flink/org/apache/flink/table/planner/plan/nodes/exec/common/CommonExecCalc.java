@@ -111,17 +111,18 @@ public abstract class CommonExecCalc extends ExecNodeBase<RowData>
         // break chain between source and next operator
         boolean breakChain = planner.getConfiguration().get(ExecutionConfigOptions.TABLE_EXEC_SOURCE_FORCE_BREAK_CHAIN).booleanValue();
         // add by venn for custom source parallelism
-        int parallelism = inputTransform.getParallelism();
-        if (breakChain) {
-            // update calc operator parallelism to default parallelism
-            parallelism = ExecutionConfig.PARALLELISM_DEFAULT;
+        String lastTransformation = inputTransform.getName();
+        int lastParallelism = inputTransform.getParallelism();
+        if(!lastTransformation.startsWith("KafkaSource") || breakChain){
+            lastParallelism = ExecutionConfig.PARALLELISM_DEFAULT;
         }
+
 
         return new OneInputTransformation<>(
                 inputTransform,
                 getDescription(),
                 substituteStreamOperator,
                 InternalTypeInfo.of(getOutputType()),
-                parallelism);
+                lastParallelism);
     }
 }
