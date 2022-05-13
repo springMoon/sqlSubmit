@@ -5,7 +5,6 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.source.*;
 import org.apache.flink.table.types.DataType;
-import org.apache.flink.table.types.logical.RowType;
 
 import static org.apache.flink.table.types.utils.TypeConversions.fromDataTypeToLegacyInfo;
 
@@ -67,7 +66,7 @@ public class RedisDynamicTableSource implements ScanTableSource, LookupTableSour
         }
         // new RedisRowDataLookUpFunction
         RedisRowDataLookUpFunction lookUpFunction
-                = new RedisRowDataLookUpFunction(keyNames, options);
+                = new RedisRowDataLookUpFunction(options);
 
         // return MysqlRowDataLookUpFunction
         return TableFunctionProvider.of(lookUpFunction);

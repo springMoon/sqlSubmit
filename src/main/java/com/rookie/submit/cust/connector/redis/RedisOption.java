@@ -19,9 +19,6 @@ public class RedisOption implements Serializable {
     public static final ConfigOption<String> PASSWORD = ConfigOptions.key("pass")
             .stringType()
             .noDefaultValue();
-    public static final ConfigOption<String> TYPE = ConfigOptions.key("key.type")
-            .stringType()
-            .noDefaultValue();
     public static final ConfigOption<Long> CACHE_MAX_SIZE = ConfigOptions.key("lookup.cache.max.size")
             .longType()
             .defaultValue(-1l);
@@ -31,42 +28,27 @@ public class RedisOption implements Serializable {
     public static final ConfigOption<Integer> MAX_RETRY_TIMES = ConfigOptions.key("lookup.max.retry.times")
             .intType()
             .defaultValue(3);
-
-    public static final ConfigOption<Integer> TIME_OUT = ConfigOptions.key("redis.timeout")
-            .intType()
-
-            .defaultValue(10);
     private static final int DEFAULT_MAX_RETRY_TIMES = 3;
 
     private final String url;
-    private final String type;
     private final String password;
     private final long cacheMaxSize;
     private final long cacheExpireMs;
     private final int maxRetryTimes;
     private final boolean lookupAsync;
 
-    // second
-    private final int timeOut;
-
-    public RedisOption(String url, String type, String password,
-                       long cacheMaxSize, long cacheExpireMs, int maxRetryTimes, boolean lookupAsync, int timeOut) {
+    public RedisOption(String url, String password,
+                       long cacheMaxSize, long cacheExpireMs, int maxRetryTimes, boolean lookupAsync) {
         this.url = url;
-        this.type = type;
         this.password = password;
         this.cacheMaxSize = cacheMaxSize;
         this.cacheExpireMs = cacheExpireMs;
         this.maxRetryTimes = maxRetryTimes;
         this.lookupAsync = lookupAsync;
-        this.timeOut = timeOut;
     }
 
     public String getUrl() {
         return url;
-    }
-
-    public String getType(){
-        return type;
     }
 
     public String getPassword() {
@@ -97,10 +79,6 @@ public class RedisOption implements Serializable {
         return new HBaseLookupOptions.Builder();
     }
 
-    public int getTimeOut() {
-        return timeOut;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o instanceof RedisOption) {
@@ -119,22 +97,15 @@ public class RedisOption implements Serializable {
      */
     public static class Builder {
         private String url;
-        private String type;
         private String password;
         private long cacheMaxSize = -1l;
         private long cacheExpireMs = -1l;
         private int maxRetryTimes = DEFAULT_MAX_RETRY_TIMES;
         private boolean lookupAsync = false;
-        private int timeOut = 60;
 
 
         public Builder setUrl(String url) {
             this.url = url;
-            return this;
-        }
-
-        public Builder setType(String type) {
-            this.type = type;
             return this;
         }
 
@@ -176,13 +147,8 @@ public class RedisOption implements Serializable {
             return this;
         }
 
-        public Builder setTimeOut(int timeOut) {
-            this.timeOut = timeOut;
-            return this;
-        }
-
         public RedisOption build() {
-            return new RedisOption(url, type, password, cacheMaxSize, cacheExpireMs, maxRetryTimes, lookupAsync, timeOut);
+            return new RedisOption(url, password, cacheMaxSize, cacheExpireMs, maxRetryTimes, lookupAsync);
         }
     }
 }

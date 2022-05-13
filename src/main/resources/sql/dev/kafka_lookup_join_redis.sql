@@ -18,14 +18,15 @@ CREATE TABLE user_log (
 );
 
 CREATE TEMPORARY TABLE redis_table (
-  code STRING
-  ,feild STRING
+  `key` STRING
+  ,filed STRING
   ,`value` STRING
 ) WITH (
    'connector' = 'cust-redis'
-   ,'redis.url' = 'redis://localhost'
+   ,'redis.url' = 'redis://localhost:6379?timeout=3000'
    ,'lookup.cache.max.size' = '28'
-   ,'lookup.cache.expire.ms' = '5555' -- ttl time 超过这么长时间无数据才行
+   ,'lookup.cache.expire.ms' = '3600000' -- ttl time 超过这么长时间无数据才行
+--     ,'pass' = '11' -- todo test
 );
 
 ---sinkTable
@@ -40,11 +41,40 @@ CREATE TABLE kakfa_join_redis_sink (
 ) WITH (
    'connector' = 'print'
 );
+-- sting/list/set/zset test sql
+-- INSERT INTO kakfa_join_redis_sink(user_id, item_id, category_id, behavior, behavior_map, ts)
+-- SELECT a.user_id, a.item_id, a.category_id, a.behavior, b.`value`, a.ts
+-- FROM user_log a
+--          left join redis_table FOR SYSTEM_TIME AS OF a.process_time AS b
+--                    ON a.behavior = b.`key`
+-- where a.behavior is not null;
 
-INSERT INTO kakfa_join_redis_sink(user_id, item_id, category_id, behavior, behavior_map, ts)
-SELECT a.user_id, a.item_id, a.category_id, a.behavior, c.`value`, a.ts
+CREATE TABLE kakfa_join_redis_sink_1 (
+                                       user_id STRING
+    ,item_id STRING
+    ,category_id STRING
+    ,behavior STRING
+    ,behavior_key STRING
+    ,behavior_map STRING
+    ,ts TIMESTAMP(3)
+    ,primary key (user_id) not enforced
+) WITH (
+      'connector' = 'print'
+      )
+    ;
+
+
+-- hash multiple input
+INSERT INTO kakfa_join_redis_sink_1(user_id, item_id, category_id, behavior, behavior_key,behavior_map, ts)
+SELECT a.user_id, a.item_id, a.category_id, a.behavior,b.filed, b.`value`, a.ts
 FROM user_log a
-         left join redis_table FOR SYSTEM_TIME AS OF a.process_time AS c
-             -- todo parameter item_id cannot get in redis Source
-                   ON  a.behavior = c.code and a.item_id = c.feild
+         left join redis_table FOR SYSTEM_TIME AS OF a.process_time AS b
+                   ON  a.behavior = b.key
 where a.behavior is not null;
+
+-- INSERT INTO kakfa_join_redis_sink_1(user_id, item_id, category_id, behavior, behavior_key,behavior_map, ts)
+-- SELECT a.user_id, a.item_id, a.category_id, a.behavior,b.filed, b.`value`, a.ts
+-- FROM user_log a
+--          left join redis_table FOR SYSTEM_TIME AS OF a.process_time AS b
+--                    ON  a.behavior = b.key and a.item = b.filed
+-- where a.behavior is not null;

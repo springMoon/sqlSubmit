@@ -7,6 +7,9 @@ CREATE TABLE t_user_log (
   ,category_id bigint
   ,behavior varchar
   ,ts timestamp(3)
+  ,db_name STRING METADATA FROM 'database_name' VIRTUAL
+  ,table_name STRING METADATA  FROM 'table_name' VIRTUAL
+  ,operation_ts TIMESTAMP_LTZ(3) METADATA FROM 'op_ts' VIRTUAL
   ,proc_time as PROCTIME()
   ,PRIMARY KEY (id) NOT ENFORCED
 ) WITH (
@@ -33,6 +36,9 @@ CREATE TABLE t_user_log_sink (
   ,category_id bigint
   ,behavior varchar
   ,ts timestamp(3)
+  ,db_name string
+                             ,table_name string,
+                             operation_ts timestamp_ltz(3)
   ,PRIMARY KEY (id) NOT ENFORCED
 ) WITH (
     'connector' = 'print'
@@ -47,21 +53,19 @@ CREATE TABLE t_user_log_sink (
 --   ,'value.fields-include' = 'ALL'
 );
 
--- insert into t_user_log_sink
--- select id, user_id, item_id, category_id, behavior, ts
--- from t_user_log;
-
-create table t_user_log_sink_2(
-    ts timestamp(3)
-    ,min_id bigint
-    ,max_id bigint
-    ,coun bigint
-)with (
-    'connector' = 'print'
-);
-
-insert into t_user_log_sink_2
-select max(ts),min(id),max(id),count(id)
+insert into t_user_log_sink
+select id, user_id, item_id, category_id, behavior, ts,db_name,table_name,operation_ts
 from t_user_log;
 
-o
+-- create table t_user_log_sink_2(
+--     ts timestamp(3)
+--     ,min_id bigint
+--     ,max_id bigint
+--     ,coun bigint
+-- )with (
+--     'connector' = 'print'
+-- );
+--
+-- insert into t_user_log_sink_2
+-- select max(ts),min(id),max(id),count(id)
+-- from t_user_log;

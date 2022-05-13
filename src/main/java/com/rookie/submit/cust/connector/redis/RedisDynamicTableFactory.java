@@ -33,12 +33,10 @@ public class RedisDynamicTableFactory implements DynamicTableSourceFactory {
     public Set<ConfigOption<?>> optionalOptions() {
         final Set<ConfigOption<?>> options = new HashSet<>();
         // no optional option
-        options.add(RedisOption.TYPE);
         options.add(RedisOption.PASSWORD);
         options.add(RedisOption.CACHE_MAX_SIZE);
         options.add(RedisOption.CACHE_EXPIRE_MS);
         options.add(RedisOption.MAX_RETRY_TIMES);
-        options.add(RedisOption.TIME_OUT);
         return options;
     }
 
@@ -55,12 +53,11 @@ public class RedisDynamicTableFactory implements DynamicTableSourceFactory {
         final ReadableConfig config = helper.getOptions();
         RedisOption.Builder builder = new RedisOption.Builder()
                 .setUrl(config.get(RedisOption.REDIS_URL))
-                .setType(config.get(RedisOption.TYPE))
                 .setPassword(config.get(RedisOption.PASSWORD))
                 .setCacheMaxSize(config.get(RedisOption.CACHE_MAX_SIZE))
                 .setCacheExpireMs(config.get(RedisOption.CACHE_EXPIRE_MS))
                 .setMaxRetryTimes(config.get(RedisOption.MAX_RETRY_TIMES))
-                .setTimeOut(config.get(RedisOption.TIME_OUT));
+                ;
 
 
         RedisOption option = builder.build();

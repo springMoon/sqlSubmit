@@ -1,6 +1,7 @@
 package com.rookie.submit.cust.connector.redis;
 
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -30,6 +31,10 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * lookup join redis source
+ * for string: return value
+ * for list/zset/set/hash : return list
+ * <p>
+ * for hash, can use key and filed to get only value
  */
 public class RedisRowDataLookUpFunction extends TableFunction<RowData> {
     private static final long serialVersionUID = 10086111L;
@@ -41,19 +46,16 @@ public class RedisRowDataLookUpFunction extends TableFunction<RowData> {
     private final int maxRetryTimes;
 
     private transient Cache<RowData, List<RowData>> cache;
-    private final String[] keyNames;
 
     private RedisClient redisClient;
     private StatefulRedisConnection<String, String> connection;
     private RedisClusterCommands<String, String> command;
 
-    public RedisRowDataLookUpFunction(String[] keyNames,
-                                      RedisOption options) {
+    public RedisRowDataLookUpFunction(RedisOption options) {
         this.cacheMaxSize = options.getCacheMaxSize();
         this.cacheExpireMs = options.getCacheExpireMs();
         this.maxRetryTimes = options.getMaxRetryTimes();
         this.options = options;
-        this.keyNames = keyNames;
     }
 
     @Override
@@ -76,9 +78,10 @@ public class RedisRowDataLookUpFunction extends TableFunction<RowData> {
 
     private void reconnect() throws SQLException {
         redisClient = RedisClient.create(options.getUrl());
+        // todo test
+//        redisClient = RedisClient.create(RedisURI.Builder.redis(options.getUrl()).withPassword(options.getPassword()).build());
         connection = redisClient.connect();
         command = connection.sync();
-
         LOG.info("reconnect redis");
     }
 
@@ -94,46 +97,61 @@ public class RedisRowDataLookUpFunction extends TableFunction<RowData> {
                 return;
             }
         }
-
+        // 返回数据构造为 tuple2 类型，放 filed 和 value，如果没有 filed，把 key 放入 filed 中
         List<Tuple2<String, String>> list = new ArrayList<>();
 
+        // 转换获取 key
         String key = keys[0].toString();
+        // 查询 key 对应的 数据类型
         String type = command.type(key);
-
-        switch (type) {
-            case "string":
-                String result = command.get(key);
-                list.add(new Tuple2<>(key, result));
-                break;
-            case "list":
-                List<String> result1 = command.lrange(key, 0, -1);
-                result1.forEach((String v) -> list.add(new Tuple2<>(key, v)));
-                break;
-            case "hash":
-                if (keys.length == 2) {
-                    String key2 = keys[1].toString();
-                    String result3 = command.hget(key, key2);
-                    list.add(new Tuple2<>(key, result3));
-                } else {
-                    Map<String, String> result4 = command.hgetall(key);
-                    result4.entrySet().forEach((Map.Entry<String, String> item) -> list.add(new Tuple2<>(item.getKey(), item.getValue())));
+        // query redis, retry maxRetryTimes count
+        for (int retry = 0; retry <= maxRetryTimes; retry++) {
+            try {
+                // 对于不同类型key，分别处理，结果放到 list 中
+                switch (type) {
+                    case "string":
+                        String result = command.get(key);
+                        list.add(new Tuple2<>(key, result));
+                        break;
+                    case "list":
+                        // list 获取 key 的全部数据
+                        List<String> result1 = command.lrange(key, 0, -1);
+                        result1.forEach((String v) -> list.add(new Tuple2<>(key, v)));
+                        break;
+                    case "set":
+                        // set 获取 key 的全部数据
+                        Set<String> result5 = command.smembers(key);
+                        result5.forEach((String v) -> list.add(new Tuple2<>(key, v)));
+                        break;
+                    case "zset":
+                        // zset 获取 key 的全部数据
+                        List<String> result6 = command.zrange(key, 0, -1);
+                        result6.forEach((String v) -> list.add(new Tuple2<>(key, v)));
+                        break;
+                    case "hash":
+                        // hash 类型，根据输入参数的个数，判断返回全部 map 还是只获取一个 值
+                        if (keys.length == 2) {
+                            // 输入两个参数，第二个参数作为 filed
+                            String filed = keys[1].toString();
+                            String result3 = command.hget(key, filed);
+                            list.add(new Tuple2<>(key, result3));
+                        } else {
+                            // 只有一个参数，作为 key，获取 key 对应的 map
+                            Map<String, String> result4 = command.hgetall(key);
+                            result4.entrySet().forEach((Map.Entry<String, String> item) -> list.add(new Tuple2<>(item.getKey(), item.getValue())));
+                        }
+                        break;
+                    default:
+                        LOG.debug("nothing");
+                        break;
                 }
                 break;
-            case "set":
-                Set<String> result5 = command.smembers(key);
-                for (int i = 0; i < result5.size(); i++) {
-                    result5.forEach((String v) -> list.add(new Tuple2<>(key, v)));
-                }
-                break;
-            case "zset":
-                List<String> result6 = command.zrange(key, 0, -1);
-                result6.forEach((String v) -> list.add(new Tuple2<>(key, v)));
-                break;
-            default:
-                LOG.debug("nothing");
-                break;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
+        // 构造输出 数据，并放入 换存中
         if (list.size() > 0) {
             List<RowData> cacheList = new ArrayList<>();
             for (Tuple2<String, String> item : list) {
@@ -142,11 +160,11 @@ public class RedisRowDataLookUpFunction extends TableFunction<RowData> {
                 row.setField(1, StringData.fromString(item.f0));
                 row.setField(2, StringData.fromString(item.f1));
                 row.setRowKind(RowKind.INSERT);
+                // 输出
                 collect(row);
                 cacheList.add(row);
             }
-
-
+            // 放入缓存
             cache.put(keyRow, cacheList);
         }
     }
