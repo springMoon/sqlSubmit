@@ -12,33 +12,33 @@ import java.util.Objects;
  */
 public class MysqlOption implements Serializable {
 
-    public static final ConfigOption<String> URL = ConfigOptions.key("mysql.url")
+    public static final ConfigOption<String> URL = ConfigOptions.key("url")
             .stringType()
             .noDefaultValue();
 
-    public static final ConfigOption<String> USERNAME = ConfigOptions.key("mysql.username")
+    public static final ConfigOption<String> USERNAME = ConfigOptions.key("username")
             .stringType()
             .noDefaultValue();
-    public static final ConfigOption<String> PASSWORD = ConfigOptions.key("mysql.password")
+    public static final ConfigOption<String> PASSWORD = ConfigOptions.key("password")
             .stringType()
             .noDefaultValue();
-    public static final ConfigOption<String> DATABASE = ConfigOptions.key("mysql.database")
+    public static final ConfigOption<String> DATABASE = ConfigOptions.key("database")
             .stringType()
             .noDefaultValue();
-    public static final ConfigOption<String> TABLE = ConfigOptions.key("mysql.table")
+    public static final ConfigOption<String> TABLE = ConfigOptions.key("table")
             .stringType()
             .noDefaultValue();
-    public static final ConfigOption<Long> CACHE_MAX_SIZE = ConfigOptions.key("mysql.lookup.cache.max.size")
+    public static final ConfigOption<Long> CACHE_MAX_SIZE = ConfigOptions.key("lookup.cache.max.size")
             .longType()
             .defaultValue(-1l);
-    public static final ConfigOption<Long> CACHE_EXPIRE_MS = ConfigOptions.key("mysql.lookup.cache.expire.ms")
+    public static final ConfigOption<Long> CACHE_EXPIRE_MS = ConfigOptions.key("lookup.cache.expire.ms")
             .longType()
             .defaultValue(-1l);
-    public static final ConfigOption<Integer> MAX_RETRY_TIMES = ConfigOptions.key("mysql.lookup.max.retry.times")
+    public static final ConfigOption<Integer> MAX_RETRY_TIMES = ConfigOptions.key("lookup.max.retry.times")
             .intType()
             .defaultValue(3);
 
-    public static final ConfigOption<Integer> TIME_OUT = ConfigOptions.key("mysql.timeout")
+    public static final ConfigOption<Integer> TIME_OUT = ConfigOptions.key("timeout")
             .intType()
 
             .defaultValue(10);

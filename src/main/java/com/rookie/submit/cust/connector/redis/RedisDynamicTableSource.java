@@ -1,11 +1,9 @@
 package com.rookie.submit.cust.connector.redis;
 
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
-import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.source.*;
-import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.RowType;
 
@@ -51,7 +49,7 @@ public class RedisDynamicTableSource implements ScanTableSource, LookupTableSour
 
     @Override
     public String asSummaryString() {
-        return "Mysql Table Source, support Lookup function";
+        return "Redis Table Source, support Lookup function";
     }
 
     @Override
@@ -67,10 +65,9 @@ public class RedisDynamicTableSource implements ScanTableSource, LookupTableSour
         for (int i = 0; i < keyCount; i++) {
             keyNames[i] = fieldNames[lookupKeysIndex[i]];
         }
-        final RowType rowType = (RowType) physicalSchema.toRowDataType().getLogicalType();
-        // new MysqlRowDataLookUpFunction
+        // new RedisRowDataLookUpFunction
         RedisRowDataLookUpFunction lookUpFunction
-                = new RedisRowDataLookUpFunction(fieldNames, keyNames, producedDataType, options, rowType);
+                = new RedisRowDataLookUpFunction(keyNames, options);
 
         // return MysqlRowDataLookUpFunction
         return TableFunctionProvider.of(lookUpFunction);

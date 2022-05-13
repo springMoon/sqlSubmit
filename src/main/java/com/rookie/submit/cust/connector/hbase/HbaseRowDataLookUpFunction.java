@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  * RowData}.
  */
 public class HbaseRowDataLookUpFunction extends TableFunction<RowData> {
-    private static final long serialVersionUID = 1008611L;
+    private static final long serialVersionUID = 1008610L;
     private static final Logger LOG = LoggerFactory.getLogger(HbaseRowDataLookUpFunction.class);
 
     private final HBaseTableSchema hbaseSchema;

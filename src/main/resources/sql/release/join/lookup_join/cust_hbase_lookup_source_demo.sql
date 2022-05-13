@@ -24,16 +24,16 @@ create temporary table hbase_table_config(
   ,cf2 ROW(code string, `value` string, update_time string)
 )WITH(
  'connector' = 'cust-hbase'
- ,'hbase.zookeeper.quorum' = 'thinkpad:12181'
+ ,'zookeeper.quorum' = 'thinkpad:12181'
  ,'zookeeper.znode.parent' = '/hbase'
- ,'hbase.tablename' = 'hbase_table_config'
- ,'hbase.null-string-literal' = 'null'
- ,'hbase.lookup.key' = 'cf:code'
---  ,'hbase.lookup.key' = 'cf:code,cf2:code'
- ,'hbase.lookup.cache.max.size' = '100'
- ,'hbase.lookup.cache.expire.ms' = '6'
- ,'hbase.lookup.max.retry.times' = '3'
- ,'hbase.timeout' = '10'
+ ,'tablename' = 'hbase_table_config'
+ ,'null-string-literal' = 'null'
+ ,'lookup.key' = 'cf:code'
+--  ,'lookup.key' = 'cf:code,cf2:code'
+ ,'lookup.cache.max.size' = '100'
+ ,'lookup.cache.expire.ms' = '6'
+ ,'lookup.max.retry.times' = '3'
+ ,'timeout' = '10'
 )
 ;
 
@@ -59,7 +59,7 @@ FROM user_log a
   -- on a.user_id = c.cf.code and a.item_id = c.cf2.code
   -- 必须要一个key 做关联条件，实际上不会用这个做关联条件
   -- 流输入端的字段使用 ',' 拼接的方式传入参数
-  -- hbase 端通过参数 'hbase.lookup.key' = 'cf:code,cf2:code' 传入过滤的字段，两边必须的数量必须匹配
+  -- hbase 端通过参数 'lookup.key' = 'cf:code,cf2:code' 传入过滤的字段，两边必须的数量必须匹配
 --   ON  a.behavior = c.rowkey
   ON  concat(a.behavior,',',a.category_id) = c.rowkey --and a.item_id = c.cf.`code`
 where a.behavior is not null;

@@ -19,7 +19,7 @@ CREATE TABLE user_log (
 
 CREATE TEMPORARY TABLE redis_table (
   code STRING
-  ,code2 STRING
+  ,feild STRING
   ,`value` STRING
 ) WITH (
    'connector' = 'cust-redis'
@@ -29,7 +29,7 @@ CREATE TEMPORARY TABLE redis_table (
 );
 
 ---sinkTable
-CREATE TABLE kakfa_join_mysql_demo (
+CREATE TABLE kakfa_join_redis_sink (
   user_id STRING
   ,item_id STRING
   ,category_id STRING
@@ -41,18 +41,10 @@ CREATE TABLE kakfa_join_mysql_demo (
    'connector' = 'print'
 );
 
----sink
--- INSERT INTO kakfa_join_mysql_demo(user_id, item_id, category_id, behavior, behavior_map, ts)
--- SELECT a.user_id, a.item_id, a.category_id, a.behavior, c.`value`, a.ts
--- FROM user_log a
---   left join redis_table FOR SYSTEM_TIME AS OF a.process_time AS c
---   ON  a.behavior = c.code
--- where a.behavior is not null;
-
-INSERT INTO kakfa_join_mysql_demo(user_id, item_id, category_id, behavior, behavior_map, ts)
+INSERT INTO kakfa_join_redis_sink(user_id, item_id, category_id, behavior, behavior_map, ts)
 SELECT a.user_id, a.item_id, a.category_id, a.behavior, c.`value`, a.ts
 FROM user_log a
          left join redis_table FOR SYSTEM_TIME AS OF a.process_time AS c
              -- todo parameter item_id cannot get in redis Source
-                   ON  a.behavior = c.code and a.item_id = c.code2
+                   ON  a.behavior = c.code and a.item_id = c.feild
 where a.behavior is not null;

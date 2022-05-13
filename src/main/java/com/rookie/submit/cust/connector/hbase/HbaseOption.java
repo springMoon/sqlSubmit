@@ -12,33 +12,33 @@ import java.util.Objects;
  */
 public class HbaseOption implements Serializable {
 
-    public static final ConfigOption<String> ZOOKEEPER_QUORUM = ConfigOptions.key("hbase.zookeeper.quorum")
+    public static final ConfigOption<String> ZOOKEEPER_QUORUM = ConfigOptions.key("zookeeper.quorum")
             .stringType()
             .noDefaultValue();
 
     public static final ConfigOption<String> ZOOKEEPER_ZNODE_PARENT = ConfigOptions.key("zookeeper.znode.parent")
             .stringType()
             .noDefaultValue();
-    public static final ConfigOption<String> NULL_STRING_LITERAL = ConfigOptions.key("hbase.null-string-literal")
+    public static final ConfigOption<String> NULL_STRING_LITERAL = ConfigOptions.key("null-string-literal")
             .stringType()
             .noDefaultValue();
-    public static final ConfigOption<String> TABLE = ConfigOptions.key("hbase.tablename")
+    public static final ConfigOption<String> TABLE = ConfigOptions.key("tablename")
             .stringType()
             .noDefaultValue();
-    public static final ConfigOption<String> LOOKUP_KEY = ConfigOptions.key("hbase.lookup.key")
+    public static final ConfigOption<String> LOOKUP_KEY = ConfigOptions.key("lookup.key")
             .stringType()
             .noDefaultValue();
-    public static final ConfigOption<Long> CACHE_MAX_SIZE = ConfigOptions.key("hbase.lookup.cache.max.size")
+    public static final ConfigOption<Long> CACHE_MAX_SIZE = ConfigOptions.key("lookup.cache.max.size")
             .longType()
             .defaultValue(100l);
-    public static final ConfigOption<Long> CACHE_EXPIRE_MS = ConfigOptions.key("hbase.lookup.cache.expire.ms")
+    public static final ConfigOption<Long> CACHE_EXPIRE_MS = ConfigOptions.key("lookup.cache.expire.ms")
             .longType()
             .defaultValue(1000l);
-    public static final ConfigOption<Integer> MAX_RETRY_TIMES = ConfigOptions.key("hbase.lookup.max.retry.times")
+    public static final ConfigOption<Integer> MAX_RETRY_TIMES = ConfigOptions.key("lookup.max.retry.times")
             .intType()
             .defaultValue(3);
 
-    public static final ConfigOption<Integer> TIME_OUT = ConfigOptions.key("hbase.timeout")
+    public static final ConfigOption<Integer> TIME_OUT = ConfigOptions.key("timeout")
             .intType()
 
             .defaultValue(10);

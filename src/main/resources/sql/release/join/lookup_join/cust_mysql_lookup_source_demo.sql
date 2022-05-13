@@ -25,15 +25,15 @@ create temporary table mysql_behavior_conf(
   ,update_time TIMESTAMP(3)
 )WITH(
  'connector' = 'cust-mysql'
- ,'mysql.url' = 'jdbc:mysql://localhost:3306/venn?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true'
- ,'mysql.username' = 'root'
- ,'mysql.password' = '123456'
- ,'mysql.database' = 'venn'
- ,'mysql.table' = 'lookup_join_config'
- ,'mysql.lookup.cache.max.size' = '100'
- ,'mysql.lookup.cache.expire.ms' = '600000'
- ,'mysql.lookup.max.retry.times' = '3'
- ,'mysql.timeout' = '10'
+ ,'url' = 'jdbc:mysql://localhost:3306/venn?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true'
+ ,'username' = 'root'
+ ,'password' = '123456'
+ ,'database' = 'venn'
+ ,'table' = 'lookup_join_config'
+ ,'lookup.cache.max.size' = '100'
+ ,'lookup.cache.expire.ms' = '600000'
+ ,'lookup.max.retry.times' = '3'
+ ,'timeout' = '10'
 )
 ;
 

@@ -160,18 +160,26 @@ public abstract class CommonExecLookupJoin extends ExecNodeBase<RowData>
     private final TemporalTableSourceSpec temporalTableSourceSpec;
 
     @JsonProperty(FIELD_NAME_PROJECTION_ON_TEMPORAL_TABLE)
-    private final @Nullable List<RexNode> projectionOnTemporalTable;
+    private final @Nullable
+    List<RexNode> projectionOnTemporalTable;
 
     @JsonProperty(FIELD_NAME_FILTER_ON_TEMPORAL_TABLE)
-    private final @Nullable RexNode filterOnTemporalTable;
+    private final @Nullable
+    RexNode filterOnTemporalTable;
 
-    /** join condition except equi-conditions extracted as lookup keys. */
+    /**
+     * join condition except equi-conditions extracted as lookup keys.
+     */
     @JsonProperty(FIELD_NAME_JOIN_CONDITION)
-    private final @Nullable RexNode joinCondition;
+    private final @Nullable
+    RexNode joinCondition;
 
-    @JsonIgnore private final boolean existCalcOnTemporalTable;
+    @JsonIgnore
+    private final boolean existCalcOnTemporalTable;
 
-    @JsonIgnore private final @Nullable RelDataType temporalTableOutputType;
+    @JsonIgnore
+    private final @Nullable
+    RelDataType temporalTableOutputType;
 
     protected CommonExecLookupJoin(
             FlinkJoinType joinType,
@@ -265,7 +273,8 @@ public abstract class CommonExecLookupJoin extends ExecNodeBase<RowData>
 
         // add by venn for increase lookup join parallelism
         String tableName = temporalTable.getQualifiedName().get(2);
-        int custParallelism = planner.getTableConfig().getConfiguration().getInteger("cust_lookup_join_parallelism_" + tableName, 2);
+        int defaultParallelism = planner.getTableConfig().getConfiguration().getInteger("table.exec.resource.default-parallelism", 1);
+        int custParallelism = planner.getTableConfig().getConfiguration().getInteger("cust_lookup_join_parallelism_" + tableName, defaultParallelism);
 
         return new OneInputTransformation<>(
                 inputTransformation,
@@ -334,16 +343,16 @@ public abstract class CommonExecLookupJoin extends ExecNodeBase<RowData>
 
         LookupJoinCodeGenerator.GeneratedTableFunctionWithDataType<AsyncFunction<RowData, Object>>
                 generatedFuncWithType =
-                        LookupJoinCodeGenerator.generateAsyncLookupFunction(
-                                config,
-                                dataTypeFactory,
-                                inputRowType,
-                                tableSourceRowType,
-                                resultRowType,
-                                allLookupKeys,
-                                LookupJoinUtil.getOrderedLookupKeys(allLookupKeys.keySet()),
-                                asyncLookupFunction,
-                                StringUtils.join(temporalTable.getQualifiedName(), "."));
+                LookupJoinCodeGenerator.generateAsyncLookupFunction(
+                        config,
+                        dataTypeFactory,
+                        inputRowType,
+                        tableSourceRowType,
+                        resultRowType,
+                        allLookupKeys,
+                        LookupJoinUtil.getOrderedLookupKeys(allLookupKeys.keySet()),
+                        asyncLookupFunction,
+                        StringUtils.join(temporalTable.getQualifiedName(), "."));
 
         RowType rightRowType =
                 Optional.ofNullable(temporalTableOutputType)
@@ -537,9 +546,9 @@ public abstract class CommonExecLookupJoin extends ExecNodeBase<RowData>
                     TypeInfoDataTypeConverter.fromDataTypeToTypeInfo(
                             tableSource.getProducedDataType());
             if (!(tableSourceProducedType instanceof InternalTypeInfo
-                            && tableSourceProducedType
-                                    .getTypeClass()
-                                    .isAssignableFrom(RowData.class))
+                    && tableSourceProducedType
+                    .getTypeClass()
+                    .isAssignableFrom(RowData.class))
                     && !(tableSourceProducedType instanceof RowTypeInfo)) {
                 throw new TableException(
                         String.format(

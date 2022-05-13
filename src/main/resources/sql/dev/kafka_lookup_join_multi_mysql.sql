@@ -18,6 +18,10 @@ CREATE TABLE user_log (
   ,'source.parallelism' = '1'
 );
 
+-- mysql source
+-- Table 'JDBC:MySQL' declares metadata columns,
+-- but the underlying DynamicTableSource doesn't implement the SupportsReadingMetadata interface.
+-- Therefore, metadata cannot be read from the given source.
 drop table if exists mysql_behavior_conf ;
 CREATE TEMPORARY TABLE mysql_behavior_conf (
    id int
@@ -62,7 +66,6 @@ CREATE TEMPORARY TABLE mysql_behavior_conf_1 (
    ,'lookup.cache.ttl' = '5555' -- ttl time 超过这么长时间无数据才行
 );
 
-
 ---sinkTable
 CREATE TABLE kakfa_join_mysql_demo (
   user_id STRING
@@ -70,19 +73,19 @@ CREATE TABLE kakfa_join_mysql_demo (
   ,category_id STRING
   ,behavior STRING
   ,behavior_map STRING
+  ,behavior_map_2 STRING
   ,ts TIMESTAMP(3)
   ,primary key (user_id) not enforced
 ) WITH (
    'connector' = 'print'
 );
 
-
-INSERT INTO kakfa_join_mysql_demo(user_id, item_id, category_id, behavior, behavior_map, ts)
-
-()
-SELECT a.user_id, a.item_id, a.category_id, a.behavior, c.`value`, a.ts
+INSERT INTO kakfa_join_mysql_demo(user_id, item_id, category_id, behavior, behavior_map,behavior_map_2, ts)
+SELECT a.user_id, a.item_id, a.category_id, a.behavior, c.`value`, d.`value`, a.ts
 FROM user_log a
   left join mysql_behavior_conf FOR SYSTEM_TIME AS OF a.process_time AS c
   ON  a.behavior = c.code -- and a.item_id = c.`value`
+  left join mysql_behavior_conf_1 FOR SYSTEM_TIME AS OF a.process_time AS d
+            ON  a.behavior = d.code -- and a.item_id = c.`value`
 where a.behavior is not null
-);
+;
