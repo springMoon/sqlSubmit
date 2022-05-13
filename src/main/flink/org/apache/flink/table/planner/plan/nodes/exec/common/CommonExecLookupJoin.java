@@ -18,6 +18,7 @@
 
 package org.apache.flink.table.planner.plan.nodes.exec.common;
 
+import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.dag.Transformation;
@@ -265,7 +266,7 @@ public abstract class CommonExecLookupJoin extends ExecNodeBase<RowData>
 
         // add by venn for increase lookup join parallelism
         String tableName = temporalTable.getQualifiedName().get(2);
-        int custParallelism = planner.getTableConfig().getConfiguration().getInteger("cust_lookup_join_parallelism_" + tableName, 2);
+        int custParallelism = planner.getTableConfig().getConfiguration().getInteger("cust_lookup_join_parallelism_" + tableName, ExecutionConfig.PARALLELISM_DEFAULT);
 
         return new OneInputTransformation<>(
                 inputTransformation,
