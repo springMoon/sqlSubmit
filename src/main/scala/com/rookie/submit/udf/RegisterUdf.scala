@@ -1,7 +1,7 @@
 package com.rookie.submit.udf
 
 import com.rookie.submit.common.Constant
-import com.rookie.submit.udaf.{BloomFilter, JedisRedisUv, RedisUv}
+import com.rookie.submit.udaf.{BloomFilter , RedisUv}
 import com.rookie.submit.udtf.UdtfTimer
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
