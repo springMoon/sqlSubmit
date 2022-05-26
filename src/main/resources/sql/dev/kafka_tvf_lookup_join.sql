@@ -15,7 +15,9 @@ CREATE TABLE user_log (
   ,'properties.group.id' = 'user_log'
   ,'scan.startup.mode' = 'latest-offset'
   ,'format' = 'json'
+    ,'value.format' = 'json'
   ,'source.parallelism' = '1'
+    ,'json.ignore-parse-errors' = 'true'
 );
 
 -- mysql source

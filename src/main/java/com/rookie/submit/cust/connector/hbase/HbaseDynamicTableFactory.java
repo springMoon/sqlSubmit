@@ -2,6 +2,7 @@ package com.rookie.submit.cust.connector.hbase;
 
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ReadableConfig;
+import org.apache.flink.connector.hbase.util.HBaseTableSchema;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.factories.DynamicTableSourceFactory;
@@ -78,7 +79,10 @@ public class HbaseDynamicTableFactory implements DynamicTableSourceFactory {
         TableSchema physicalSchema =
                 TableSchemaUtils.getPhysicalSchema(context.getCatalogTable().getSchema());
 
+        HBaseTableSchema hbaseSchema =
+                HBaseTableSchema.fromDataType(context.getPhysicalRowDataType());
+
         // create and return dynamic table source
-        return new HbaseDynamicTableSource(producedDataType, option, physicalSchema);
+        return new HbaseDynamicTableSource(producedDataType, option, hbaseSchema);
     }
 }

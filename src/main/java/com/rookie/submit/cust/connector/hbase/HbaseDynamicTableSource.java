@@ -1,22 +1,14 @@
 package com.rookie.submit.cust.connector.hbase;
 
-import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.connector.hbase.util.HBaseTableSchema;
-import org.apache.flink.streaming.api.functions.source.SourceFunction;
-import org.apache.flink.table.api.TableColumn;
-import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.table.connector.ChangelogMode;
-import org.apache.flink.table.connector.source.*;
-import org.apache.flink.table.data.RowData;
+import org.apache.flink.table.connector.source.DynamicTableSource;
+import org.apache.flink.table.connector.source.LookupTableSource;
+import org.apache.flink.table.connector.source.TableFunctionProvider;
 import org.apache.flink.table.types.DataType;
-import org.apache.flink.table.types.logical.RowType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
-import java.util.List;
-
-import static org.apache.flink.table.types.utils.TypeConversions.fromDataTypeToLegacyInfo;
 
 public class HbaseDynamicTableSource implements LookupTableSource {
 
@@ -24,22 +16,22 @@ public class HbaseDynamicTableSource implements LookupTableSource {
 
     private final DataType producedDataType;
     private final HbaseOption options;
-    private final TableSchema physicalSchema;
+    private final HBaseTableSchema hbaseSchema;
 
     public HbaseDynamicTableSource(
 
             DataType producedDataType,
             HbaseOption options,
-            TableSchema physicalSchema) {
+            HBaseTableSchema hbaseSchema) {
 
         this.producedDataType = producedDataType;
         this.options = options;
-        this.physicalSchema = physicalSchema;
+        this.hbaseSchema = hbaseSchema;
     }
 
     @Override
     public DynamicTableSource copy() {
-        return new HbaseDynamicTableSource(producedDataType, options, physicalSchema);
+        return new HbaseDynamicTableSource(producedDataType, options, hbaseSchema);
     }
 
     @Override
@@ -49,8 +41,6 @@ public class HbaseDynamicTableSource implements LookupTableSource {
 
     @Override
     public LookupRuntimeProvider getLookupRuntimeProvider(LookupContext context) {
-
-        HBaseTableSchema hbaseSchema = HBaseTableSchema.fromTableSchema(physicalSchema);
 
         HbaseRowDataLookUpFunction lookUpFunction = null;
         try {

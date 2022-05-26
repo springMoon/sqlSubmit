@@ -1,13 +1,9 @@
 package com.rookie.submit.cust.connector.mysql;
 
-import com.rookie.submit.cust.connector.mysql.MysqlOption;
-import org.apache.flink.connector.jdbc.dialect.MySQLDialect;
-import org.apache.flink.connector.jdbc.internal.converter.JdbcRowConverter;
+import org.apache.flink.connector.jdbc.converter.JdbcRowConverter;
 import org.apache.flink.connector.jdbc.statement.FieldNamedPreparedStatement;
 import org.apache.flink.shaded.guava30.com.google.common.cache.Cache;
 import org.apache.flink.shaded.guava30.com.google.common.cache.CacheBuilder;
-//import org.apache.flink.shaded.guava18.com.google.common.cache.Cache;
-//import org.apache.flink.shaded.guava18.com.google.common.cache.CacheBuilder;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.functions.FunctionContext;
@@ -17,6 +13,7 @@ import org.apache.flink.table.types.logical.LogicalType;
 import org.apache.flink.table.types.logical.RowType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.flink.connector.jdbc.dialect.mysql.MySqlDialect;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -58,7 +55,7 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
         this.keyNames = keyNames;
 
         // generate lookup query sql
-        MySQLDialect mySQLDialect = new MySQLDialect();
+        MySqlDialect mySQLDialect = new MySqlDialect();
         this.query =
                 mySQLDialect
                         .getSelectFromStatement(options.getTable(), fieldNames, keyNames);

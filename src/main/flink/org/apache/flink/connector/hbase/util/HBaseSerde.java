@@ -43,7 +43,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static org.apache.flink.table.types.logical.utils.LogicalTypeChecks.getPrecision;
-import static org.apache.flink.table.types.logical.utils.LogicalTypeChecks.hasFamily;
 import static org.apache.flink.util.Preconditions.checkArgument;
 
 /**
@@ -334,7 +333,7 @@ public class HBaseSerde {
             LogicalType fieldType, final byte[] nullStringBytes) {
         final FieldEncoder encoder = createFieldEncoder(fieldType);
         if (fieldType.isNullable()) {
-            if (hasFamily(fieldType, LogicalTypeFamily.CHARACTER_STRING)) {
+            if (fieldType.is(LogicalTypeFamily.CHARACTER_STRING)) {
                 // special logic for null string values, because HBase can store empty bytes for
                 // string
                 return (row, pos) -> {
@@ -450,7 +449,7 @@ public class HBaseSerde {
             LogicalType fieldType, final byte[] nullStringBytes) {
         final FieldDecoder decoder = createFieldDecoder(fieldType);
         if (fieldType.isNullable()) {
-            if (hasFamily(fieldType, LogicalTypeFamily.CHARACTER_STRING)) {
+            if (fieldType.is(LogicalTypeFamily.CHARACTER_STRING)) {
                 return value -> {
                     if (value == null || Arrays.equals(value, nullStringBytes)) {
                         return null;

@@ -36,6 +36,7 @@ import org.apache.flink.streaming.connectors.kafka.internals.KafkaTopicPartition
 import org.apache.flink.streaming.connectors.kafka.table.DynamicKafkaDeserializationSchema.MetadataConverter;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.connector.ChangelogMode;
+import org.apache.flink.table.connector.ProviderContext;
 import org.apache.flink.table.connector.format.DecodingFormat;
 import org.apache.flink.table.connector.source.DataStreamScanProvider;
 import org.apache.flink.table.connector.source.DynamicTableSource;
@@ -85,6 +86,9 @@ public class KafkaDynamicSource
      * Data type that describes the final output of the source.
      */
     protected DataType producedDataType;
+
+    private static final String KAFKA_TRANSFORMATION = "kafka";
+
 
     /**
      * Metadata that is appended at the end of a physical source row.
@@ -258,26 +262,16 @@ public class KafkaDynamicSource
 
         return new DataStreamScanProvider() {
             @Override
-            public DataStream<RowData> produceDataStream(StreamExecutionEnvironment execEnv) {
+            public DataStream<RowData> produceDataStream(
+                    ProviderContext providerContext, StreamExecutionEnvironment execEnv) {
                 if (watermarkStrategy == null) {
                     watermarkStrategy = WatermarkStrategy.noWatermarks();
                 }
-
-                DataStreamSource<RowData> dataDataStreamSource = execEnv.fromSource(
-                        kafkaSource, watermarkStrategy, "KafkaSource-" + tableIdentifier);
-                int parallelism = execEnv.getParallelism();
-
-                // add by venn for custom source parallelism
-                //
-                if (sourceParallelism != null && sourceParallelism != parallelism) {
-                    dataDataStreamSource.setParallelism(sourceParallelism);
-                }
-                // break chain between kafka source and next operator
-                boolean breakChain = Boolean.parseBoolean(execEnv.getConfig().getGlobalJobParameters().toMap().get("table.exec.source.force-break-chain"));
-                if (breakChain) {
-                    dataDataStreamSource.disableChaining();
-                }
-                return dataDataStreamSource;
+                DataStreamSource<RowData> sourceStream =
+                        execEnv.fromSource(
+                                kafkaSource, watermarkStrategy, "KafkaSource-" + tableIdentifier);
+                providerContext.generateUid(KAFKA_TRANSFORMATION).ifPresent(sourceStream::uid);
+                return sourceStream;
             }
 
             @Override
