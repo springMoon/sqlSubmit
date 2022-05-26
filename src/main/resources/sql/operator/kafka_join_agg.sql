@@ -69,6 +69,7 @@ CREATE TABLE user_log_sink_2 (
 ) WITH (
       'connector' = 'print'
       );
+
 insert into user_log_sink_2
 SELECT a.behavior, count(a.user_id) pv, count(distinct a.user_id) uv, count(distinct category_id) uv_cate, uuid() max_page
 , max(a.ts) max_ts

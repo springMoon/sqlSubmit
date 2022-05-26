@@ -65,21 +65,24 @@ object SqlSubmit {
     var result: StatementSet = null
     for (sql <- sqlList) {
       try {
-        if (sql.toLowerCase.startsWith("insert")) {
-          // ss
-          result = statement.addInsertSql(sql)
-        } else {
-          if (sql.contains("hive_table_")) {
-            tabEnv.getConfig.setSqlDialect(SqlDialect.HIVE)
+        if(!sql.trim.equals("")) {
+
+          if (sql.toLowerCase.startsWith("insert")) {
+            // ss
+            result = statement.addInsertSql(sql)
           } else {
-            tabEnv.getConfig.setSqlDialect(SqlDialect.DEFAULT)
+            if (sql.contains("hive_table_")) {
+              tabEnv.getConfig.setSqlDialect(SqlDialect.HIVE)
+            } else {
+              tabEnv.getConfig.setSqlDialect(SqlDialect.DEFAULT)
+            }
+            logger.info("dialect : " + tabEnv.getConfig.getSqlDialect)
+            println("dialect : " + tabEnv.getConfig.getSqlDialect)
+            tabEnv.executeSql(sql)
           }
-          logger.info("dialect : " + tabEnv.getConfig.getSqlDialect)
-          println("dialect : " + tabEnv.getConfig.getSqlDialect)
-          tabEnv.executeSql(sql)
+          logger.info("execute success : " + sql)
+          println("execute success : " + sql)
         }
-        logger.info("execute success : " + sql)
-        println("execute success : " + sql)
       } catch {
         case e: Exception =>
           println("execute sql error : " + sql)
