@@ -46,8 +46,6 @@ object TableConfUtil {
       }
     } )
 
-
-
   }
 
 }

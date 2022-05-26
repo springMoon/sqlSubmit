@@ -15,6 +15,7 @@ import org.apache.flink.table.api.{EnvironmentSettings, SqlDialect, StatementSet
 import org.slf4j.LoggerFactory
 
 import java.time.{ZoneId, ZoneOffset}
+import java.util.Properties
 import javax.security.auth.login.Configuration
 import scala.collection.JavaConversions._
 
@@ -36,6 +37,10 @@ object SqlSubmit {
     // StreamExecutionEnvironment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.getConfig.setAutoWatermarkInterval(200l)
+
+    val prop = new Properties()
+    prop.setProperty("table.exec.sink.type-length-enforcer", "drop")
+
     // state backend and checkpoint
     enableCheckpoint(env, paraTool)
     // EnvironmentSettings

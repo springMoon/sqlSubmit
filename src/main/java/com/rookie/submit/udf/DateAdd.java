@@ -21,21 +21,21 @@ public class DateAdd extends ScalarFunction {
         map.put("" + System.currentTimeMillis(), "aa-" + System.currentTimeMillis());
 
         // new Timer
-        Timer timer = new Timer(true);
-        // schedule is 10 second 定义了一个10秒的定时器，定时执行查询数据库的方法
-
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                query();
-            }
-        }, 10000, 10000);
+//        Timer timer = new Timer(true);
+//        // schedule is 10 second 定义了一个10秒的定时器，定时执行查询数据库的方法
+//
+//        timer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                query();
+//            }
+//        }, 10000, 10000);
     }
 
-    public void query(){
-        map.put("" + System.currentTimeMillis(), "aa-" + System.currentTimeMillis());
-        LOG.info("timer run, map element size : " + map.size());
-    }
+//    public void query(){
+//        map.put("" + System.currentTimeMillis(), "aa-" + System.currentTimeMillis());
+//        LOG.info("timer run, map element size : " + map.size());
+//    }
 
     @FunctionHint(output = @DataTypeHint("STRING"))
     public String eval(String tar, int num) {
