@@ -8,7 +8,7 @@
 
   挑战失败，
 
-  mysql 为主表，无法触发计算，改用 stream api 
+  mysql 为主表，无法触发计算，改用 stream api
 
  */
 
