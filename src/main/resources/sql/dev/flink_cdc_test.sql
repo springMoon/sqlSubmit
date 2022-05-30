@@ -19,7 +19,7 @@ CREATE TABLE t_user_log (
  ,'username' = 'root'
  ,'password' = '123456'
  ,'database-name' = 'venn'
- ,'table-name' = 'user_log'
+ ,'table-name' = 'user_log_1'
  ,'server-id' = '5400-5440'
  ,'scan.startup.mode' = 'initial'
 --  ,'scan.startup.mode' = 'specific-offset'
