@@ -14,9 +14,8 @@ import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
 import org.apache.flink.table.api.{EnvironmentSettings, SqlDialect, StatementSet}
 import org.slf4j.LoggerFactory
 
-import java.time.{ZoneId, ZoneOffset}
+import java.time.ZoneId
 import java.util.Properties
-import javax.security.auth.login.Configuration
 import scala.collection.JavaConversions._
 
 /**
@@ -50,7 +49,8 @@ object SqlSubmit {
     // create table enviroment
     val tabEnv = StreamTableEnvironment.create(env, settings)
     // table Config
-    TableConfUtil.conf(tabEnv, paraTool)
+    TableConfUtil.conf(tabEnv, paraTool, sqlList)
+
 
     // register catalog, only in server
     //    if ("/".equals(File.separator)) {

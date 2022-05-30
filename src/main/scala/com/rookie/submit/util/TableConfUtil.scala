@@ -1,17 +1,22 @@
 package com.rookie.submit.util
 
 import java.time.Duration
-
 import com.rookie.submit.common.{Common, Constant}
+import com.rookie.submit.main.SqlSubmit.logger
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
+import org.slf4j.LoggerFactory
+
+import java.util
+import scala.collection.JavaConversions._
 
 /**
  * flink table config
  */
 object TableConfUtil {
+  private val logger = LoggerFactory.getLogger("TableConfUtil")
 
-  def conf(tableEnv: StreamTableEnvironment, paraTool: ParameterTool): Unit = {
+  def conf(tableEnv: StreamTableEnvironment, paraTool: ParameterTool, sqlList: util.List[String]): Unit = {
 
     val tabConf = tableEnv.getConfig
     // state retention：min，max，interval must greater than 5 minute
@@ -40,11 +45,39 @@ object TableConfUtil {
       tabConf.addJobParameter("table.exec.source.force-break-chain", paraTool.get(Constant.TABLE_EXEC_SOURCE_FORCE_BREAK_CHAIN))
     }
     // set custom parameter
-    paraTool.getProperties.forEach((key,value) => {
-      if(key.toString.startsWith("cust")){
+    paraTool.getProperties.forEach((key, value) => {
+      if (key.toString.startsWith("cust")) {
         conf.setString(key.toString, value.toString)
       }
-    } )
+    })
+
+    //    conf.setString("table.exec.emit.early-fire.enabled", "true")
+    //    conf.setString("table.exec.emit.early-fire.delay", 5 * 1000 + "")
+
+    // add parameter to table config
+    val indexList = new util.ArrayList[String]()
+    for (sql <- sqlList) {
+
+      // if sql start with 'set ' parse as table parameter
+      if (sql.trim.toLowerCase().startsWith("set ")) {
+        indexList.add(sql)
+        try {
+          val tmp = sql.substring(4).split("=")
+          val key = tmp(0).trim
+          val value = tmp(1).trim
+          logger.info("add parameter to table config: " + key + " = " + value)
+          conf.setString(key, value)
+        } catch {
+          case e: Exception =>
+            logger.error("parse parameter error : " + sql)
+            e.printStackTrace()
+            System.exit(-1)
+        }
+      }
+    }
+
+    // remove set statement
+    sqlList.removeAll(indexList)
 
   }
 
