@@ -2,7 +2,7 @@
 
 SQL submission program base on flink
 
-Now just support flink 1.14.0
+Now just support flink 1.15.0
 
 Learn more about Flink https://flink.apache.org/
 
@@ -16,6 +16,9 @@ Derived from Jark's blog http://wuchong.me/blog/2019/09/02/flink-sql-1-9-read-fr
 
 SQL file ***demo.sql*** like : 
 ```sql
+-- parse set statement as table config
+set pipeline.name = demo_sql_job;
+set table.exec.resource.default-parallelism = 1;
 -- source
 CREATE TABLE user_log (
     user_id VARCHAR
@@ -130,7 +133,6 @@ var stateBackend: StateBackend = null
 
 register udf
 ```java
-
 // udf
 env.createTemporarySystemFunction("udf_decode", new Decode)
 

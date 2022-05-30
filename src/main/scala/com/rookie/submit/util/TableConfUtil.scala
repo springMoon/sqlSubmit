@@ -1,12 +1,11 @@
 package com.rookie.submit.util
 
-import java.time.Duration
 import com.rookie.submit.common.{Common, Constant}
-import com.rookie.submit.main.SqlSubmit.logger
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
 import org.slf4j.LoggerFactory
 
+import java.time.Duration
 import java.util
 import scala.collection.JavaConversions._
 

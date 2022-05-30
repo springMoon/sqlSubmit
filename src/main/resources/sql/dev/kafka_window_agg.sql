@@ -3,6 +3,7 @@
 -- table.exec.emit.early-fire.delay: 5000 # 5s
 set table.exec.emit.early-fire.enabled = true;
 set table.exec.emit.early-fire.delay = 5000;
+set pipeline.name = test_table_parameter;
 
 -- kafka source
 drop table if exists user_log;
