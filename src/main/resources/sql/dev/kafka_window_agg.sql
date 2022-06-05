@@ -30,19 +30,19 @@ CREATE TABLE user_log
 
 -- set table.sql-dialect=hive;
 -- kafka sink
-drop table if exists user_log_sink;
-CREATE TABLE user_log_sink
-(
-    current_time_str string
-    ,item_id     STRING
-    ,behavior    STRING
-    ,coun    bigint
-    ,hou string
-    ,window_start timestamp(3)
-    ,window_end timestamp(3)
-) WITH (
-      'connector' = 'print'
-      );
+-- drop table if exists user_log_sink;
+-- CREATE TABLE user_log_sink
+-- (
+--     current_time_str string
+--     ,item_id     STRING
+--     ,behavior    STRING
+--     ,coun    bigint
+--     ,hou string
+--     ,window_start timestamp(3)
+--     ,window_end timestamp(3)
+-- ) WITH (
+--       'connector' = 'print'
+--       );
 
 
 -- window tvf doesn't support early-fire and late-fire
@@ -53,14 +53,26 @@ CREATE TABLE user_log_sink
 -- group by  item_id, behavior, window_start, window_end
 -- ;
 
+
+
+drop table if exists user_log_sink_1;
+CREATE TABLE user_log_sink_1
+(
+    current_tim string
+    ,item_id     STRING
+    ,behavior    STRING
+    ,pv    bigint
+    ,uv    bigint
+) WITH (
+      'connector' = 'print'
+      );
+
 -- group window aggregation
-insert into user_log_sink
+insert into user_log_sink_1
 select date_format(now(), 'yyyy-MM-dd HH:mm:ss')
-     ,max(item_id) item_id
-     ,max(behavior) behavior
-     ,count(1) coun
-     ,''
-     ,TUMBLE_START(proc_time, INTERVAL '1' minute) AS wStart
-     ,TUMBLE_END(proc_time, INTERVAL '1' minute) AS wEnd
+     ,date_format(TUMBLE_START(proc_time, INTERVAL '1' minute), 'yyyy-MM-dd HH:mm:ss') AS wStart
+     ,date_format(TUMBLE_END(proc_time, INTERVAL '1' minute), 'yyyy-MM-dd HH:mm:ss') AS wEnd
+     ,count(user_id) pv
+     ,count(distinct user_id) uv
 from user_log
 group by TUMBLE(proc_time, INTERVAL '1' minute)
