@@ -4,6 +4,7 @@ import com.rookie.submit.common.Common
 import com.rookie.submit.common.Constant._
 import com.rookie.submit.udf.RegisterUdf
 import com.rookie.submit.util.{SqlFileUtil, TableConfUtil}
+import org.apache.flink.api.common.RuntimeExecutionMode
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend
 import org.apache.flink.runtime.state.StateBackend
@@ -37,20 +38,17 @@ object SqlSubmit {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.getConfig.setAutoWatermarkInterval(200l)
 
-    val prop = new Properties()
-    prop.setProperty("table.exec.sink.type-length-enforcer", "drop")
 
     // state backend and checkpoint
     enableCheckpoint(env, paraTool)
     // EnvironmentSettings
     val settings = EnvironmentSettings.newInstance()
-      .inStreamingMode()
+//      .inStreamingMode()
       .build()
     // create table enviroment
     val tabEnv = StreamTableEnvironment.create(env, settings)
     // table Config
     TableConfUtil.conf(tabEnv, paraTool, sqlList)
-
 
     // register catalog, only in server
     //    if ("/".equals(File.separator)) {
@@ -61,7 +59,6 @@ object SqlSubmit {
 
     // load udf
     RegisterUdf.registerUdf(tabEnv, paraTool)
-
 
     tabEnv.getConfig.setLocalTimeZone(ZoneId.of("Asia/Shanghai"));
 

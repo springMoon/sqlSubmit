@@ -18,9 +18,6 @@ object TableConfUtil {
   def conf(tableEnv: StreamTableEnvironment, paraTool: ParameterTool, sqlList: util.List[String]): Unit = {
 
     val tabConf = tableEnv.getConfig
-//    tabConf.set("table.exec.emit.early-fire.enabled", "true")
-//    tabConf.set("table.exec.emit.early-fire.delay", "5000")
-    // state retention：min，max，interval must greater than 5 minute
     // Deprecated
     //    tabConf.setIdleStateRetentionTime(Time.minutes(paraTool.getInt(Constant.STATE_RETENTION_MIN_TIME)), Time.minutes(paraTool.getInt(Constant.STATE_RETENTION_MAX_TIME)))
     tabConf.setIdleStateRetention(Duration.ofMinutes(paraTool.getInt(Constant.STATE_RETENTION_DURATION)))
@@ -51,7 +48,6 @@ object TableConfUtil {
         conf.setString(key.toString, value.toString)
       }
     })
-
     //    conf.setString("table.exec.emit.early-fire.enabled", "true")
     //    conf.setString("table.exec.emit.early-fire.delay", 5 * 1000 + "")
 
