@@ -1,4 +1,6 @@
 -- starrocks to print
+
+-- mini batch invalid
 set table.exec.mini-batch.enabled=true;
 set table.exec.mini-batch.allow-latency=20 s;
 set table.exec.mini-batch.size=100;
