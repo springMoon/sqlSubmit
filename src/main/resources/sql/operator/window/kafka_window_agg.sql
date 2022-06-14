@@ -95,4 +95,4 @@ group by TUMBLE(proc_time, INTERVAL '1' minute)
 -- FROM TABLE(
 --              TUMBLE(TABLE user_log, DESCRIPTOR(ts), INTERVAL '1' MINUTES )) t1
 -- group by window_start, window_end
--- ;
+;
