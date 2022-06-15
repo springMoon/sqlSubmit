@@ -43,7 +43,7 @@ object SqlSubmit {
     enableCheckpoint(env, paraTool)
     // EnvironmentSettings
     val settings = EnvironmentSettings.newInstance()
-//      .inStreamingMode()
+      .inStreamingMode()
       .build()
     // create table enviroment
     val tabEnv = StreamTableEnvironment.create(env, settings)

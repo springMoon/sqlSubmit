@@ -1,9 +1,10 @@
 --- test flink window parameter
 -- table.exec.emit.early-fire.enabled: true
 -- table.exec.emit.early-fire.delay: 5000 # 5s
-set table.exec.emit.early-fire.enabled = true;
-set table.exec.emit.early-fire.delay = 5000;
+-- set table.exec.emit.early-fire.enabled = true;
+-- set table.exec.emit.early-fire.delay = 5000;
 set pipeline.name = test_table_parameter;
+set table.exec.resource.default-parallelism = 2;
 
 -- kafka source
 drop table if exists user_log;
@@ -49,27 +50,28 @@ CREATE TABLE user_log_sink_1
       );
 
 -- group window aggregation
-insert into user_log_sink_1
-select 'group window'
-     ,date_format(TUMBLE_START(ts, INTERVAL '1' minute), 'yyyy-MM-dd HH:mm:ss') AS wStart
-     ,date_format(TUMBLE_END(ts, INTERVAL '1' minute), 'yyyy-MM-dd HH:mm:ss') AS wEnd
-     ,count(user_id) pv
-     ,count(distinct user_id) uv
-    ,max(user_id)
-from user_log
-group by TUMBLE(ts, INTERVAL '1' minute)
-;
-
 -- insert into user_log_sink_1
--- select 'window_tvf'
---      ,date_format(window_start, 'yyyy-MM-dd HH:mm:ss') AS wStart
---      ,date_format(window_end, 'yyyy-MM-dd HH:mm:ss') AS wEnd
+-- select 'group window'
+--      ,date_format(TUMBLE_START(ts, INTERVAL '1' minute), 'yyyy-MM-dd HH:mm:ss') AS wStart
+--      ,date_format(TUMBLE_END(ts, INTERVAL '1' minute), 'yyyy-MM-dd HH:mm:ss') AS wEnd
 --      ,count(user_id) pv
 --      ,count(distinct user_id) uv
--- FROM TABLE(
---              TUMBLE(TABLE user_log, DESCRIPTOR(ts), INTERVAL '1' MINUTES )) t1
--- group by window_start, window_end
+--     ,max(user_id)
+-- from user_log
+-- group by TUMBLE(ts, INTERVAL '1' minute)
 -- ;
+
+insert into user_log_sink_1
+select 'window_tvf'
+     ,date_format(window_start, 'yyyy-MM-dd HH:mm:ss') AS wStart
+     ,date_format(window_end, 'yyyy-MM-dd HH:mm:ss') AS wEnd
+     ,count(user_id) pv
+     ,count(distinct user_id) uv
+     ,max(user_id)
+FROM TABLE(
+             TUMBLE(TABLE user_log, DESCRIPTOR(ts), INTERVAL '10' second )) t1
+group by window_start, window_end
+;
 
 -- insert into user_log_sink_1
 -- select 'cumulate_window'
@@ -77,6 +79,7 @@ group by TUMBLE(ts, INTERVAL '1' minute)
 --      ,date_format(window_end, 'yyyy-MM-dd HH:mm:ss') AS wEnd
 --      ,count(user_id) pv
 --      ,count(distinct user_id) uv
+--      ,max(user_id)
 -- FROM TABLE(
 --              CUMULATE(TABLE user_log, DESCRIPTOR(ts), INTERVAL '5' SECOND, INTERVAL '5' MINUTE)) t1
 -- group by window_start, window_end
