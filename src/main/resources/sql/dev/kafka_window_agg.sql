@@ -102,6 +102,6 @@ select 'cumulate_window'
      ,count(distinct user_id) uv
      ,max(user_id)
 FROM TABLE(
-             CUMULATE(TABLE user_log, DESCRIPTOR(proc_time), INTERVAL '5' SECOND, INTERVAL '5' MINUTE)) t1
+             CUMULATE(TABLE user_log, DESCRIPTOR(ts), INTERVAL '5' SECOND, INTERVAL '5' MINUTE)) t1
 group by window_start, window_end
 ;

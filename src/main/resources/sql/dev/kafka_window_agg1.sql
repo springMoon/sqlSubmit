@@ -19,7 +19,7 @@ CREATE TABLE user_log
     behavior    VARCHAR,
     proc_time  as PROCTIME(),
     ts          TIMESTAMP(3),
-    WATERMARK FOR ts AS ts - INTERVAL '5' SECOND
+    WATERMARK FOR ts AS ts - INTERVAL '1' SECOND
 ) WITH (
       'connector' = 'kafka'
       ,'topic' = 'user_log'
@@ -56,6 +56,6 @@ select 'window_tvf'
      ,count(distinct user_id) uv
      ,behavior
 FROM TABLE(
-             TUMBLE(TABLE user_log, DESCRIPTOR(proc_time), INTERVAL '10' second )) t1
+             TUMBLE(TABLE user_log, DESCRIPTOR(ts), INTERVAL '10' second )) t1
 group by window_start, window_end, behavior
 ;
