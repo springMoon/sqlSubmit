@@ -3,7 +3,7 @@
 -- table.exec.emit.early-fire.delay: 5000 # 5s
 -- set table.exec.emit.early-fire.enabled = true;
 -- set table.exec.emit.early-fire.delay = 5000;
-set pipeline.name = test_table_parameter;
+-- set pipeline.name = test_table_parameter;
 set table.exec.resource.default-parallelism = 2;
 
 -- kafka source

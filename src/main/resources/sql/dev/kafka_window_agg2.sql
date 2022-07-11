@@ -3,7 +3,7 @@
 -- table.exec.emit.early-fire.delay: 5000 # 5s
 -- set table.exec.emit.early-fire.enabled = true;
 -- set table.exec.emit.early-fire.delay = 5000;
-set pipeline.name = test_table_parameter;
+-- set pipeline.name = test_table_parameter;
 set table.exec.resource.default-parallelism = 2;
 
 -- kafka source
@@ -28,6 +28,7 @@ CREATE TABLE user_log
       ,'scan.startup.mode' = 'latest-offset'
       ,'format' = 'json'
       );
+
 drop table if exists user_log_sink_1;
 CREATE TABLE user_log_sink_1
 (
@@ -48,14 +49,15 @@ CREATE TABLE user_log_sink_1
       ,'key.format' = 'json'
       ,'value.format' = 'json'
       );
+
+-- group window aggregation
 insert into user_log_sink_1
-select 'window_tvf'
-     ,date_format(window_start, 'yyyy-MM-dd HH:mm:ss') AS wStart
-     ,date_format(window_end, 'yyyy-MM-dd HH:mm:ss') AS wEnd
+select 'group window'
+     ,date_format(TUMBLE_START(ts, INTERVAL '1' minute), 'yyyy-MM-dd HH:mm:ss') AS wStart
+     ,date_format(TUMBLE_END(ts, INTERVAL '1' minute), 'yyyy-MM-dd HH:mm:ss') AS wEnd
      ,count(user_id) pv
      ,count(distinct user_id) uv
-     ,behavior
-FROM TABLE(
-             TUMBLE(TABLE user_log, DESCRIPTOR(proc_time), INTERVAL '10' second )) t1
-group by window_start, window_end, behavior
+    ,max(user_id)
+from user_log
+group by TUMBLE(ts, INTERVAL '1' minute)
 ;
