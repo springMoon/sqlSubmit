@@ -104,6 +104,7 @@ public class MysqlRowDataLookUpFunction extends TableFunction<RowData> {
      * @param keys query parameter
      */
     public void eval(Object... keys) {
+
         RowData keyRow = GenericRowData.of(keys);
         // get row from cache
         if (cache != null) {

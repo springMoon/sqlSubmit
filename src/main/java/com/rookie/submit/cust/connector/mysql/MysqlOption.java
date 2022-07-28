@@ -28,6 +28,9 @@ public class MysqlOption implements Serializable {
     public static final ConfigOption<String> TABLE = ConfigOptions.key("table")
             .stringType()
             .noDefaultValue();
+    public static final ConfigOption<String> KEY = ConfigOptions.key("key")
+            .stringType()
+            .noDefaultValue();
     public static final ConfigOption<Long> CACHE_MAX_SIZE = ConfigOptions.key("lookup.cache.max.size")
             .longType()
             .defaultValue(-1l);
@@ -40,28 +43,35 @@ public class MysqlOption implements Serializable {
 
     public static final ConfigOption<Integer> TIME_OUT = ConfigOptions.key("timeout")
             .intType()
-
             .defaultValue(10);
+    public static final ConfigOption<Long> BATCH_SIZE = ConfigOptions.key("batch.size")
+            .longType()
+            .defaultValue(10000l)
+            .withDescription("if batch.size max than (totalsize / subtask num), set batch.size as (totalsize / subtask num)");
+
+
     private static final int DEFAULT_MAX_RETRY_TIMES = 3;
 
     private final String url;
     private final String database;
     private final String table;
+    private final String key;
     private final String username;
     private final String password;
     private final long cacheMaxSize;
     private final long cacheExpireMs;
     private final int maxRetryTimes;
     private final boolean lookupAsync;
-
     // second
     private final int timeOut;
+    private final long batchSize;
 
-    public MysqlOption(String url, String database, String table, String username, String password,
-                       long cacheMaxSize, long cacheExpireMs, int maxRetryTimes, boolean lookupAsync, int timeOut) {
+    public MysqlOption(String url, String database, String table, String key, String username, String password,
+                       long cacheMaxSize, long cacheExpireMs, int maxRetryTimes, boolean lookupAsync, int timeOut, long batch) {
         this.url = url;
         this.database = database;
         this.table = table;
+        this.key = key;
         this.username = username;
         this.password = password;
         this.cacheMaxSize = cacheMaxSize;
@@ -69,6 +79,7 @@ public class MysqlOption implements Serializable {
         this.maxRetryTimes = maxRetryTimes;
         this.lookupAsync = lookupAsync;
         this.timeOut = timeOut;
+        this.batchSize = batch;
     }
 
     public String getUrl() {
@@ -81,6 +92,10 @@ public class MysqlOption implements Serializable {
 
     public String getTable() {
         return table;
+    }
+
+    public String getKey() {
+        return key;
     }
 
     public String getUsername() {
@@ -119,6 +134,10 @@ public class MysqlOption implements Serializable {
         return timeOut;
     }
 
+    public long getBatchSize() {
+        return batchSize;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof MysqlOption) {
@@ -139,6 +158,7 @@ public class MysqlOption implements Serializable {
         private String url;
         private String database;
         private String table;
+        private String key;
         private String username;
         private String password;
         private long cacheMaxSize = -1l;
@@ -146,6 +166,7 @@ public class MysqlOption implements Serializable {
         private int maxRetryTimes = DEFAULT_MAX_RETRY_TIMES;
         private boolean lookupAsync = false;
         private int timeOut = 60;
+        private long batchSize = 10000;
 
 
         public MysqlOption.Builder setUrl(String url) {
@@ -160,6 +181,11 @@ public class MysqlOption implements Serializable {
 
         public MysqlOption.Builder setTable(String table) {
             this.table = table;
+            return this;
+        }
+
+        public MysqlOption.Builder setKey(String key) {
+            this.key = key;
             return this;
         }
 
@@ -210,9 +236,13 @@ public class MysqlOption implements Serializable {
             this.timeOut = timeOut;
             return this;
         }
+        public MysqlOption.Builder setBatchSize(long batchSize) {
+            this.batchSize = batchSize;
+            return this;
+        }
 
         public MysqlOption build() {
-            return new MysqlOption(url, database, table, username, password, cacheMaxSize, cacheExpireMs, maxRetryTimes, lookupAsync, timeOut);
+            return new MysqlOption(url, database, table, key, username, password, cacheMaxSize, cacheExpireMs, maxRetryTimes, lookupAsync, timeOut, batchSize);
         }
     }
 }

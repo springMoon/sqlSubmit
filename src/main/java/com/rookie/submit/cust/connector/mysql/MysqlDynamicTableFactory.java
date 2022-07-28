@@ -37,10 +37,12 @@ public class MysqlDynamicTableFactory implements DynamicTableSourceFactory {
     public Set<ConfigOption<?>> optionalOptions() {
         final Set<ConfigOption<?>> options = new HashSet<>();
         // no optional option
+        options.add(MysqlOption.KEY);
         options.add(MysqlOption.CACHE_MAX_SIZE);
         options.add(MysqlOption.CACHE_EXPIRE_MS);
         options.add(MysqlOption.MAX_RETRY_TIMES);
         options.add(MysqlOption.TIME_OUT);
+        options.add(MysqlOption.BATCH_SIZE);
         return options;
     }
 
@@ -59,12 +61,14 @@ public class MysqlDynamicTableFactory implements DynamicTableSourceFactory {
                 .setUrl(config.get(MysqlOption.URL))
                 .setDatabase(config.get(MysqlOption.DATABASE))
                 .setTable(config.get(MysqlOption.TABLE))
+                .setKey(config.get(MysqlOption.KEY))
                 .setUsername(config.get(MysqlOption.USERNAME))
                 .setPassword(config.get(MysqlOption.PASSWORD))
                 .setCacheMaxSize(config.get(MysqlOption.CACHE_MAX_SIZE))
                 .setCacheExpireMs(config.get(MysqlOption.CACHE_EXPIRE_MS))
                 .setMaxRetryTimes(config.get(MysqlOption.MAX_RETRY_TIMES))
                 .setTimeOut(config.get(MysqlOption.TIME_OUT))
+                .setBatchSize(config.get(MysqlOption.BATCH_SIZE))
                 .build();
 
         // derive the produced data type (excluding computed columns) from the catalog table
