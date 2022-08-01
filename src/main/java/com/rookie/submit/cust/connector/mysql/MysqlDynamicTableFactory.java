@@ -37,11 +37,11 @@ public class MysqlDynamicTableFactory implements DynamicTableSourceFactory {
     public Set<ConfigOption<?>> optionalOptions() {
         final Set<ConfigOption<?>> options = new HashSet<>();
         // no optional option
-        options.add(MysqlOption.KEY);
         options.add(MysqlOption.CACHE_MAX_SIZE);
         options.add(MysqlOption.CACHE_EXPIRE_MS);
         options.add(MysqlOption.MAX_RETRY_TIMES);
         options.add(MysqlOption.TIME_OUT);
+        options.add(MysqlOption.KEY);
         options.add(MysqlOption.BATCH_SIZE);
         return options;
     }

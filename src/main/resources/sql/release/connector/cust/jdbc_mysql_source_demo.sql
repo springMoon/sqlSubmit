@@ -1,4 +1,4 @@
-create table cust_mysql_user_log
+create table user_log
 (
     user_id STRING,
     sex                      STRING,
@@ -10,14 +10,15 @@ create table cust_mysql_user_log
     default_shipping_address STRING,
     register_date            TIMESTAMP(3)
 ) WITH (
-      'connector' = 'cust-mysql'
+      'connector' = 'jdbc'
       ,'url' = 'jdbc:mysql://10.201.0.166:3306/shell1?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true'
       ,'username' = 'root'
       ,'password' = 'daas2020'
-      ,'database' = 'shell1'
-      ,'table' = 'user_info'
-      ,'key' = 'id'
-      ,'batch.size' = '10000'
+      ,'table-name' = 'user_info'
+      ,'scan.partition.column' = 'id'
+      ,'scan.partition.num' = '10000'
+      ,'scan.partition.lower-bound' = '0'
+      ,'scan.partition.upper-bound' = '9999999999'
       )
 ;
 
@@ -39,9 +40,9 @@ create table cust_mysql_user_log_sink
       ,'properties.group.id' = 'user_log'
       ,'scan.startup.mode' = 'latest-offset'
       ,'format' = 'json'
-)
+      )
 ;
 
 insert into cust_mysql_user_log_sink
 select user_id, sex, age, degree, address, work_address, income_range,default_shipping_address, register_date
-from cust_mysql_user_log;
+from user_log;
