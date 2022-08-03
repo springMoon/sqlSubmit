@@ -5,6 +5,7 @@ CREATE TABLE user_log (
   ,item_id VARCHAR
   ,category_id VARCHAR
   ,behavior VARCHAR
+  ,proc_time as PROCTIME()
   ,ts TIMESTAMP(3)
   ,WATERMARK FOR ts AS ts - INTERVAL '5' SECOND
 ) WITH (
@@ -25,7 +26,8 @@ CREATE TABLE user_log_sink (
   ,item_id STRING
   ,category_id STRING
   ,behavior STRING
-  ,ts timestamp(3)
+  ,proc_time timestamp(3)
+    ,ts timestamp(3)
 ) WITH (
   'connector' = 'print'
 );
@@ -33,5 +35,6 @@ CREATE TABLE user_log_sink (
 
 -- streaming sql, insert into mysql table
 insert into user_log_sink
-SELECT a.user_id, item_id, category_id, behavior, ts
+SELECT user_id, item_id, category_id, behavior, proc_time,ts
+from user_log
 ;

@@ -59,7 +59,7 @@ object SqlSubmit {
     // load udf
     RegisterUdf.registerUdf(tabEnv, paraTool)
 
-    tabEnv.getConfig.setLocalTimeZone(ZoneId.of("Asia/Shanghai"));
+//    tabEnv.getConfig.setLocalTimeZone(ZoneId.of("Asia/Shanghai"));
 
     // execute sql
     val statement = tabEnv.createStatementSet()
