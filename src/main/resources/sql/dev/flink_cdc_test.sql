@@ -1,17 +1,14 @@
 -- mysql cdc to print
 -- creates a mysql table source
 CREATE TABLE t_user_log (
-  id bigint
-  ,user_id bigint
-  ,item_id bigint
-  ,category_id bigint
-  ,behavior varchar
-  ,ts timestamp(3)
-  ,db_name STRING METADATA FROM 'database_name' VIRTUAL
+                            category_id varchar(20),
+                            behavior    varchar(20),
+                            cnt         bigint
+                                ,db_name STRING METADATA FROM 'database_name' VIRTUAL
   ,table_name STRING METADATA  FROM 'table_name' VIRTUAL
   ,operation_ts TIMESTAMP_LTZ(3) METADATA FROM 'op_ts' VIRTUAL
   ,proc_time as PROCTIME()
-  ,PRIMARY KEY (id) NOT ENFORCED
+  ,PRIMARY KEY (category_id, behavior) NOT ENFORCED
 ) WITH (
  'connector' = 'mysql-cdc'
  ,'hostname' = 'localhost'
@@ -19,7 +16,7 @@ CREATE TABLE t_user_log (
  ,'username' = 'root'
  ,'password' = '123456'
  ,'database-name' = 'venn'
- ,'table-name' = 'user_log_1'
+ ,'table-name' = 'user_view'
  ,'server-id' = '5400-5440'
  ,'scan.startup.mode' = 'initial'
 --  ,'scan.startup.mode' = 'specific-offset'
@@ -30,16 +27,9 @@ CREATE TABLE t_user_log (
 -- kafka sink
 drop table if exists t_user_log_sink;
 CREATE TABLE t_user_log_sink (
-  id bigint
-  ,user_id bigint
-  ,item_id bigint
-  ,category_id bigint
-  ,behavior varchar
-  ,ts timestamp(3)
-  ,db_name string
-                             ,table_name string,
-                             operation_ts timestamp_ltz(3)
-  ,PRIMARY KEY (id) NOT ENFORCED
+                                 category_id varchar(20),
+                                 behavior    varchar(20),
+                                 cnt         bigint
 ) WITH (
     'connector' = 'print'
 --    'connector' = 'upsert-kafka'
@@ -54,18 +44,5 @@ CREATE TABLE t_user_log_sink (
 );
 
 insert into t_user_log_sink
-select id, user_id, item_id, category_id, behavior, ts,db_name,table_name,operation_ts
+select category_id, behavior, cnt
 from t_user_log;
-
--- create table t_user_log_sink_2(
---     ts timestamp(3)
---     ,min_id bigint
---     ,max_id bigint
---     ,coun bigint
--- )with (
---     'connector' = 'print'
--- );
---
--- insert into t_user_log_sink_2
--- select max(ts),min(id),max(id),count(id)
--- from t_user_log;
