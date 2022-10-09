@@ -109,12 +109,12 @@
             <scope>provided</scope>
         </dependency>
         <!-- cep-->
-        <dependency>
+       <!-- <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-cep</artifactId>
             <version>${flink.version}</version>
             <scope>provided</scope>
-        </dependency>
+        </dependency>-->
         <!--connector-->
         <!--<dependency>
             <groupId>org.apache.iceberg</groupId>
