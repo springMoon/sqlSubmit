@@ -26,10 +26,10 @@ create table if not exists starrocks_sink (
     ,PRIMARY key(col1) NOT ENFORCED
 ) WITH (
           'connector'='starrocks',
-          'load-url'='172.31.0.13:8030',
-          'jdbc-url'='jdbc:mysql://172.31.0.13:9030',
-          'username'='develop',
-          'password'='Develo123p@',
+          'load-url'='10.201.0.230:28030',
+          'jdbc-url'='jdbc:mysql://10.201.0.230:29030',
+          'username'='root',
+          'password'='123456',
           'database-name'='test',
           'table-name'='datagen_key',
       'sink.buffer-flush.max-rows' = '1000000',

@@ -22,7 +22,18 @@ CREATE TABLE user_log_sink
     ,`col4` string
     ,cnt  bigint
 ) WITH (
-      'connector' = 'print'
+      'connector'='starrocks',
+      'load-url'='10.201.0.230:28030',
+      'jdbc-url'='jdbc:mysql://10.201.0.230:29030',
+      'username'='root',
+      'password'='123456',
+      'database-name'='test',
+      'table-name'='datagen_key',
+      'sink.buffer-flush.max-rows' = '1000000',
+      'sink.buffer-flush.max-bytes' = '300000000',
+      'sink.buffer-flush.interval-ms' = '5000'
+      ,'sink.properties.format' = 'json'
+      ,'sink.properties.strip_outer_array' = 'true'
 );
 
 insert into user_log_sink
