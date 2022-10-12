@@ -8,9 +8,22 @@ CREATE TABLE user_log
     ,`col3` string
     ,`col4` string
 ) WITH (
+--       'connector' = 'datagen'
+--       ,'rows-per-second' = '20000'
+--       ,'number-of-rows' = '100000000'
+--       ,'fields.col1.kind' = 'random'
+--       ,'fields.col2.kind' = 'random'
+--       ,'fields.col3.kind' = 'random'
+--       ,'fields.col4.kind' = 'random'
+--       ,'fields.col1.length' = '20'
+--       ,'fields.col2.length' = '10'
+--       ,'fields.col3.length' = '10'
+--       ,'fields.col4.length' = '10'
       'connector' = 'jdbc'
-      ,'url' = 'jdbc:mysql://10.201.0.230:29030/shell'
-      ,'table-name' = 'datagen_key'
+--       ,'url' = 'jdbc:mysql://10.201.0.230:29030/shell'
+--       ,'table-name' = 'datagen_key'
+      ,'url' = 'jdbc:mysql://localhost:3306/venn'
+      ,'table-name' = 'user_log_datagen'
       ,'username' = 'root'
       ,'password' = '123456'
       );
@@ -22,6 +35,7 @@ CREATE TABLE user_log_sink
     ,`col4` string
     ,cnt  bigint
 ) WITH (
+--     'connector' = 'print'
       'connector'='starrocks',
       'load-url'='10.201.0.230:28030',
       'jdbc-url'='jdbc:mysql://10.201.0.230:29030',
@@ -37,6 +51,6 @@ CREATE TABLE user_log_sink
 );
 
 insert into user_log_sink
-select col1, col2, col3,'' col4, count(1)
+select col1, col2, col3,'' col4,  count(1)
 from user_log
 group by col1, col2, col3
