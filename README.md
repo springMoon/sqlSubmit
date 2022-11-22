@@ -2,7 +2,7 @@
 
 SQL submission program base on flink
 
-Now just support flink 1.15.0
+Now just support flink 1.16.0
 
 Learn more about Flink https://flink.apache.org/
 
