@@ -2,7 +2,7 @@ package com.rookie.submit.cust.connector.redis;
 
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
-import org.apache.flink.connector.hbase.options.HBaseLookupOptions;
+//import org.apache.flink.connector.hbase.options.HBaseLookupOptions;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -75,9 +75,9 @@ public class RedisOption implements Serializable {
         return lookupAsync;
     }
 
-    public static HBaseLookupOptions.Builder builder() {
-        return new HBaseLookupOptions.Builder();
-    }
+//    public static HBaseLookupOptions.Builder builder() {
+//        return new HBaseLookupOptions.Builder();
+//    }
 
     @Override
     public boolean equals(Object o) {
@@ -92,9 +92,9 @@ public class RedisOption implements Serializable {
         }
     }
 
-    /**
-     * Builder of {@link HBaseLookupOptions}.
-     */
+//    /**
+//     * Builder of {@link HBaseLookupOptions}.
+//     */
     public static class Builder {
         private String url;
         private String password;

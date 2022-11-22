@@ -6,6 +6,7 @@ import com.rookie.submit.udf.RegisterUdf
 import com.rookie.submit.util.{SqlFileUtil, TableConfUtil}
 import org.apache.flink.api.common.RuntimeExecutionMode
 import org.apache.flink.api.java.utils.ParameterTool
+import org.apache.flink.connector.jdbc.catalog.MySqlCatalog
 import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend
 import org.apache.flink.runtime.state.StateBackend
 import org.apache.flink.runtime.state.hashmap.HashMapStateBackend
@@ -49,12 +50,22 @@ object SqlSubmit {
     // table Config
     TableConfUtil.conf(tabEnv, paraTool, sqlList)
 
+    // hive catalog
     // register catalog, only in server
     //    if ("/".equals(File.separator)) {
     //      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH))
     //      tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
     //      tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
     //    }
+    // mysql catalog, useless, cannot persistent table schema to mysql
+//    val catalog = new MySqlCatalog(this.getClass.getClassLoader
+//      , "mysql-catalog"
+//      , "venn"
+//      , "root"
+//      , "123456"
+//      , "jdbc:mysql://localhost:3306")
+//    tabEnv.registerCatalog("mysql-catalog", catalog)
+//    tabEnv.useCatalog("mysql-catalog")
 
     // load udf
     RegisterUdf.registerUdf(tabEnv, paraTool)

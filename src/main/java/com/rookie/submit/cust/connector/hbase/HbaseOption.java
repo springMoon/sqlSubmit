@@ -2,7 +2,7 @@ package com.rookie.submit.cust.connector.hbase;
 
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
-import org.apache.flink.connector.hbase.options.HBaseLookupOptions;
+//import org.apache.flink.connector.hbase.options.HBaseLookupOptions;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -111,9 +111,9 @@ public class HbaseOption implements Serializable {
         return lookupAsync;
     }
 
-    public static HBaseLookupOptions.Builder builder() {
-        return new HBaseLookupOptions.Builder();
-    }
+//    public static HBaseLookupOptions.Builder builder() {
+//        return new HBaseLookupOptions.Builder();
+//    }
 
     public int getTimeOut() {
         return timeOut;
@@ -132,9 +132,9 @@ public class HbaseOption implements Serializable {
         }
     }
 
-    /**
-     * Builder of {@link HBaseLookupOptions}.
-     */
+//    /**
+//     * Builder of {@link HBaseLookupOptions}.
+//     */
     public static class Builder {
         private String zookeeperQuorum;
         private String zookeeperZnodeParent;
