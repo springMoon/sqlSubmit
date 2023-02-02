@@ -1,33 +1,34 @@
 -- kafka source
 drop table if exists user_log;
-CREATE TABLE user_log (
-  user_id VARCHAR
-  ,item_id VARCHAR
-  ,category_id VARCHAR
-  ,behavior VARCHAR
-  ,ts TIMESTAMP(3)
-  ,WATERMARK FOR ts AS ts - INTERVAL '5' SECOND
+CREATE TABLE user_log
+(
+    user_id     VARCHAR,
+    item_id     VARCHAR,
+    category_id VARCHAR,
+    behavior    VARCHAR
 ) WITH (
-  'connector.type' = 'kafka'
-  ,'connector.version' = 'universal'
-  ,'connector.topic' = 'user_behavior'
-  ,'connector.properties.zookeeper.connect' = 'venn:2181'
-  ,'connector.properties.bootstrap.servers' = 'venn:9092'
-  ,'connector.properties.group.id' = 'user_log'
-  ,'connector.startup-mode' = 'group-offsets'
-  ,'connector.sink-partitioner' = 'fixed'
-  ,'format.type' = 'json'
-);
+      'connector' = 'datagen'
+      ,'rows-per-second' = '200'
+      ,'number-of-rows' = '10000'
+      ,'fields.user_id.kind' = 'random'
+      ,'fields.item_id.kind' = 'random'
+      ,'fields.category_id.kind' = 'random'
+      ,'fields.behavior.kind' = 'random'
+      ,'fields.user_id.length' = '20'
+      ,'fields.item_id.length' = '10'
+      ,'fields.category_id.length' = '10'
+      ,'fields.behavior.length' = '10'
+      );
 
--- set table.sql-dialect=hive;
--- kafka sink
-drop table if exists hive_table_user_log_sink;
-CREATE TABLE hive_table_user_log_sink (
-  user_id STRING
-  ,item_id STRING
-  ,category_id STRING
-  ,behavior STRING
-) PARTITIONED BY (dt STRING, hr STRING) STORED AS parquet TBLPROPERTIES (
+
+set table.sql-dialect=hive;
+drop table if exists myHive.test.user_log;
+CREATE TABLE myHive.test.user_log (
+    user_id STRING
+    ,item_id STRING
+    ,category_id STRING
+    ,behavior STRING
+) PARTITIONED BY (ds STRING) STORED AS parquet TBLPROPERTIES (
   'partition.time-extractor.timestamp-pattern'='$dt $hr:00:00',
   'sink.partition-commit.trigger'='partition-time',
   'sink.partition-commit.delay'='1 min',
@@ -36,6 +37,8 @@ CREATE TABLE hive_table_user_log_sink (
 
 
 -- streaming sql, insert into hive table
-insert into table hive_table_user_log_sink
-SELECT user_id, item_id, category_id, behavior, DATE_FORMAT(ts, 'yyyy-MM-dd'), DATE_FORMAT(ts, 'HH')
+set table.sql-dialect=flink;
+insert into myHive.test.user_log
+SELECT user_id, item_id, category_id, behavior, DATE_FORMAT(now(), 'yyyy-MM-dd') --,DATE_FORMAT(now(), 'HH')
 FROM user_log;
+

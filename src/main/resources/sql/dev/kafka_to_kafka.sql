@@ -37,12 +37,12 @@ CREATE TABLE user_log_sink
     ts          timestamp(3),
     current_t     timestamp(3)
 ) WITH (
-      'connector' = 'print'
---       ,'topic' = 'user_log_sink_6'
---       ,'properties.bootstrap.servers' = 'localhost:9092'
---       ,'properties.group.id' = 'user_log'
---       ,'scan.startup.mode' = 'latest-offset'
---       ,'format' = 'json'
+      'connector' = 'kafka'
+      ,'topic' = 'user_log_sink_6'
+      ,'properties.bootstrap.servers' = 'localhost:9092'
+      ,'properties.group.id' = 'user_log'
+      ,'scan.startup.mode' = 'latest-offset'
+      ,'format' = 'json'
       );
 
 
