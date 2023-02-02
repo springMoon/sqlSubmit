@@ -14,11 +14,15 @@ import org.apache.flink.streaming.api.{CheckpointingMode, TimeCharacteristic}
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
 import org.apache.flink.table.api.{EnvironmentSettings, SqlDialect, StatementSet}
+import org.apache.flink.table.catalog.hive.HiveCatalog
 import org.slf4j.LoggerFactory
+import com.rookie.submit.common.Constant
+import com.rookie.submit.util.TableConfUtil.logger
 
 import java.time.ZoneId
 import java.util.Properties
 import scala.collection.JavaConversions._
+import scala.tools.nsc.io
 
 /**
  * sqlSubmit main class
@@ -38,6 +42,7 @@ object SqlSubmit {
     // StreamExecutionEnvironment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.getConfig.setAutoWatermarkInterval(200l)
+    env.setRuntimeMode(RuntimeExecutionMode.BATCH)
 
     // state backend and checkpoint
     enableCheckpoint(env, paraTool)
@@ -50,53 +55,62 @@ object SqlSubmit {
     // table Config
     TableConfUtil.conf(tabEnv, paraTool, sqlList)
 
+
     // hive catalog
     // register catalog, only in server
-    //    if ("/".equals(File.separator)) {
-    //      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH))
-    //      tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
-    //      tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
-    //    }
+    if ("/".equals(io.File.separator)) {
+      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH))
+      tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
+      tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
+    }
     // mysql catalog, useless, cannot persistent table schema to mysql
-//    val catalog = new MySqlCatalog(this.getClass.getClassLoader
-//      , "mysql-catalog"
-//      , "venn"
-//      , "root"
-//      , "123456"
-//      , "jdbc:mysql://localhost:3306")
-//    tabEnv.registerCatalog("mysql-catalog", catalog)
-//    tabEnv.useCatalog("mysql-catalog")
+    //    val catalog = new MySqlCatalog(this.getClass.getClassLoader
+    //      , "mysql-catalog"
+    //      , "venn"
+    //      , "root"
+    //      , "123456"
+    //      , "jdbc:mysql://localhost:3306")
+    //    tabEnv.registerCatalog("mysql-catalog", catalog)
+    //    tabEnv.useCatalog("mysql-catalog")
 
     // load udf
     RegisterUdf.registerUdf(tabEnv, paraTool)
     tabEnv.getConfig.setLocalTimeZone(ZoneId.of("Asia/Shanghai"));
-
     // execute sql
     val statement = tabEnv.createStatementSet()
     var result: StatementSet = null
     for (sql <- sqlList) {
       try {
-        if(!sql.trim.equals("")) {
+        if (!sql.trim.equals("")) {
 
-          if (sql.toLowerCase.startsWith("insert")) {
+          // execute sql set parameter
+          if (sql.toLowerCase().startsWith("set")) {
+            val tmp = sql.substring(4).split("=")
+            val key = tmp(0).trim
+            val value = tmp(1).trim
+            logger.info("add parameter to table config: " + key + " = " + value)
+//            if(key.equals(""))
+            tabEnv.getConfig.getConfiguration.setString(key, value)
+          } else if (sql.toLowerCase.startsWith("insert")) {
             // ss
+            tabEnv.getConfig.setSqlDialect(SqlDialect.DEFAULT)
             result = statement.addInsertSql(sql)
           } else {
-            if (sql.contains("hive_table_")) {
-              tabEnv.getConfig.setSqlDialect(SqlDialect.HIVE)
-            } else {
-              tabEnv.getConfig.setSqlDialect(SqlDialect.DEFAULT)
-            }
+//            if (sql.contains("hive_table_") || sql.contains("user_log_two")) {
+//              tabEnv.getConfig.setSqlDialect(SqlDialect.HIVE)
+//            } else {
+//              tabEnv.getConfig.setSqlDialect(SqlDialect.DEFAULT)
+//            }
             logger.info("dialect : " + tabEnv.getConfig.getSqlDialect)
-            println("dialect : " + tabEnv.getConfig.getSqlDialect)
+            //            println("dialect : " + tabEnv.getConfig.getSqlDialect)
             tabEnv.executeSql(sql)
           }
           logger.info("execute success : " + sql)
-          println("execute success : " + sql)
+          //          println("execute success : " + sql)
         }
       } catch {
         case e: Exception =>
-          println("execute sql error : " + sql)
+          //          println("execute sql error : " + sql)
           logger.error("execute sql error : " + sql, e)
           e.printStackTrace()
           System.exit(-1)
