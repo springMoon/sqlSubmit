@@ -1,4 +1,5 @@
 -- kafka source
+set pipeline.name = xxx;
 drop table if exists user_log;
 CREATE TABLE user_log
 (
@@ -22,6 +23,7 @@ CREATE TABLE user_log
 
 
 set table.sql-dialect=hive;
+set sql-client.execution.result-mode=tableau;
 drop table if exists myHive.test.user_log;
 CREATE TABLE myHive.test.user_log (
     user_id STRING
@@ -37,7 +39,7 @@ CREATE TABLE myHive.test.user_log (
 
 
 -- streaming sql, insert into hive table
-set table.sql-dialect=flink;
+set table.sql-dialect=default;
 insert into myHive.test.user_log
 SELECT user_id, item_id, category_id, behavior, DATE_FORMAT(now(), 'yyyy-MM-dd') --,DATE_FORMAT(now(), 'HH')
 FROM user_log;

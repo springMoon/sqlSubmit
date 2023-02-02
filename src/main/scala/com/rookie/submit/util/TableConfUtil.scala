@@ -51,30 +51,30 @@ object TableConfUtil {
     //    conf.setString("table.exec.emit.early-fire.enabled", "true")
     //    conf.setString("table.exec.emit.early-fire.delay", 5 * 1000 + "")
 
+
+
     // add parameter to table config
-//    val indexList = new util.ArrayList[String]()
-//    for (sql <- sqlList) {
-//
-//      // if sql start with 'set ' parse as table parameter
-//      if (sql.trim.toLowerCase().startsWith("set ") ) {
-//        indexList.add(sql)
-//        try {
-//          val tmp = sql.substring(4).split("=")
-//          val key = tmp(0).trim
-//          val value = tmp(1).trim
-//          logger.info("add parameter to table config: " + key + " = " + value)
+    val indexList = new util.ArrayList[String]()
+    for (sql <- sqlList) {
+
+      // if sql start with 'set ' parse as table parameter
+      if (sql.trim.toLowerCase().contains("execution.runtime-mode") ) {
+        indexList.add(sql)
+        try {
+          val tmp = sql.substring(4).split("=")
+          val key = tmp(0).trim
+          val value = tmp(1).trim
+          logger.info("ignore table config: " + key + " = " + value)
 //          conf.setString(key, value)
-//        } catch {
-//          case e: Exception =>
-//            logger.error("parse parameter error : " + sql)
-//            e.printStackTrace()
-//            System.exit(-1)
-//        }
-//      }
-//    }
-//
-//    // remove set statement
-//    sqlList.removeAll(indexList)
+        } catch {
+          case e: Exception =>
+            System.exit(-1)
+        }
+      }
+    }
+
+    // remove set statement
+    sqlList.removeAll(indexList)
 
   }
 

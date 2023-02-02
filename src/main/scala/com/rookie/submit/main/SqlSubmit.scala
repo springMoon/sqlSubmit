@@ -93,7 +93,6 @@ object SqlSubmit {
             tabEnv.getConfig.getConfiguration.setString(key, value)
           } else if (sql.toLowerCase.startsWith("insert")) {
             // ss
-            tabEnv.getConfig.setSqlDialect(SqlDialect.DEFAULT)
             result = statement.addInsertSql(sql)
           } else {
 //            if (sql.contains("hive_table_") || sql.contains("user_log_two")) {
