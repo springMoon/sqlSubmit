@@ -58,11 +58,11 @@ object SqlSubmit {
 
     // hive catalog
     // register catalog, only in server
-    if ("/".equals(io.File.separator)) {
-      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH))
-      tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
-      tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
-    }
+//    if ("/".equals(io.File.separator)) {
+//      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH))
+//      tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
+//      tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
+//    }
     // mysql catalog, useless, cannot persistent table schema to mysql
     //    val catalog = new MySqlCatalog(this.getClass.getClassLoader
     //      , "mysql-catalog"
