@@ -18,7 +18,7 @@
         <hbase.version>2.1.0</hbase.version>
         <mysql-connector.version>8.0.21</mysql-connector.version>
         <flink.cdc.version>2.2.0</flink.cdc.version>
-        <gson.version>2.2.4</gson.version>
+        <gson.version>2.8.9</gson.version>
         <guava.version>30.1.1-jre</guava.version>
         <lettuce.version>6.1.3.RELEASE</lettuce.version>
         <common.io>2.7</common.io>
