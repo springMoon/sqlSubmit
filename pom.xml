@@ -6,7 +6,7 @@
 
     <groupId>com.rookie</groupId>
     <artifactId>sqlSubmit</artifactId>
-    <version>1.6.1</version>
+    <version>1.16</version>
 
     <properties>
         <flink.version>1.16.1</flink.version>
@@ -74,7 +74,6 @@
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-table-api-scala-bridge_${scala.binary.version}</artifactId>
             <version>${flink.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
@@ -150,6 +149,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-elasticsearch7</artifactId>
+            <version>1.16.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.hive</groupId>
             <artifactId>hive-exec</artifactId>
             <version>${hive.version}</version>
@@ -179,11 +184,11 @@
             <version>${flink.version}</version>
         </dependency>
         <!--mysql -->
-        <dependency>
+        <!--<dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql-connector.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
@@ -241,12 +246,12 @@
             <artifactId>lettuce-core</artifactId>
             <version>${lettuce.version}</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>com.starrocks</groupId>
             <artifactId>flink-connector-starrocks</artifactId>
             <version>${starrocks.version}</version>
             <scope>provided</scope>
-        </dependency>
+        </dependency>-->
         <!--<dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>

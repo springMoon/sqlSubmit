@@ -21,24 +21,24 @@ CREATE TABLE user_log (
 
 -- set table.sql-dialect=hive;
 -- kafka sink
-drop table if exists user_log_sink;
-CREATE TABLE user_log_sink (
-  user_id STRING
-  ,item_id STRING
-  ,category_id STRING
-  ,behavior STRING
-  ,proc_time timestamp(3)
-  ,ts timestamp(3)
-) WITH (
-  'connector' = 'print'
-);
-
-
--- streaming sql, insert into mysql table
-insert into user_log_sink
-SELECT user_id, item_id, category_id, behavior, proc_time,ts
-from user_log
-;
+-- drop table if exists user_log_sink;
+-- CREATE TABLE user_log_sink (
+--   user_id STRING
+--   ,item_id STRING
+--   ,category_id STRING
+--   ,behavior STRING
+--   ,proc_time timestamp(3)
+--   ,ts timestamp(3)
+-- ) WITH (
+--   'connector' = 'print'
+-- );
+--
+--
+-- -- streaming sql, insert into mysql table
+-- insert into user_log_sink
+-- SELECT user_id, item_id, category_id, behavior, proc_time,ts
+-- from user_log
+-- ;
 create table user_log_sink(
     item_id string
     ,median_price double

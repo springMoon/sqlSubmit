@@ -33,7 +33,7 @@ CREATE TABLE user_log_sink
 ) WITH (
       'connector' = 'kafka'
       ,'topic' = 'user_log_test_20230309'
-      ,'properties.bootstrap.servers' = '172.17.120.3:9092'
+      ,'properties.bootstrap.servers' = 'localhost:9092'
       ,'properties.group.id' = 'user_log'
       ,'scan.startup.mode' = 'latest-offset'
       ,'format' = 'json'

@@ -30,7 +30,7 @@ CREATE TABLE myHive.test.user_log_2 (
     ,category_id STRING
     ,behavior STRING
 ) PARTITIONED BY (ds STRING) STORED AS parquet TBLPROPERTIES (
-  'partition.time-extractor.timestamp-pattern'='$ds:00',  --
+  'partition.time-extractor.timestamp-pattern'='$ds:00',
   'sink.partition-commit.trigger'='partition-time',
   'sink.partition-commit.delay'='1 min',
   'sink.partition-commit.policy.kind'='metastore,success-file'
