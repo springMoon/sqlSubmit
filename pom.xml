@@ -18,6 +18,7 @@
         <hbase.version>2.1.0</hbase.version>
         <mysql-connector.version>8.0.21</mysql-connector.version>
         <flink.cdc.version>2.3.0</flink.cdc.version>
+        <flink.jdbc>3.1-SNAPSHOT</flink.jdbc>
         <gson.version>2.2.4</gson.version>
         <guava.version>30.1.1-jre</guava.version>
         <lettuce.version>6.1.3.RELEASE</lettuce.version>
@@ -123,7 +124,6 @@
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-kafka</artifactId>
             <version>${flink.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
@@ -148,12 +148,6 @@
             <version>${flink.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-connector-elasticsearch7</artifactId>
-            <version>1.16.1</version>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.hive</groupId>
             <artifactId>hive-exec</artifactId>
@@ -181,7 +175,7 @@
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-jdbc</artifactId>
-            <version>${flink.version}</version>
+            <version>${flink.jdbc}</version>
         </dependency>
         <!--mysql -->
         <!--<dependency>
@@ -246,12 +240,11 @@
             <artifactId>lettuce-core</artifactId>
             <version>${lettuce.version}</version>
         </dependency>
-        <!--<dependency>
+        <dependency>
             <groupId>com.starrocks</groupId>
             <artifactId>flink-connector-starrocks</artifactId>
             <version>${starrocks.version}</version>
-            <scope>provided</scope>
-        </dependency>-->
+        </dependency>
         <!--<dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>

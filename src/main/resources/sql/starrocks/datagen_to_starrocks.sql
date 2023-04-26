@@ -1,6 +1,6 @@
 -- datagen to starrocks
 drop table if  exists  datagen_key_source;
-create table if not exists datagen_key_source (
+create table if not exists datagen_key_source1 (
     `col1` string
     ,`col2` string
     ,`col3` string

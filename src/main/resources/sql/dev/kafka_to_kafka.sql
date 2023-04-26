@@ -43,6 +43,8 @@ CREATE TABLE user_log_sink
       ,'properties.group.id' = 'user_log'
       ,'scan.startup.mode' = 'latest-offset'
       ,'format' = 'json'
+      ,'sink.semantic' = 'exactly-once'
+      ,'properties.transaction.timeout.ms' = '900000'
       );
 
 
