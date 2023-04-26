@@ -25,6 +25,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.connector.jdbc.dialect.JdbcDialectTypeMapper;
 import org.apache.flink.connector.jdbc.dialect.mysql.MySqlTypeMapper;
 import org.apache.flink.table.api.Schema;
+import org.apache.flink.table.api.TableColumn;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.catalog.*;
 import org.apache.flink.table.catalog.exceptions.CatalogException;
@@ -198,28 +199,23 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
         checkNotNull(table, "table cannot be null");
 
         String databaseName = tablePath.getDatabaseName();
+        String tableName = tablePath.getObjectName();
         String dbUrl = baseUrl + databaseName;
 
         if (!this.databaseExists(tablePath.getDatabaseName())) {
             throw new DatabaseNotExistException(this.getName(), tablePath.getDatabaseName());
         } else {
-            boolean managedTable = ManagedTableListener.isManagedTable(this, table);
-            Table mysqlTable = MysqlCatalogUtils.instantiateHiveTable(tablePath, table, null, managedTable);
 
             try (Connection conn = DriverManager.getConnection(dbUrl, username, pwd)) {
 
                 // insert table
-                PreparedStatement ps = conn.prepareStatement("insert into TBLS(TBL_NAME, CREATE_TIME) values(?, NOW())");
-                ps.setString(1, mysqlTable.getTableName());
-                boolean bool = ps.execute();
-                if (!bool) {
-                    throw new CatalogException(
-                            String.format("Failed create table %s", tablePath.getFullName()));
-                }
+                PreparedStatement ps = conn.prepareStatement("insert into tbls(TBL_NAME, CREATE_TIME) values(?, NOW())");
+                ps.setString(1, tableName);
+                ps.execute();
 
                 // select table id
-                ps = conn.prepareStatement("select id from TBLS where TBL_NAME = ?");
-                ps.setString(1, mysqlTable.getTableName());
+                ps = conn.prepareStatement("select id from tbls where TBL_NAME = ?");
+                ps.setString(1, tableName);
                 ResultSet resultSet = ps.executeQuery();
                 int id = -1;
                 while (resultSet.next()) {
@@ -230,10 +226,25 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
                             String.format("Find table %s id error", tablePath.getFullName()));
                 }
 
-                // insert TABLE_PARAMS
-                ps = conn.prepareStatement("insert into COL(TBL_id, PARAM_KEY, PARAM_VALUE, CREATE_TIME) values(?,?,?, now())");
+                ////////// parse propertes
+                /// parse column
+                Map<String, String> prop = new HashMap<>();
+                int fieldCount = table.getSchema().getFieldCount();
+                for (int i = 0; i < fieldCount; i++) {
+                    TableColumn tableColumn = table.getSchema().getTableColumn(i).get();
+                    prop.put("schema." + i + ".name", tableColumn.getName());
+                    prop.put("schema." + i + ".data-type", tableColumn.getType().toString());
+                }
+                /// parse prop
+                prop.putAll(table.getOptions());
+                // todo add comment
+                // todo add transient_lastDdlTime
+                prop.put("transient_lastDdlTime", "" + System.currentTimeMillis());
 
-                for (Map.Entry<String, String> entry : table.getOptions().entrySet()) {
+                // insert TABLE_PARAMS
+                ps = conn.prepareStatement("insert into col(TBL_id, PARAM_KEY, PARAM_VALUE, CREATE_TIME) values(?,?,?, now())");
+
+                for (Map.Entry<String, String> entry : prop.entrySet()) {
                     String key = entry.getKey();
                     String value = entry.getValue();
                     ps.setInt(1, id);
@@ -243,7 +254,6 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
                 }
                 // todo check insert stable
                 ps.executeBatch();
-
 
             } catch (SQLException e) {
                 //todo
@@ -285,22 +295,20 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
             Map<String, String> colMap = new HashMap<>();
             // for properties
             Map<String, String> props = new HashMap<>();
-            List<Col> propList = new ArrayList<>();
             while (resultSet.next()) {
                 String key = resultSet.getString(1);
                 String value = resultSet.getString(2);
-                Col col = new Col(key, value);
 
-                if (key.startsWith("flink.schema")) {
+                if (key.startsWith("schema")) {
                     colMap.put(key, value);
                 } else {
-                    props.put(key.substring(6), value);
+                    props.put(key, value);
 
                 }
             }
             /////////////// remove key
-            String primaryKeyColumns = props.remove("flink.schema.primary-key.columns");
-            String primaryKeyName = props.remove("flink.schema.primary-key.name");
+            String primaryKeyColumns = props.remove("schema.primary-key.columns");
+            String primaryKeyName = props.remove("schema.primary-key.name");
 
             /////// find column size
             int columnSize = -1;
@@ -319,8 +327,8 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
             String[] colNames = new String[columnSize];
             DataType[] colTypes = new DataType[columnSize];
             for (int i = 0; i < columnSize; i++) {
-                String name = colMap.get("flink.schema." + i + ".name");
-                String dateType = colMap.get("flink.schema." + i + ".data-type");
+                String name = colMap.get("schema." + i + ".name");
+                String dateType = colMap.get("schema." + i + ".data-type");
 
                 if (name == null) {
                     break;
@@ -337,7 +345,7 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
 //            }
             TableSchema tableSchema = builder.build();
             String comment = props.remove("comment");
-            props.remove("ent_lastDdlTime");
+            props.remove("transient_lastDdlTime");
 
 
             return new CatalogTableImpl(tableSchema, new ArrayList<>(), props, null);
@@ -381,4 +389,6 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
             return v > 0 ? v : DEFAULT_UNKNOWN_STATS_VALUE;
         }
     }
+
+
 }
