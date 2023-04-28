@@ -5,7 +5,7 @@ import com.rookie.submit.common.Constant._
 import com.rookie.submit.udf.RegisterUdf
 import com.rookie.submit.util.{SqlFileUtil, TableConfUtil}
 import org.apache.flink.api.java.utils.ParameterTool
-import org.apache.flink.connector.jdbc.catalog.MySqlCatalog
+import org.apache.flink.connector.jdbc.catalog.MyMySqlCatalog
 import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend
 import org.apache.flink.runtime.state.StateBackend
 import org.apache.flink.runtime.state.hashmap.HashMapStateBackend

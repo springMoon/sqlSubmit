@@ -23,6 +23,7 @@ import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.connector.jdbc.JdbcExecutionOptions;
+import org.apache.flink.connector.jdbc.catalog.MysqlCatalogUtils;
 import org.apache.flink.connector.jdbc.dialect.JdbcDialect;
 import org.apache.flink.connector.jdbc.dialect.JdbcDialectLoader;
 import org.apache.flink.connector.jdbc.internal.options.JdbcConnectorOptions;
@@ -68,8 +69,10 @@ public class JdbcDynamicTableFactory implements DynamicTableSourceFactory, Dynam
                 FactoryUtil.createTableFactoryHelper(this, context);
         final ReadableConfig config = helper.getOptions();
 
-        // todo
-        if (false) {
+        // add by venn, for user define mysql catalog
+        // if table identifier is jdbc, use JdbcDynamic Factory
+        // else use FactoryUtil to auto set
+        if (IDENTIFIER.equals(config.get(MysqlCatalogUtils.CONNECTOR))) {
             helper.validate();
             validateConfigOptions(config, context.getClassLoader());
             validateDataTypeWithJdbcDialect(
@@ -104,8 +107,8 @@ public class JdbcDynamicTableFactory implements DynamicTableSourceFactory, Dynam
                 FactoryUtil.createTableFactoryHelper(this, context);
         final ReadableConfig config = helper.getOptions();
 
-        if (false) {
-
+        // todo
+        if (IDENTIFIER.equals(config.get(MysqlCatalogUtils.CONNECTOR))) {
             helper.validate();
             validateConfigOptions(config, context.getClassLoader());
             validateDataTypeWithJdbcDialect(
@@ -124,6 +127,7 @@ public class JdbcDynamicTableFactory implements DynamicTableSourceFactory, Dynam
 
             return source;
         }
+
     }
 
     private static void validateDataTypeWithJdbcDialect(

@@ -1,6 +1,6 @@
 -- -- kafka source
 -- set execution.runtime-mode=BATCH;
--- drop table if exists user_log1;
+drop table if exists user_log1;
 CREATE TABLE user_log1
 (
     user_id     VARCHAR,

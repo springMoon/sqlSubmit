@@ -5,6 +5,7 @@ import com.rookie.submit.common.Constant._
 import com.rookie.submit.udf.RegisterUdf
 import com.rookie.submit.util.{SqlFileUtil, TableConfUtil}
 import org.apache.flink.api.java.utils.ParameterTool
+import org.apache.flink.connector.jdbc.catalog.MyMySqlCatalog
 import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend
 import org.apache.flink.runtime.state.StateBackend
 import org.apache.flink.runtime.state.hashmap.HashMapStateBackend
@@ -13,7 +14,6 @@ import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
 import org.apache.flink.table.api.{EnvironmentSettings, StatementSet}
 import org.slf4j.LoggerFactory
-import org.apache.flink.connector.jdbc.catalog.MySqlCatalog
 
 import java.time.ZoneId
 import scala.collection.JavaConversions._
@@ -59,7 +59,7 @@ object SqlSubmit {
 //      tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
 //    }
 //     mysql catalog, useless, cannot persistent table schema to mysql
-        val catalog = new MySqlCatalog(this.getClass.getClassLoader
+        val catalog = new MyMySqlCatalog(this.getClass.getClassLoader
       , "mysql-catalog"
       , "flink"
       , "root"

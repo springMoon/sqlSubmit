@@ -18,29 +18,21 @@
 
 package org.apache.flink.connector.jdbc.catalog;
 
-import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.annotation.Internal;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.connector.jdbc.dialect.JdbcDialectTypeMapper;
 import org.apache.flink.connector.jdbc.dialect.mysql.MySqlTypeMapper;
-import org.apache.flink.table.api.Schema;
 import org.apache.flink.table.api.TableColumn;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.catalog.*;
 import org.apache.flink.table.catalog.exceptions.CatalogException;
 import org.apache.flink.table.catalog.exceptions.DatabaseNotExistException;
-import org.apache.flink.table.catalog.exceptions.TableAlreadyExistException;
 import org.apache.flink.table.catalog.exceptions.TableNotExistException;
-import org.apache.flink.table.catalog.hive.util.HiveTableUtil;
-import org.apache.flink.table.catalog.hive.util.HiveTypeUtil;
 import org.apache.flink.table.catalog.stats.CatalogTableStatistics;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.TemporaryClassLoaderContext;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,19 +41,15 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.apache.flink.connector.jdbc.table.JdbcConnectorOptions.*;
-import static org.apache.flink.connector.jdbc.table.JdbcConnectorOptions.TABLE_NAME;
-import static org.apache.flink.connector.jdbc.table.JdbcDynamicTableFactory.IDENTIFIER;
-import static org.apache.flink.table.factories.FactoryUtil.CONNECTOR;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
 /**
  * Catalog for MySQL.
  */
 @Internal
-public class MySqlCatalog extends AbstractJdbcCatalog {
+public class MyMySqlCatalog extends AbstractJdbcCatalog {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MySqlCatalog.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MyMySqlCatalog.class);
 
     private final JdbcDialectTypeMapper dialectTypeMapper;
 
@@ -77,7 +65,7 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
                 }
             };
 
-    public MySqlCatalog(
+    public MyMySqlCatalog(
             ClassLoader userClassLoader,
             String catalogName,
             String defaultDatabase,
@@ -95,6 +83,9 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
         this.dialectTypeMapper = new MySqlTypeMapper(databaseVersion, driverVersion);
     }
 
+    /**
+     * list Database
+     */
     @Override
     public List<String> listDatabases() throws CatalogException {
         return extractColumnValuesBySQL(
@@ -104,17 +95,15 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
                 dbName -> !builtinDatabases.contains(dbName));
     }
 
-    // ------ tables ------
-
+    /**
+     * list table
+     */
     @Override
     public List<String> listTables(String databaseName)
-            throws DatabaseNotExistException, CatalogException {
+            throws CatalogException {
         Preconditions.checkState(
                 StringUtils.isNotBlank(databaseName), "Database name must not be blank.");
-        // not need
-//        if (!databaseExists(databaseName)) {
-//            throw new DatabaseNotExistException(getName(), databaseName);
-//        }
+
         //
         List<String> tableList = extractColumnValuesBySQL(
                 baseUrl + databaseName,
@@ -126,6 +115,9 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
         return tableList;
     }
 
+    /**
+     * check if table exists
+     */
     @Override
     public boolean tableExists(ObjectPath tablePath) throws CatalogException {
         return !extractColumnValuesBySQL(
@@ -190,9 +182,15 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
         return tablePath.getObjectName();
     }
 
+    /**
+     * create table, save metadata to mysql
+     * <p>
+     * 1. insert table to table: tbls
+     * 2. insert column to table: col
+     */
     @Override
     public void createTable(ObjectPath tablePath, CatalogBaseTable table, boolean ignoreIfExists)
-            throws TableAlreadyExistException, DatabaseNotExistException, CatalogException {
+            throws DatabaseNotExistException, CatalogException {
         LOG.debug("create table in mysql catalog");
 
         checkNotNull(tablePath, "tablePath cannot be null");
@@ -206,14 +204,24 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
             throw new DatabaseNotExistException(this.getName(), tablePath.getDatabaseName());
         } else {
 
+            // get connection
             try (Connection conn = DriverManager.getConnection(dbUrl, username, pwd)) {
 
-                // insert table
+                // insert table name to tbls
                 PreparedStatement ps = conn.prepareStatement("insert into tbls(TBL_NAME, CREATE_TIME) values(?, NOW())");
                 ps.setString(1, tableName);
-                ps.execute();
+                try {
+                    ps.execute();
+                } catch (SQLIntegrityConstraintViolationException e) {
+                    // Duplicate entry 'user_log' for key 'tbls.tbls_UN'
+                    if (!ignoreIfExists) {
+                        throw new SQLIntegrityConstraintViolationException(e);
+                    }
+                    // table exists, return
+                    return;
+                }
 
-                // select table id
+                // get table id
                 ps = conn.prepareStatement("select id from tbls where TBL_NAME = ?");
                 ps.setString(1, tableName);
                 ResultSet resultSet = ps.executeQuery();
@@ -227,7 +235,9 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
                 }
 
                 ////////// parse propertes
-                /// parse column
+                /// parse column to format :
+                // schema.x.name
+                // schema.x.data-type
                 Map<String, String> prop = new HashMap<>();
                 int fieldCount = table.getSchema().getFieldCount();
                 for (int i = 0; i < fieldCount; i++) {
@@ -235,10 +245,10 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
                     prop.put("schema." + i + ".name", tableColumn.getName());
                     prop.put("schema." + i + ".data-type", tableColumn.getType().toString());
                 }
-                /// parse prop
+                /// parse prop: connector,and ext properties
                 prop.putAll(table.getOptions());
                 // todo add comment
-                // todo add transient_lastDdlTime
+                prop.put("comment", table.getComment());
                 prop.put("transient_lastDdlTime", "" + System.currentTimeMillis());
 
                 // insert TABLE_PARAMS
@@ -260,13 +270,12 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
                 throw new CatalogException(
                         String.format("Failed create table %s", tablePath.getFullName()), e);
             }
-
-
         }
-
-
     }
 
+    /**
+     * get table from mysql
+     */
     @Override
     public CatalogBaseTable getTable(ObjectPath tablePath) throws TableNotExistException, CatalogException {
         // check table exists
@@ -275,21 +284,14 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
         }
 
         try (Connection conn = DriverManager.getConnection(baseUrl + tablePath.getDatabaseName(), username, pwd)) {
-//            DatabaseMetaData metaData = conn.getMetaData();
-//            Optional<UniqueConstraint> primaryKey =
-//                    getPrimaryKey(
-//                            metaData,
-//                            tablePath.getDatabaseName(),
-//                            getSchemaName(tablePath),
-//                            getTableName(tablePath));
 
+            // load table column and properties
             PreparedStatement ps =
                     conn.prepareStatement(
                             String.format("select PARAM_KEY, PARAM_VALUE from col where tbl_id in (select id from tbls where TBL_NAME = ?);", getSchemaTableName(tablePath)));
             ps.setString(1, tablePath.getObjectName());
 
             ResultSet resultSet = ps.executeQuery();
-
 
             // for column
             Map<String, String> colMap = new HashMap<>();
@@ -306,9 +308,9 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
 
                 }
             }
-            /////////////// remove key
-            String primaryKeyColumns = props.remove("schema.primary-key.columns");
-            String primaryKeyName = props.remove("schema.primary-key.name");
+            ///////////////  remove primary key
+            String pkColumns = props.remove("schema.primary-key.columns");
+            String pkName = props.remove("schema.primary-key.name");
 
             /////// find column size
             int columnSize = -1;
@@ -318,38 +320,32 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
                 Matcher m = p.matcher(key);
                 String num = m.replaceAll("").trim();
                 if (num.length() > 0) {
-                    columnSize = Integer.parseInt(num) > columnSize ? Integer.parseInt(num) : columnSize;
+                    columnSize = Math.max(Integer.parseInt(num), columnSize);
                 }
             }
             ++columnSize;
 
-            ///////////////
+            /////////////// makeup column and column type
             String[] colNames = new String[columnSize];
             DataType[] colTypes = new DataType[columnSize];
             for (int i = 0; i < columnSize; i++) {
                 String name = colMap.get("schema." + i + ".name");
                 String dateType = colMap.get("schema." + i + ".data-type");
-
-                if (name == null) {
-                    break;
-                }
-
                 colNames[i] = (name);
                 colTypes[i] = MysqlCatalogUtils.toFlinkType(dateType);
             }
+            // makeup TableSchema
             TableSchema.Builder builder = TableSchema.builder().fields(colNames, colTypes);
-            // todo
-//            if (primaryKey != null) {
-//                builder.primaryKey(
-//                        primaryKey.getName(), primaryKey.getColumns().toArray(new String[0]));
-//            }
+            if (StringUtils.isNotBlank(pkName)) {
+                builder.primaryKey(pkName, pkColumns);
+            }
+
             TableSchema tableSchema = builder.build();
             String comment = props.remove("comment");
             props.remove("transient_lastDdlTime");
 
-
-            return new CatalogTableImpl(tableSchema, new ArrayList<>(), props, null);
-//            return CatalogTable.of(tableSchema, null, Lists.newArrayList(), props);
+            // init CatalogTable
+            return new CatalogTableImpl(tableSchema, new ArrayList<>(), props, comment);
         } catch (Exception e) {
             throw new CatalogException(
                     String.format("Failed getting table %s", tablePath.getFullName()), e);
@@ -360,7 +356,7 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
     public CatalogTableStatistics getTableStatistics(ObjectPath tablePath) throws TableNotExistException, CatalogException {
 
         CatalogBaseTable table = getTable(tablePath);
-        Map parameters = table.getOptions();
+        Map<String, String> parameters = table.getOptions();
 
         return new CatalogTableStatistics(
                 parsePositiveLongStat(parameters, StatsSetupConst.ROW_COUNT),
@@ -390,5 +386,53 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
         }
     }
 
+    /**
+     * drop table :
+     * delete table column from talbe : col
+     * delete table from tbls
+     */
+    @Override
+    public void dropTable(ObjectPath tablePath, boolean ignoreIfNotExists) throws TableNotExistException, CatalogException {
+        checkNotNull(tablePath, "tablePath cannot be null");
 
+        try (Connection conn = DriverManager.getConnection(baseUrl + tablePath.getDatabaseName(), username, pwd)) {
+
+            String tableName = tablePath.getObjectName();
+
+            // drop column
+            PreparedStatement ps = conn.prepareStatement("delete from col where tbl_id in(select id from tbls where TBL_NAME = ?)");
+            ps.setString(1, tableName);
+            ps.execute();
+
+            // drop table
+            ps = conn.prepareStatement("delete from tbls where TBL_NAME = ?");
+            ps.setString(1, tableName);
+            ps.execute();
+
+
+        } catch (SQLException e) {
+            if (!ignoreIfNotExists) {
+                throw new CatalogException(
+                        String.format("Failed to drop table %s", tablePath.getFullName()), e);
+            }
+        }
+
+    }
+
+    /**
+     * drop old and create new table
+     */
+    @Override
+    public void alterTable(ObjectPath tablePath, CatalogBaseTable newTable, boolean ignoreIfNotExists) throws TableNotExistException, CatalogException {
+        // drop first
+        dropTable(tablePath, ignoreIfNotExists);
+
+        // create table
+        try {
+            createTable(tablePath, newTable, !ignoreIfNotExists);
+        } catch (DatabaseNotExistException e) {
+            throw new CatalogException(
+                    String.format("Failed create table %s", tablePath.getFullName()), e);
+        }
+    }
 }

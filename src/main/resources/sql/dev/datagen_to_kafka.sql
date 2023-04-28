@@ -1,12 +1,14 @@
 -- kafka source
 -- drop table if exists user_log;
-CREATE TABLE user_log
+CREATE TABLE if not exists user_log
 (
     user_id     VARCHAR,
     item_id     VARCHAR,
     category_id VARCHAR,
     behavior    VARCHAR
-) WITH (
+)
+COMMENT 'abcdefs'
+WITH (
       'connector' = 'datagen'
       ,'rows-per-second' = '20'
       ,'number-of-rows' = '10000'
@@ -23,7 +25,7 @@ CREATE TABLE user_log
 --
 -- -- set table.sql-dialect=hive;
 -- -- kafka sink
--- drop table if exists user_log_sink;
+drop table if exists user_log_sink;
 CREATE TABLE user_log_sink
 (
     user_id     STRING,
@@ -32,7 +34,7 @@ CREATE TABLE user_log_sink
     behavior    STRING
 ) WITH (
       'connector' = 'kafka'
-      ,'topic' = 'user_log_test_20230309'
+      ,'topic' = 'user_log_test'
       -- ,'properties.bootstrap.servers' = 'host.docker.internal:9092'
       ,'properties.bootstrap.servers' = 'localhost:9092'
       ,'properties.group.id' = 'user_log'
