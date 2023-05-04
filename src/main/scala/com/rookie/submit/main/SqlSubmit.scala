@@ -41,8 +41,8 @@ object SqlSubmit {
 
     // StreamExecutionEnvironment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.getConfig.setAutoWatermarkInterval(200l)
-    env.setRuntimeMode(RuntimeExecutionMode.BATCH)
+    env.getConfig.setAutoWatermarkInterval(100l)
+//    env.setRuntimeMode(RuntimeExecutionMode.BATCH)
 
     // state backend and checkpoint
     enableCheckpoint(env, paraTool)
