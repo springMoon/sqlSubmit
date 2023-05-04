@@ -6,7 +6,6 @@ import com.rookie.submit.udf.RegisterUdf
 import com.rookie.submit.util.{SqlFileUtil, TableConfUtil}
 import org.apache.flink.api.common.RuntimeExecutionMode
 import org.apache.flink.api.java.utils.ParameterTool
-import org.apache.flink.connector.jdbc.catalog.MySqlCatalog
 import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend
 import org.apache.flink.runtime.state.StateBackend
 import org.apache.flink.runtime.state.hashmap.HashMapStateBackend
@@ -18,6 +17,7 @@ import org.apache.flink.table.catalog.hive.HiveCatalog
 import org.slf4j.LoggerFactory
 import com.rookie.submit.common.Constant
 import com.rookie.submit.util.TableConfUtil.logger
+import org.apache.flink.connector.jdbc.catalog.MyMySqlCatalog
 
 import java.time.ZoneId
 import java.util.Properties
@@ -42,7 +42,7 @@ object SqlSubmit {
     // StreamExecutionEnvironment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.getConfig.setAutoWatermarkInterval(100l)
-//    env.setRuntimeMode(RuntimeExecutionMode.BATCH)
+    //    env.setRuntimeMode(RuntimeExecutionMode.BATCH)
 
     // state backend and checkpoint
     enableCheckpoint(env, paraTool)
@@ -58,20 +58,20 @@ object SqlSubmit {
 
     // hive catalog
     // register catalog, only in server
-//    if ("/".equals(io.File.separator)) {
-//      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH))
-//      tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
-//      tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
-//    }
-    // mysql catalog, useless, cannot persistent table schema to mysql
-    //    val catalog = new MySqlCatalog(this.getClass.getClassLoader
-    //      , "mysql-catalog"
-    //      , "venn"
-    //      , "root"
-    //      , "123456"
-    //      , "jdbc:mysql://localhost:3306")
-    //    tabEnv.registerCatalog("mysql-catalog", catalog)
-    //    tabEnv.useCatalog("mysql-catalog")
+    //    if ("/".equals(io.File.separator)) {
+    //      val catalog = new HiveCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), paraTool.get(Constant.HIVE_DEFAULT_DATABASE), paraTool.get(Constant.HIVE_CONFIG_PATH))
+    //      tabEnv.registerCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME), catalog)
+    //      tabEnv.useCatalog(paraTool.get(Constant.HIVE_CATALOG_NAME))
+    //    }
+    //     mysql catalog, useless, cannot persistent table schema to mysql
+    val catalog = new MyMySqlCatalog(this.getClass.getClassLoader
+      , "my-mysql-catalog"
+      , "flink"
+      , "root"
+      , "123456"
+      , "jdbc:mysql://localhost:3306")
+    tabEnv.registerCatalog("my-mysql-catalog", catalog)
+    tabEnv.useCatalog("my-mysql-catalog")
 
     // load udf
     RegisterUdf.registerUdf(tabEnv, paraTool)
@@ -89,17 +89,17 @@ object SqlSubmit {
             val key = tmp(0).trim
             val value = tmp(1).trim
             logger.info("add parameter to table config: " + key + " = " + value)
-//            if(key.equals(""))
+            //            if(key.equals(""))
             tabEnv.getConfig.getConfiguration.setString(key, value)
           } else if (sql.toLowerCase.startsWith("insert")) {
             // ss
             result = statement.addInsertSql(sql)
           } else {
-//            if (sql.contains("hive_table_") || sql.contains("user_log_two")) {
-//              tabEnv.getConfig.setSqlDialect(SqlDialect.HIVE)
-//            } else {
-//              tabEnv.getConfig.setSqlDialect(SqlDialect.DEFAULT)
-//            }
+            //            if (sql.contains("hive_table_") || sql.contains("user_log_two")) {
+            //              tabEnv.getConfig.setSqlDialect(SqlDialect.HIVE)
+            //            } else {
+            //              tabEnv.getConfig.setSqlDialect(SqlDialect.DEFAULT)
+            //            }
             logger.info("dialect : " + tabEnv.getConfig.getSqlDialect)
             //            println("dialect : " + tabEnv.getConfig.getSqlDialect)
             tabEnv.executeSql(sql)
