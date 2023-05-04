@@ -47,7 +47,7 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
  * Catalog for MySQL.
  */
 @Internal
-public class MyMySqlCatalog extends AbstractJdbcCatalog {
+public class MyMySqlCatalog extends AbstractMyJdbcCatalog {
 
     private static final Logger LOG = LoggerFactory.getLogger(MyMySqlCatalog.class);
 

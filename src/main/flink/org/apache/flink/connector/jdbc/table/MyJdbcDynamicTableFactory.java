@@ -23,14 +23,11 @@ import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.connector.jdbc.JdbcExecutionOptions;
-import org.apache.flink.connector.jdbc.catalog.MysqlCatalogUtils;
 import org.apache.flink.connector.jdbc.dialect.JdbcDialect;
 import org.apache.flink.connector.jdbc.dialect.JdbcDialectLoader;
 import org.apache.flink.connector.jdbc.internal.options.JdbcConnectorOptions;
 import org.apache.flink.connector.jdbc.internal.options.JdbcDmlOptions;
 import org.apache.flink.connector.jdbc.internal.options.JdbcReadOptions;
-import org.apache.flink.table.catalog.hive.HiveCatalogLock;
-import org.apache.flink.table.connector.RequireCatalogLock;
 import org.apache.flink.table.connector.sink.DynamicTableSink;
 import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.connector.source.lookup.LookupOptions;
@@ -59,7 +56,7 @@ import static org.apache.flink.connector.jdbc.table.JdbcConnectorOptions.*;
  * JdbcDynamicTableSink}.
  */
 @Internal
-public class JdbcDynamicTableFactory implements DynamicTableSourceFactory, DynamicTableSinkFactory {
+public class MyJdbcDynamicTableFactory implements DynamicTableSourceFactory, DynamicTableSinkFactory {
 
     public static final String IDENTIFIER = "jdbc";
 
@@ -70,35 +67,16 @@ public class JdbcDynamicTableFactory implements DynamicTableSourceFactory, Dynam
         final ReadableConfig config = helper.getOptions();
 
         // add by venn, for user define mysql catalog
-        // if table identifier is jdbc, use JdbcDynamic Factory
-        // else use FactoryUtil to auto set
-        if (IDENTIFIER.equals(config.get(MysqlCatalogUtils.CONNECTOR))) {
-            helper.validate();
-            validateConfigOptions(config, context.getClassLoader());
-            validateDataTypeWithJdbcDialect(
-                    context.getPhysicalRowDataType(), config.get(URL), context.getClassLoader());
-            JdbcConnectorOptions jdbcOptions = getJdbcOptions(config, context.getClassLoader());
+        DynamicTableSink sink =
+                FactoryUtil.createDynamicTableSink(
+                        null,
+                        context.getObjectIdentifier(),
+                        context.getCatalogTable(),
+                        context.getConfiguration(),
+                        context.getClassLoader(),
+                        context.isTemporary());
 
-            return new JdbcDynamicTableSink(
-                    jdbcOptions,
-                    getJdbcExecutionOptions(config),
-                    getJdbcDmlOptions(
-                            jdbcOptions,
-                            context.getPhysicalRowDataType(),
-                            context.getPrimaryKeyIndexes()),
-                    context.getPhysicalRowDataType());
-        } else {
-            DynamicTableSink sink =
-                    FactoryUtil.createDynamicTableSink(
-                            null,
-                            context.getObjectIdentifier(),
-                            context.getCatalogTable(),
-                            context.getConfiguration(),
-                            context.getClassLoader(),
-                            context.isTemporary());
-
-            return sink;
-        }
+        return sink;
     }
 
     @Override
@@ -107,26 +85,11 @@ public class JdbcDynamicTableFactory implements DynamicTableSourceFactory, Dynam
                 FactoryUtil.createTableFactoryHelper(this, context);
         final ReadableConfig config = helper.getOptions();
 
-        // todo
-        if (IDENTIFIER.equals(config.get(MysqlCatalogUtils.CONNECTOR))) {
-            helper.validate();
-            validateConfigOptions(config, context.getClassLoader());
-            validateDataTypeWithJdbcDialect(
-                    context.getPhysicalRowDataType(), config.get(URL), context.getClassLoader());
-            return new JdbcDynamicTableSource(
-                    getJdbcOptions(helper.getOptions(), context.getClassLoader()),
-                    getJdbcReadOptions(helper.getOptions()),
-                    helper.getOptions().get(LookupOptions.MAX_RETRIES),
-                    getLookupCache(config),
-                    context.getPhysicalRowDataType());
-        } else {
-            DynamicTableSource source = FactoryUtil.createDynamicTableSource((DynamicTableSourceFactory) null, context.getObjectIdentifier(), context.getCatalogTable(), context.getConfiguration(), context.getClassLoader(), context.isTemporary());
-//            if (source instanceof RequireCatalogLock) {
-//                ((RequireCatalogLock)source).setLockFactory(HiveCatalogLock.createFactory(this.hiveConf));
-//            }
+        DynamicTableSource source = FactoryUtil.createDynamicTableSource((DynamicTableSourceFactory) null, context.getObjectIdentifier(), context.getCatalogTable(), context.getConfiguration(), context.getClassLoader(), context.isTemporary());
 
-            return source;
-        }
+
+        return source;
+//        }
 
     }
 

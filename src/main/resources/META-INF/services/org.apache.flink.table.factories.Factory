@@ -5,3 +5,4 @@ com.rookie.submit.cust.connector.hbase.HbaseDynamicTableFactory
 com.rookie.submit.cust.connector.redis.RedisDynamicTableFactory
 com.rookie.submit.cust.format.changelog.csv.ChangelogCsvFormatFactory
 com.rookie.submit.cust.connector.starrocks.StarrocksDynamicTableFactory
+org.apache.flink.connector.jdbc.table.MyJdbcDynamicTableFactory
