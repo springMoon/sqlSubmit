@@ -9,7 +9,8 @@
     <version>1.16</version>
 
     <properties>
-        <flink.version>1.16.1</flink.version>
+        <flink.version>1.17.1</flink.version>
+        <flink.jdbc.version>3.1.1-1.17</flink.jdbc.version>
         <scala.binary.version>2.12</scala.binary.version>
         <hadoop.version>2.7.7</hadoop.version>
         <jackson.version>2.12.4</jackson.version>
@@ -181,7 +182,7 @@
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-jdbc</artifactId>
-            <version>${flink.version}</version>
+            <version>${flink.jdbc.version}</version>
         </dependency>
         <!--mysql -->
         <!--<dependency>
