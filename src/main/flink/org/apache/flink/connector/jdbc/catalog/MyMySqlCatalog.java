@@ -20,8 +20,9 @@ package org.apache.flink.connector.jdbc.catalog;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.annotation.Internal;
+import org.apache.flink.connector.jdbc.databases.mysql.catalog.MySqlTypeMapper;
 import org.apache.flink.connector.jdbc.dialect.JdbcDialectTypeMapper;
-import org.apache.flink.connector.jdbc.dialect.mysql.MySqlTypeMapper;
+//import org.apache.flink.connector.jdbc.dialect.mysql.MySqlTypeMapper;
 import org.apache.flink.table.api.TableColumn;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.catalog.*;
