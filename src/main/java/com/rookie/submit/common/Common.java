@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.net.URL;
 
 /**
  * Common initialization utilities.
@@ -35,14 +36,20 @@ public class Common {
 
         if (!new File(path).exists()) {
             LOG.info(Constant.DEFAULT_CONFIG_FILE + " not exists, find in class path");
-            path = Common.class.getClassLoader().getResource(Constant.DEFAULT_CONFIG_FILE).getPath();
+            URL defaultConfig = Common.class.getClassLoader().getResource(Constant.DEFAULT_CONFIG_FILE);
+            if (defaultConfig == null) {
+                throw new IllegalArgumentException("cannot find " + Constant.DEFAULT_CONFIG_FILE + " in file system or classpath");
+            }
+            path = defaultConfig.getPath();
         }
+        LOG.info("load default config: {}", path);
 
         ParameterTool defaultPropFile = ParameterTool.fromPropertiesFile(path);
 
         ParameterTool inputJobPropFile = null;
         if (inputPara.has(Constant.INPUT_JOB_PROP_FILE_PARA)) {
             inputJobPropFile = ParameterTool.fromPropertiesFile(inputPara.get(Constant.INPUT_JOB_PROP_FILE_PARA));
+            LOG.info("load job config: {}", inputPara.get(Constant.INPUT_JOB_PROP_FILE_PARA));
         }
 
         ParameterTool parameterTool;
@@ -62,6 +69,7 @@ public class Common {
         if (jobName == null || jobName.isEmpty()) {
             jobName = parameterTool.get(Constant.JOB_NAME);
         }
+        LOG.info("job name: {}", jobName);
 
         return parameterTool;
     }

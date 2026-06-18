@@ -33,6 +33,13 @@ public class Constant {
     public final static String USERNAME = "root";
     public final static String PASSWORD = "123456";
 
+    public final static String MYSQL_CATALOG_ENABLE = "mysql.catalog.enable";
+    public final static String MYSQL_CATALOG_NAME = "mysql.catalog.name";
+    public final static String MYSQL_CATALOG_DEFAULT_DATABASE = "mysql.catalog.default-database";
+    public final static String MYSQL_CATALOG_USERNAME = "mysql.catalog.username";
+    public final static String MYSQL_CATALOG_PASSWORD = "mysql.catalog.password";
+    public final static String MYSQL_CATALOG_BASE_URL = "mysql.catalog.base-url";
+
     // redis
     public final static String REDIS_URL = "redis.url";
 

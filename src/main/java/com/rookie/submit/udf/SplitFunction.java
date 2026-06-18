@@ -9,6 +9,9 @@ import org.apache.flink.types.Row;
 public class SplitFunction extends TableFunction<Row> {
 
     public void eval(String str) {
+        if (str == null || str.isEmpty()) {
+            return;
+        }
         for (String s : str.split(" ")) {
             collect(Row.of(s, Integer.valueOf(s.length())));
         }

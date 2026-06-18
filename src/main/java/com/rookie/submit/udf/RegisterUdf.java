@@ -7,8 +7,12 @@ import com.rookie.submit.udaf.math.Median;
 import com.rookie.submit.udtf.UdtfTimer;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RegisterUdf {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RegisterUdf.class);
 
     private RegisterUdf() {
     }
@@ -31,5 +35,6 @@ public class RegisterUdf {
         tabEnv.createTemporarySystemFunction("udaf_uv_count", BloomFilter.class);
         tabEnv.createTemporarySystemFunction("udaf_redis_uv_count", new RedisUv(paraTool.get(Constant.REDIS_URL), "user_log_uv"));
         tabEnv.createTemporarySystemFunction("udaf_median", Median.class);
+        LOG.info("registered udf/udtf/udaf functions");
     }
 }

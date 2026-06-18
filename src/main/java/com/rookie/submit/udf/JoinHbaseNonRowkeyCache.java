@@ -14,12 +14,15 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +42,7 @@ public class JoinHbaseNonRowkeyCache extends TableFunction<Row> {
     private final long timeOut;
     private final long cacheSize;
 
+    private Connection connection;
     private Table table;
     private byte[] family;
     private List<byte[]> qualifier;
@@ -53,14 +57,6 @@ public class JoinHbaseNonRowkeyCache extends TableFunction<Row> {
 
     @Override
     public void open(FunctionContext context) throws Exception {
-        org.apache.hadoop.conf.Configuration conf = HBaseConfiguration.create();
-        conf.set("hbase.zookeeper.quorum", "thinkpad:12181");
-        conf.set("hbase.htable.threads.keepalivetime", "20");
-        conf.set("zookeeper.znode.parent", "/hbase");
-
-        Connection connection = ConnectionFactory.createConnection(conf);
-        table = connection.getTable(TableName.valueOf("user_info"));
-
         if (StringUtils.isEmpty(familyString)) {
             LOG.error("hbase udtf family is empty");
             System.exit(-1);
@@ -69,19 +65,27 @@ public class JoinHbaseNonRowkeyCache extends TableFunction<Row> {
             LOG.error("hbase udtf qualifier is empty");
             System.exit(-1);
         }
-        family = familyString.getBytes("UTF8");
+        family = familyString.getBytes(StandardCharsets.UTF_8);
         String[] arr = qualifierString.split(",");
         qualifier = new ArrayList<>();
         for (String item : arr) {
-            qualifier.add(item.getBytes("UTF8"));
+            qualifier.add(item.getBytes(StandardCharsets.UTF_8));
         }
 
-        LOG.info("hbase udtf join family: " + familyString + ", qualifier: " + qualifierString);
+        org.apache.hadoop.conf.Configuration conf = HBaseConfiguration.create();
+        conf.set("hbase.zookeeper.quorum", "thinkpad:12181");
+        conf.set("hbase.htable.threads.keepalivetime", "20");
+        conf.set("zookeeper.znode.parent", "/hbase");
+
+        connection = ConnectionFactory.createConnection(conf);
+        table = connection.getTable(TableName.valueOf("user_info"));
 
         cache = CacheBuilder.newBuilder()
                 .expireAfterWrite(timeOut, TimeUnit.SECONDS)
                 .maximumSize(cacheSize)
                 .build();
+        LOG.info("hbase cache udtf opened, table: user_info, family: {}, qualifier: {}, cache timeout: {}s, cache size: {}",
+                familyString, qualifierString, timeOut, cacheSize);
     }
 
     @FunctionHint(output = @DataTypeHint("ROW<arr ARRAY<STRING>>"))
@@ -89,12 +93,11 @@ public class JoinHbaseNonRowkeyCache extends TableFunction<Row> {
         if (key == null || key.length() == 0) {
             return;
         }
-        RowKind rowKind = RowKind.fromByteValue((byte) 0);
-        Row row = new Row(rowKind, 1);
 
         List<String[]> list = cache.getIfPresent(key);
         if (list != null) {
             for (String[] arr : list) {
+                Row row = new Row(RowKind.INSERT, 1);
                 row.setField(0, arr);
                 collect(row);
             }
@@ -107,6 +110,7 @@ public class JoinHbaseNonRowkeyCache extends TableFunction<Row> {
         }
         cache.put(key, list);
         for (String[] arr : list) {
+            Row row = new Row(RowKind.INSERT, 1);
             row.setField(0, arr);
             collect(row);
         }
@@ -124,41 +128,57 @@ public class JoinHbaseNonRowkeyCache extends TableFunction<Row> {
             scan.addColumn(family, item);
         }
 
-        SingleColumnValueFilter filter = new SingleColumnValueFilter(family, qualifier.get(0), CompareOperator.EQUAL, key.getBytes("UTF8"));
+        SingleColumnValueFilter filter = new SingleColumnValueFilter(family, qualifier.get(0),
+                CompareOperator.EQUAL, key.getBytes(StandardCharsets.UTF_8));
         scan.setFilter(filter);
 
-        org.apache.hadoop.hbase.client.ResultScanner resultScanner = table.getScanner(scan);
-        java.util.Iterator<org.apache.hadoop.hbase.client.Result> it = resultScanner.iterator();
-
         List<String[]> list = new ArrayList<>();
-        while (it.hasNext()) {
-            org.apache.hadoop.hbase.client.Result result = it.next();
-            String[] arr = new String[qualifier.size() + 1];
-            int index = 0;
-            String rowkey = new String(result.getRow());
-            arr[index] = rowkey;
-            for (byte[] item : qualifier) {
-                byte[] value = result.getValue(family, item);
-                if (value != null) {
-                    index += 1;
-                    arr[index] = new String(value, "UTF8");
-                }
+        // ResultScanner must be closed even when query results are cached later.
+        try (ResultScanner resultScanner = table.getScanner(scan)) {
+            java.util.Iterator<Result> it = resultScanner.iterator();
+            while (it.hasNext()) {
+                list.add(buildOutputArray(it.next()));
             }
-            list.add(arr);
         }
         return list;
     }
 
+    private String[] buildOutputArray(Result result) {
+        String[] arr = new String[qualifier.size() + 1];
+        int index = 0;
+        String rowkey = new String(result.getRow(), StandardCharsets.UTF_8);
+        arr[index] = rowkey;
+        for (byte[] item : qualifier) {
+            byte[] value = result.getValue(family, item);
+            if (value != null) {
+                index += 1;
+                arr[index] = new String(value, StandardCharsets.UTF_8);
+            }
+        }
+        return arr;
+    }
+
     @Override
     public void close() throws Exception {
+        if (cache != null) {
+            cache.cleanUp();
+            cache = null;
+        }
         if (table != null) {
             table.close();
+            table = null;
         }
+        if (connection != null) {
+            connection.close();
+            connection = null;
+        }
+        LOG.info("hbase cache udtf closed");
     }
 
     public static void main(String[] args) throws Exception {
-        JoinHbaseNonRowkeyNoCache joinHbase = new JoinHbaseNonRowkeyNoCache("cf", "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10");
+        JoinHbaseNonRowkeyCache joinHbase = new JoinHbaseNonRowkeyCache("cf", "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10", 600, 10000);
         joinHbase.open(null);
         joinHbase.eval("002");
+        joinHbase.close();
     }
 }
