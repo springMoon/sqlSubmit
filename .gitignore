@@ -2,3 +2,14 @@ sqlSubmit.iml
 target/
 dependency-reduced-pom.xml
 .DS_Store
+__pycache__/
+*.pyc
+node_modules/
+dist/
+platform-ui/node_modules/
+platform-ui/dist/
+
+# Local-only drafts and publishing assets.
+.local/
+doc/platform/wechat-*
+doc/platform/render_wechat_*.py

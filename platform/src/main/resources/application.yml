@@ -1,0 +1,30 @@
+server:
+  port: 18080
+
+spring:
+  application:
+    name: sqlsubmit-platform
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/sqlsubmit_platform?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+  sql:
+    init:
+      mode: always
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+
+platform:
+  flink:
+    home: /opt/flink
+    sqlsubmit-jar-path: /opt/sqlsubmit/sqlSubmit.jar
+    generated-sql-dir: /opt/sqlsubmit/generated/sql
+    generated-prop-dir: /opt/sqlsubmit/generated/prop
+    yarn-queue: default
+    rest-url: http://localhost:8081
+    main-class: com.rookie.submit.main.SqlSubmit
+    submit-enabled: false
+    submit-timeout-seconds: 120
