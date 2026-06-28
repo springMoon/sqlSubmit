@@ -111,6 +111,14 @@ public class YarnSubmitService {
         return jobInstanceMapper.selectList(wrapper);
     }
 
+    public List<SyncJobLogEntity> listLogs(Long instanceId) {
+        getInstance(instanceId);
+        LambdaQueryWrapper<SyncJobLogEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SyncJobLogEntity::getJobInstanceId, instanceId)
+                .orderByAsc(SyncJobLogEntity::getId);
+        return jobLogMapper.selectList(wrapper);
+    }
+
     private SyncJobEntity requiredJob(Long jobId) {
         SyncJobEntity job = jobMapper.selectById(jobId);
         if (job == null) {

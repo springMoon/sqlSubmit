@@ -60,6 +60,11 @@ public class DatasourceController {
         return ApiResponse.ok(datasourceService.testConnection(id));
     }
 
+    @GetMapping("/{id}/live/topics")
+    public ApiResponse<List<String>> listKafkaTopics(@PathVariable Long id) throws Exception {
+        return ApiResponse.ok(datasourceService.listKafkaTopics(id));
+    }
+
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         datasourceService.delete(id);

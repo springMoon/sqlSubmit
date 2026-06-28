@@ -194,7 +194,8 @@ POST /api/v1/jobs/sql/preview
 | 字段 | 说明 |
 |---|---|
 | sourceDatasourceId | 源数据源 ID，必填 |
-| sourceTableId | MySQL 源表元数据 ID，MySQL 源必填 |
+| sourceTableName | MySQL 源表名，MySQL 源必填；平台会实时读取源库字段结构 |
+| sourceTableId | 兼容旧元数据缓存模式，页面主流程不再使用 |
 | sinkDatasourceId | 目标数据源 ID，必填 |
 | sinkTableName | 目标物理表名；Kafka 时可作为 topic 覆盖数据源默认 topic |
 | fieldMapping | 字段映射，不传时按源字段一一映射 |

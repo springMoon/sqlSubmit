@@ -57,6 +57,7 @@ public class JobService {
         entity.setJobName(request.getJobName().trim());
         entity.setSourceDatasourceId(request.getSourceDatasourceId());
         entity.setSourceTableId(request.getSourceTableId());
+        entity.setSourceTableName(resolveSourceTableName(request));
         entity.setSinkDatasourceId(request.getSinkDatasourceId());
         entity.setSinkTableName(resolveSinkTableName(request.getSinkTableName(), sink));
         entity.setFieldMappingJson(toJson(request.getFieldMapping() == null ? Collections.emptyList() : request.getFieldMapping()));
@@ -86,6 +87,30 @@ public class JobService {
         if (entity == null) {
             throw new IllegalArgumentException("任务不存在: " + id);
         }
+        return entity;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public SyncJobEntity update(Long id, CreateJobRequest request) {
+        SyncJobEntity entity = get(id);
+        ensureJobNameNotExists(request.getJobName(), id);
+        SqlPreviewResponse preview = sqlGeneratorService.preview(request);
+        DatasourceDefinition sink = datasourceService.get(request.getSinkDatasourceId());
+
+        entity.setJobName(request.getJobName().trim());
+        entity.setSourceDatasourceId(request.getSourceDatasourceId());
+        entity.setSourceTableId(request.getSourceTableId());
+        entity.setSourceTableName(resolveSourceTableName(request));
+        entity.setSinkDatasourceId(request.getSinkDatasourceId());
+        entity.setSinkTableName(resolveSinkTableName(request.getSinkTableName(), sink));
+        entity.setFieldMappingJson(toJson(request.getFieldMapping() == null ? Collections.emptyList() : request.getFieldMapping()));
+        entity.setRuntimeConfigJson(request.getRuntimeConfig() == null ? null : toJson(request.getRuntimeConfig()));
+        entity.setGeneratedSql(preview.getSql());
+        entity.setStatus("DRAFT");
+        entity.setRemark(request.getRemark());
+        entity.setUpdatedAt(LocalDateTime.now());
+        jobMapper.updateById(entity);
+        LOG.info("updated sync job draft, id: {}, name: {}", entity.getId(), entity.getJobName());
         return entity;
     }
 
@@ -123,8 +148,15 @@ public class JobService {
     }
 
     private void ensureJobNameNotExists(String jobName) {
+        ensureJobNameNotExists(jobName, null);
+    }
+
+    private void ensureJobNameNotExists(String jobName, Long selfId) {
         LambdaQueryWrapper<SyncJobEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SyncJobEntity::getJobName, jobName.trim());
+        if (selfId != null) {
+            wrapper.ne(SyncJobEntity::getId, selfId);
+        }
         if (jobMapper.selectCount(wrapper) > 0) {
             throw new IllegalArgumentException("任务名称已存在: " + jobName);
         }
@@ -142,6 +174,15 @@ public class JobService {
             return "print";
         }
         throw new IllegalArgumentException("目标表名不能为空");
+    }
+
+    private String resolveSourceTableName(CreateJobRequest request) {
+        DatasourceDefinition source = datasourceService.get(request.getSourceDatasourceId());
+        String tableName = trimToNull(request.getSourceTableName());
+        if (source.getType() == DatasourceType.MYSQL && tableName == null && request.getSourceTableId() == null) {
+            throw new IllegalArgumentException("MySQL 源表名不能为空");
+        }
+        return tableName;
     }
 
     private String buildDefaultProperties(SyncJobEntity job) {
@@ -166,6 +207,9 @@ public class JobService {
         node.put("sourceDatasourceId", job.getSourceDatasourceId());
         if (job.getSourceTableId() != null) {
             node.put("sourceTableId", job.getSourceTableId());
+        }
+        if (job.getSourceTableName() != null) {
+            node.put("sourceTableName", job.getSourceTableName());
         }
         node.put("sinkDatasourceId", job.getSinkDatasourceId());
         node.put("sinkTableName", job.getSinkTableName());

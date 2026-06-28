@@ -3,6 +3,7 @@ package com.rookie.submit.platform.datasource.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rookie.submit.platform.datasource.dto.CreateDatasourceRequest;
 import com.rookie.submit.platform.datasource.dto.TestConnectionResponse;
 import com.rookie.submit.platform.datasource.entity.SyncDatasourceEntity;
@@ -26,9 +27,12 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.PostConstruct;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.ArrayList;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -85,11 +89,12 @@ public class DatasourceService {
         SyncDatasourceEntity entity = requiredEntity(id);
         ensureNotBuiltin(entity);
         ensureNameNotExists(request.getName(), id);
-        validateConfig(request.getType(), request.getConfig());
+        JsonNode config = normalizeUpdateConfig(entity, request);
+        validateConfig(request.getType(), config);
 
         entity.setName(request.getName().trim());
         entity.setType(request.getType().name());
-        entity.setConfigJson(toJson(request.getConfig()));
+        entity.setConfigJson(toJson(config));
         entity.setEnabled(request.getEnabled() == null ? Boolean.TRUE : request.getEnabled());
         entity.setRemark(request.getRemark());
         entity.setUpdatedAt(LocalDateTime.now());
@@ -157,6 +162,22 @@ public class DatasourceService {
         } catch (Exception e) {
             LOG.warn("datasource connection test failed, id: {}, type: {}", id, datasource.getType(), e);
             return new TestConnectionResponse(false, e.getMessage());
+        }
+    }
+
+    public List<String> listKafkaTopics(Long id) throws Exception {
+        DatasourceDefinition datasource = get(id);
+        if (datasource.getType() != DatasourceType.KAFKA) {
+            throw new IllegalArgumentException("仅支持读取 Kafka 数据源 Topic");
+        }
+        String bootstrapServers = required(datasource.getConfig(), "bootstrapServers");
+        Properties properties = kafkaAdminProperties(bootstrapServers);
+        try (AdminClient adminClient = AdminClient.create(properties)) {
+            ListTopicsResult result = adminClient.listTopics();
+            List<String> topics = new ArrayList<>(result.names().get(5, TimeUnit.SECONDS));
+            Collections.sort(topics);
+            LOG.info("loaded kafka topics, datasourceId: {}, topicCount: {}", id, topics.size());
+            return topics;
         }
     }
 
@@ -250,10 +271,7 @@ public class DatasourceService {
         String bootstrapServers = required(config, "bootstrapServers");
         String topic = text(config, "topic");
 
-        Properties properties = new Properties();
-        properties.put("bootstrap.servers", bootstrapServers);
-        properties.put("request.timeout.ms", "5000");
-        properties.put("default.api.timeout.ms", "5000");
+        Properties properties = kafkaAdminProperties(bootstrapServers);
 
         try (AdminClient adminClient = AdminClient.create(properties)) {
             if (topic == null || topic.trim().isEmpty()) {
@@ -264,6 +282,14 @@ public class DatasourceService {
                 result.all().get(5, TimeUnit.SECONDS);
             }
         }
+    }
+
+    private Properties kafkaAdminProperties(String bootstrapServers) {
+        Properties properties = new Properties();
+        properties.put("bootstrap.servers", bootstrapServers);
+        properties.put("request.timeout.ms", "5000");
+        properties.put("default.api.timeout.ms", "5000");
+        return properties;
     }
 
     private String required(JsonNode config, String key) {
@@ -277,6 +303,22 @@ public class DatasourceService {
     private String text(JsonNode config, String key) {
         JsonNode value = config == null ? null : config.get(key);
         return value == null || value.isNull() ? null : value.asText();
+    }
+
+    private JsonNode normalizeUpdateConfig(SyncDatasourceEntity entity, CreateDatasourceRequest request) {
+        JsonNode config = request.getConfig();
+        if (request.getType() != DatasourceType.MYSQL || config == null || !"******".equals(text(config, "password"))) {
+            return config;
+        }
+        JsonNode oldConfig = parseJson(entity.getConfigJson());
+        ObjectNode normalized = objectMapper.createObjectNode();
+        Iterator<Map.Entry<String, JsonNode>> fields = config.fields();
+        while (fields.hasNext()) {
+            Map.Entry<String, JsonNode> field = fields.next();
+            normalized.set(field.getKey(), field.getValue());
+        }
+        normalized.put("password", text(oldConfig, "password"));
+        return normalized;
     }
 
     private DatasourceDefinition toDefinition(SyncDatasourceEntity entity) {

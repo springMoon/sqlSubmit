@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS sync_job (
     job_name VARCHAR(256) NOT NULL,
     source_datasource_id BIGINT NOT NULL,
     source_table_id BIGINT NULL,
+    source_table_name VARCHAR(256) NULL,
     sink_datasource_id BIGINT NOT NULL,
     sink_table_name VARCHAR(256) NOT NULL,
     field_mapping_json JSON NOT NULL,

@@ -14,6 +14,7 @@ import com.rookie.submit.platform.submit.service.YarnSubmitService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,6 +44,13 @@ public class JobController {
     @PostMapping
     public ApiResponse<JobResponse> create(@Valid @RequestBody CreateJobRequest request) {
         return ApiResponse.ok(JobResponse.from(jobService.create(request)));
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<JobResponse> update(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateJobRequest request) {
+        return ApiResponse.ok(JobResponse.from(jobService.update(id, request)));
     }
 
     @GetMapping

@@ -13,6 +13,7 @@ import com.rookie.submit.platform.metadata.entity.SyncColumnMetadataEntity;
 import com.rookie.submit.platform.metadata.entity.SyncTableMetadataEntity;
 import com.rookie.submit.platform.metadata.mapper.SyncColumnMetadataMapper;
 import com.rookie.submit.platform.metadata.mapper.SyncTableMetadataMapper;
+import com.rookie.submit.platform.metadata.service.MetadataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -33,14 +34,17 @@ public class SqlGeneratorService {
     private final DatasourceService datasourceService;
     private final SyncTableMetadataMapper tableMetadataMapper;
     private final SyncColumnMetadataMapper columnMetadataMapper;
+    private final MetadataService metadataService;
 
     public SqlGeneratorService(
             DatasourceService datasourceService,
             SyncTableMetadataMapper tableMetadataMapper,
-            SyncColumnMetadataMapper columnMetadataMapper) {
+            SyncColumnMetadataMapper columnMetadataMapper,
+            MetadataService metadataService) {
         this.datasourceService = datasourceService;
         this.tableMetadataMapper = tableMetadataMapper;
         this.columnMetadataMapper = columnMetadataMapper;
+        this.metadataService = metadataService;
     }
 
     public SqlPreviewResponse preview(SqlPreviewRequest request) {
@@ -84,14 +88,20 @@ public class SqlGeneratorService {
 
     private SourcePlan buildSourcePlan(DatasourceDefinition source, SqlPreviewRequest request) {
         if (source.getType() == DatasourceType.MYSQL) {
-            return buildMysqlSourcePlan(source, request.getSourceTableId());
+            return buildMysqlSourcePlan(source, request);
         }
         return buildDatagenSourcePlan(request);
     }
 
-    private SourcePlan buildMysqlSourcePlan(DatasourceDefinition source, Long sourceTableId) {
+    private SourcePlan buildMysqlSourcePlan(DatasourceDefinition source, SqlPreviewRequest request) {
+        String sourceTableName = trimToNull(request.getSourceTableName());
+        if (sourceTableName != null) {
+            return buildLiveMysqlSourcePlan(source, sourceTableName);
+        }
+
+        Long sourceTableId = request.getSourceTableId();
         if (sourceTableId == null) {
-            throw new IllegalArgumentException("MySQL 源表必须选择 sourceTableId");
+            throw new IllegalArgumentException("MySQL 源表必须选择 sourceTableName");
         }
         SyncTableMetadataEntity table = tableMetadataMapper.selectById(sourceTableId);
         if (table == null || !source.getId().equals(table.getDatasourceId())) {
@@ -109,6 +119,27 @@ public class SqlGeneratorService {
         SourcePlan sourcePlan = new SourcePlan();
         sourcePlan.sqlTableName = "source_preview";
         sourcePlan.physicalTableName = table.getTableName();
+        sourcePlan.columns = columns.stream()
+                .map(column -> new ColumnPlan(
+                        column.getColumnName(),
+                        column.getFlinkType(),
+                        Boolean.TRUE.equals(column.getPrimaryKey())))
+                .collect(Collectors.toList());
+        sourcePlan.warnings = Collections.emptyList();
+        return sourcePlan;
+    }
+
+    private SourcePlan buildLiveMysqlSourcePlan(DatasourceDefinition source, String sourceTableName) {
+        List<SyncColumnMetadataEntity> columns;
+        try {
+            columns = metadataService.listLiveMysqlColumns(source.getId(), sourceTableName);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("读取 MySQL 源表字段失败: " + e.getMessage(), e);
+        }
+
+        SourcePlan sourcePlan = new SourcePlan();
+        sourcePlan.sqlTableName = "source_preview";
+        sourcePlan.physicalTableName = sourceTableName;
         sourcePlan.columns = columns.stream()
                 .map(column -> new ColumnPlan(
                         column.getColumnName(),

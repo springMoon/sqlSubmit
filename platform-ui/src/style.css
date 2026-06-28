@@ -202,13 +202,17 @@ button:disabled {
   color: #405060;
 }
 
+.side-item.muted.active {
+  color: #2c78ff;
+}
+
 .content {
   min-height: 100vh;
-  padding: 98px 36px 28px 262px;
+  padding: 92px 32px 28px 262px;
 }
 
 .breadcrumb {
-  margin-bottom: 34px;
+  margin-bottom: 24px;
   color: #7c8794;
   font-size: 16px;
   font-weight: 700;
@@ -227,8 +231,16 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 16px;
   min-height: 48px;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .search-box {
@@ -246,6 +258,34 @@ button:disabled {
   font-size: 15px;
 }
 
+.filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 3px;
+  border: 1px solid #dbe3ed;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.filter-tabs button {
+  min-width: 72px;
+  height: 32px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #5e6b7b;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.filter-tabs button.active {
+  background: #edf4ff;
+  color: #1f6fff;
+}
+
 .two-column,
 .three-column {
   display: grid;
@@ -257,12 +297,39 @@ button:disabled {
   grid-template-columns: 420px minmax(0, 1fr);
 }
 
+.datasource-layout {
+  display: grid;
+}
+
+.datasource-list-panel {
+  width: 100%;
+}
+
+.datasource-list-panel .card-grid {
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+}
+
 .two-column.wide-left {
   grid-template-columns: minmax(480px, 0.9fr) minmax(420px, 1fr);
 }
 
 .three-column {
-  grid-template-columns: 430px 430px minmax(520px, 1fr);
+  grid-template-columns: minmax(420px, 520px) minmax(420px, 520px) minmax(520px, 680px);
+  justify-content: start;
+}
+
+.simulate-workbench {
+  max-width: 1760px;
+}
+
+.simulate-workbench .panel {
+  min-height: 0;
+}
+
+.config-panel,
+.mapping-panel,
+.sql-panel {
+  align-self: start;
 }
 
 .panel {
@@ -279,6 +346,10 @@ button:disabled {
   gap: 9px;
   min-height: 30px;
   margin-bottom: 16px;
+}
+
+.modal-header .panel-title {
+  margin-bottom: 0;
 }
 
 .panel-title h2 {
@@ -401,6 +472,14 @@ select:focus {
   padding: 20px;
 }
 
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  max-width: 220px;
+}
+
 .resource-card strong {
   display: block;
   color: #202938;
@@ -507,6 +586,9 @@ tr.selected {
 .mapping-list {
   display: grid;
   gap: 8px;
+  max-height: 560px;
+  overflow: auto;
+  padding-right: 4px;
 }
 
 .mapping-grid {
@@ -540,11 +622,48 @@ tr.selected {
   justify-content: flex-end;
   gap: 8px;
   margin-top: 14px;
+  padding-top: 2px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: auto;
+  background: rgba(21, 31, 46, 0.42);
+  padding: 96px 24px 32px;
+}
+
+.modal-panel {
+  width: min(680px, 100%);
+  border: 1px solid #dce3ec;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(21, 31, 46, 0.28);
+  padding: 20px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
 }
 
 .sql-panel pre {
-  min-height: 610px;
-  max-height: 610px;
+  min-height: 560px;
+  max-height: calc(100vh - 244px);
   overflow: auto;
   margin: 0;
   padding: 14px;
@@ -556,6 +675,14 @@ tr.selected {
   font-size: 12px;
   line-height: 1.58;
   white-space: pre-wrap;
+}
+
+.sql-panel pre.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7f91a4;
+  text-align: center;
 }
 
 .tab-row {
@@ -619,6 +746,75 @@ tr.selected {
   max-width: 860px;
 }
 
+.instance-detail-panel {
+  margin-top: 18px;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.detail-grid > div {
+  display: grid;
+  gap: 6px;
+}
+
+.detail-grid strong {
+  color: #202938;
+  font-size: 13px;
+}
+
+.detail-grid span {
+  color: #647180;
+  word-break: break-all;
+}
+
+.detail-grid pre,
+.log-line pre {
+  overflow: auto;
+  margin: 0;
+  border-radius: 7px;
+  border: 1px solid #e3e8ef;
+  background: #f8fafc;
+  color: #263342;
+  padding: 10px;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.log-list {
+  display: grid;
+  gap: 10px;
+}
+
+.log-line {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.log-line > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  border-radius: 999px;
+  background: #edf3ff;
+  color: #1f6fff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.log-line.error > span {
+  background: #fff1ef;
+  color: #b34435;
+}
+
 .settings-grid {
   display: grid;
   gap: 12px;
@@ -667,6 +863,21 @@ tr.selected {
   background: #b34435;
 }
 
+@media (max-width: 1680px) {
+  .three-column {
+    grid-template-columns: minmax(400px, 540px) minmax(420px, 1fr);
+  }
+
+  .sql-panel {
+    grid-column: 1 / -1;
+  }
+
+  .sql-panel pre {
+    min-height: 420px;
+    max-height: 520px;
+  }
+}
+
 @media (max-width: 1360px) {
   body {
     min-width: 0;
@@ -684,5 +895,28 @@ tr.selected {
 
   .content {
     padding-left: 244px;
+  }
+
+  .datasource-list-panel .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .page-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .toolbar-actions {
+    justify-content: flex-start;
+  }
+
+  .modal-backdrop {
+    padding: 84px 14px 24px;
+  }
+
+  .modal-panel {
+    padding: 16px;
   }
 }

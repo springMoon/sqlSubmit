@@ -2,6 +2,7 @@ package com.rookie.submit.platform.submit.controller;
 
 import com.rookie.submit.platform.common.ApiResponse;
 import com.rookie.submit.platform.submit.dto.JobInstanceResponse;
+import com.rookie.submit.platform.submit.dto.JobLogResponse;
 import com.rookie.submit.platform.submit.service.YarnSubmitService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,5 +34,13 @@ public class JobInstanceController {
     @GetMapping("/{id}")
     public ApiResponse<JobInstanceResponse> get(@PathVariable Long id) {
         return ApiResponse.ok(JobInstanceResponse.from(yarnSubmitService.getInstance(id)));
+    }
+
+    @GetMapping("/{id}/logs")
+    public ApiResponse<List<JobLogResponse>> listLogs(@PathVariable Long id) {
+        List<JobLogResponse> responses = yarnSubmitService.listLogs(id).stream()
+                .map(JobLogResponse::from)
+                .collect(Collectors.toList());
+        return ApiResponse.ok(responses);
     }
 }

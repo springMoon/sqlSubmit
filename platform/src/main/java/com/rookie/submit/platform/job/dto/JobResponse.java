@@ -10,11 +10,14 @@ public class JobResponse {
     private String jobName;
     private Long sourceDatasourceId;
     private Long sourceTableId;
+    private String sourceTableName;
     private Long sinkDatasourceId;
     private String sinkTableName;
     private String status;
     private Integer currentVersion;
     private String generatedSql;
+    private String fieldMappingJson;
+    private String runtimeConfigJson;
     private String remark;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -25,11 +28,14 @@ public class JobResponse {
         response.setJobName(entity.getJobName());
         response.setSourceDatasourceId(entity.getSourceDatasourceId());
         response.setSourceTableId(entity.getSourceTableId());
+        response.setSourceTableName(entity.getSourceTableName());
         response.setSinkDatasourceId(entity.getSinkDatasourceId());
         response.setSinkTableName(entity.getSinkTableName());
         response.setStatus(entity.getStatus());
         response.setCurrentVersion(entity.getCurrentVersion());
         response.setGeneratedSql(entity.getGeneratedSql());
+        response.setFieldMappingJson(entity.getFieldMappingJson());
+        response.setRuntimeConfigJson(entity.getRuntimeConfigJson());
         response.setRemark(entity.getRemark());
         response.setCreatedAt(entity.getCreatedAt());
         response.setUpdatedAt(entity.getUpdatedAt());
@@ -66,6 +72,14 @@ public class JobResponse {
 
     public void setSourceTableId(Long sourceTableId) {
         this.sourceTableId = sourceTableId;
+    }
+
+    public String getSourceTableName() {
+        return sourceTableName;
+    }
+
+    public void setSourceTableName(String sourceTableName) {
+        this.sourceTableName = sourceTableName;
     }
 
     public Long getSinkDatasourceId() {
@@ -106,6 +120,22 @@ public class JobResponse {
 
     public void setGeneratedSql(String generatedSql) {
         this.generatedSql = generatedSql;
+    }
+
+    public String getFieldMappingJson() {
+        return fieldMappingJson;
+    }
+
+    public void setFieldMappingJson(String fieldMappingJson) {
+        this.fieldMappingJson = fieldMappingJson;
+    }
+
+    public String getRuntimeConfigJson() {
+        return runtimeConfigJson;
+    }
+
+    public void setRuntimeConfigJson(String runtimeConfigJson) {
+        this.runtimeConfigJson = runtimeConfigJson;
     }
 
     public String getRemark() {

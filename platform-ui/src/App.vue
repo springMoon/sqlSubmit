@@ -19,17 +19,21 @@ import {
   createDatasource,
   createJob,
   createJobVersion,
-  listColumns,
+  deleteDatasource,
   listDatasources,
+  listInstanceLogs,
   listInstances,
   listJobs,
   listJobVersions,
-  listTables,
+  listLiveColumns,
+  listLiveTables,
+  listLiveTopics,
   previewSql,
   simulateSql,
   submitJob,
-  syncMetadata,
-  testDatasource
+  testDatasource,
+  updateDatasource,
+  updateJob
 } from './api';
 import type {
   ColumnMetadata,
@@ -39,28 +43,42 @@ import type {
   FieldMapping,
   Job,
   JobInstance,
+  JobLog,
   JobVersion,
   RuntimeConfig,
   SqlPreviewResponse,
   TableMetadata
 } from './types';
 
-type PageKey = 'datasources' | 'metadata' | 'simulate' | 'jobs' | 'instances' | 'settings';
+type PageKey = 'datasources' | 'simulate' | 'jobs' | 'instances' | 'settings';
+type DatasourceTypeFilter = 'ALL' | 'MYSQL' | 'KAFKA' | 'BUILTIN';
 
 const datasourceTypes: DatasourceType[] = ['MYSQL', 'KAFKA'];
 const stateBackendOptions = ['hashmap', 'rocksdb'];
+const datasourceTypeFilters: Array<{ key: DatasourceTypeFilter; label: string }> = [
+  { key: 'ALL', label: '全部' },
+  { key: 'MYSQL', label: 'MySQL' },
+  { key: 'KAFKA', label: 'Kafka' },
+  { key: 'BUILTIN', label: '内置' }
+];
 
 const activePage = ref<PageKey>('datasources');
 const datasources = ref<Datasource[]>([]);
 const tables = ref<TableMetadata[]>([]);
 const columns = ref<ColumnMetadata[]>([]);
+const sinkOptions = ref<string[]>([]);
 const jobs = ref<Job[]>([]);
 const versions = ref<JobVersion[]>([]);
 const instances = ref<JobInstance[]>([]);
+const logs = ref<JobLog[]>([]);
 const selectedJobId = ref<number | ''>('');
+const selectedInstance = ref<JobInstance | null>(null);
+const editingDatasourceId = ref<number | null>(null);
+const editingJobId = ref<number | null>(null);
+const showDatasourceDialog = ref(false);
 
 const sourceDatasourceId = ref<number | ''>('');
-const sourceTableId = ref<number | ''>('');
+const sourceTableName = ref('');
 const sinkDatasourceId = ref<number | ''>('');
 const sinkTableName = ref('');
 const jobName = ref('');
@@ -69,6 +87,7 @@ const fieldMappings = ref<FieldMapping[]>([]);
 const sqlPreview = ref<SqlPreviewResponse | null>(null);
 const activeSqlTab = ref<'full' | 'source' | 'sink' | 'insert'>('full');
 const datasourceKeyword = ref('');
+const datasourceTypeFilter = ref<DatasourceTypeFilter>('ALL');
 const jobKeyword = ref('');
 
 const loading = reactive<Record<string, boolean>>({});
@@ -103,7 +122,6 @@ const runtime = reactive<RuntimeConfig>({
 
 const pageItems = [
   { key: 'datasources' as PageKey, label: '数据源管理', icon: Database },
-  { key: 'metadata' as PageKey, label: '元数据管理', icon: Table2 },
   { key: 'simulate' as PageKey, label: 'SQL模拟生成', icon: FileCode2 },
   { key: 'jobs' as PageKey, label: '任务管理', icon: GitBranch },
   { key: 'instances' as PageKey, label: '提交实例', icon: Activity },
@@ -121,13 +139,30 @@ const selectedSink = computed(() => datasources.value.find((item) => item.id ===
 const currentPage = computed(() => pageItems.find((item) => item.key === activePage.value) || pageItems[0]);
 const filteredDatasources = computed(() => {
   const keyword = datasourceKeyword.value.trim().toLowerCase();
-  if (!keyword) return datasources.value;
-  return datasources.value.filter((item) => `${item.name} ${item.type}`.toLowerCase().includes(keyword));
+  return datasources.value.filter((item) => {
+    const matchesType =
+      datasourceTypeFilter.value === 'ALL'
+      || item.type === datasourceTypeFilter.value
+      || (datasourceTypeFilter.value === 'BUILTIN' && (item.type === 'DATAGEN' || item.type === 'PRINT'));
+    const matchesKeyword =
+      !keyword || `${item.name} ${item.type} ${item.remark || ''}`.toLowerCase().includes(keyword);
+    return matchesType && matchesKeyword;
+  });
 });
 const filteredJobs = computed(() => {
   const keyword = jobKeyword.value.trim().toLowerCase();
   if (!keyword) return jobs.value;
   return jobs.value.filter((item) => `${item.jobName} ${item.status}`.toLowerCase().includes(keyword));
+});
+const activeTopNav = computed(() => {
+  if (activePage.value === 'instances') return 'ops';
+  if (activePage.value === 'datasources') return 'prepare';
+  return 'sync';
+});
+const sinkTargetPlaceholder = computed(() => {
+  if (selectedSink.value?.type === 'MYSQL') return '请选择或输入目标表名';
+  if (selectedSink.value?.type === 'KAFKA') return '请选择或输入 Topic';
+  return 'print';
 });
 const sqlText = computed(() => {
   if (!sqlPreview.value) return '';
@@ -161,7 +196,7 @@ async function refreshAll() {
     datasources.value = await listDatasources();
     jobs.value = await listJobs();
     instances.value = selectedJobId.value ? await listInstances(Number(selectedJobId.value)) : await listInstances();
-    ensureDefaultSelection();
+    await ensureDefaultSelection();
   });
 }
 
@@ -169,17 +204,19 @@ function goPage(key: PageKey) {
   activePage.value = key;
 }
 
-function ensureDefaultSelection() {
+async function ensureDefaultSelection() {
   if (!sourceDatasourceId.value && sourceDatasources.value.length > 0) {
     sourceDatasourceId.value = sourceDatasources.value[0].id;
   }
   if (!sinkDatasourceId.value && sinkDatasources.value.length > 0) {
     sinkDatasourceId.value = sinkDatasources.value[0].id;
   }
+  await loadSinkOptions(true);
 }
 
 async function submitDatasource() {
   await withLoading('createDatasource', async () => {
+    const wasEditing = Boolean(editingDatasourceId.value);
     const config =
       datasourceForm.type === 'MYSQL'
         ? {
@@ -189,22 +226,89 @@ async function submitDatasource() {
           }
         : {
             bootstrapServers: datasourceForm.bootstrapServers,
-            topic: datasourceForm.topic,
+            topic: datasourceForm.topic || undefined,
             format: datasourceForm.format || 'json'
           };
-    await createDatasource({
+    const payload = {
       name: datasourceForm.name,
       type: datasourceForm.type,
       config,
       enabled: true,
       remark: datasourceForm.remark
-    });
-    datasourceForm.name = '';
-    datasourceForm.password = '';
-    datasourceForm.topic = '';
-    datasourceForm.remark = '';
+    };
+    if (editingDatasourceId.value) {
+      await updateDatasource(editingDatasourceId.value, payload);
+    } else {
+      await createDatasource(payload);
+    }
+    resetDatasourceForm();
+    showDatasourceDialog.value = false;
     await refreshAll();
-    setToast('数据源已创建', 'success');
+    setToast(wasEditing ? '数据源已更新' : '数据源已创建', 'success');
+  });
+}
+
+function openCreateDatasource() {
+  resetDatasourceForm();
+  showDatasourceDialog.value = true;
+}
+
+function closeDatasourceDialog() {
+  resetDatasourceForm();
+  showDatasourceDialog.value = false;
+}
+
+function resetDatasourceForm() {
+  editingDatasourceId.value = null;
+  datasourceForm.name = '';
+  datasourceForm.type = 'MYSQL';
+  datasourceForm.url =
+    'jdbc:mysql://localhost:3306/sqlsubmit_platform?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai';
+  datasourceForm.username = 'root';
+  datasourceForm.password = '';
+  datasourceForm.bootstrapServers = 'localhost:9092';
+  datasourceForm.topic = '';
+  datasourceForm.format = 'json';
+  datasourceForm.remark = '';
+}
+
+function editDatasource(datasource: Datasource) {
+  if (datasource.type === 'DATAGEN' || datasource.type === 'PRINT') {
+    setToast('内置数据源不需要编辑', 'info');
+    return;
+  }
+  editingDatasourceId.value = datasource.id;
+  datasourceForm.name = datasource.name;
+  datasourceForm.type = datasource.type;
+  datasourceForm.remark = datasource.remark || '';
+  if (datasource.type === 'MYSQL') {
+    datasourceForm.url = String(datasource.config.url || '');
+    datasourceForm.username = String(datasource.config.username || '');
+    datasourceForm.password = String(datasource.config.password || '');
+  } else {
+    datasourceForm.bootstrapServers = String(datasource.config.bootstrapServers || '');
+    datasourceForm.topic = String(datasource.config.topic || '');
+    datasourceForm.format = String(datasource.config.format || 'json');
+  }
+  activePage.value = 'datasources';
+  showDatasourceDialog.value = true;
+}
+
+async function removeDatasource(datasource: Datasource) {
+  if (datasource.type === 'DATAGEN' || datasource.type === 'PRINT') {
+    setToast('内置数据源不能删除', 'info');
+    return;
+  }
+  if (!window.confirm(`确认删除数据源 ${datasource.name}？`)) {
+    return;
+  }
+  await withLoading(`delete-ds-${datasource.id}`, async () => {
+    await deleteDatasource(datasource.id);
+    if (editingDatasourceId.value === datasource.id) {
+      resetDatasourceForm();
+    }
+    await refreshAll();
+    setToast('数据源已删除', 'success');
   });
 }
 
@@ -215,17 +319,8 @@ async function runConnectionTest(datasource: Datasource) {
   });
 }
 
-async function runMetadataSync() {
-  if (!sourceDatasourceId.value) return;
-  await withLoading('syncMetadata', async () => {
-    const result = await syncMetadata(Number(sourceDatasourceId.value));
-    await loadTables();
-    setToast(`同步完成：${result.tableCount} 张表，${result.columnCount} 个字段`, 'success');
-  });
-}
-
 async function onSourceChange() {
-  sourceTableId.value = '';
+  sourceTableName.value = '';
   columns.value = [];
   fieldMappings.value = [];
   sqlPreview.value = null;
@@ -240,19 +335,49 @@ async function onSourceChange() {
 async function loadTables() {
   if (!sourceDatasourceId.value || selectedSource.value?.type !== 'MYSQL') return;
   await withLoading('tables', async () => {
-    tables.value = await listTables(Number(sourceDatasourceId.value));
+    tables.value = await listLiveTables(Number(sourceDatasourceId.value));
   });
 }
 
 async function onTableChange() {
-  if (!sourceTableId.value) return;
+  if (!sourceDatasourceId.value || !sourceTableName.value) return;
   await withLoading('columns', async () => {
-    columns.value = await listColumns(Number(sourceTableId.value));
+    columns.value = await listLiveColumns(Number(sourceDatasourceId.value), sourceTableName.value);
     fieldMappings.value = columns.value.map((column) => ({
       sourceField: column.columnName,
       sinkField: column.columnName
     }));
     sqlPreview.value = null;
+  });
+}
+
+async function onSinkChange() {
+  await loadSinkOptions(false);
+  sqlPreview.value = null;
+}
+
+async function loadSinkOptions(preserveSelection: boolean) {
+  const currentTableName = sinkTableName.value;
+  sinkOptions.value = [];
+  if (!preserveSelection) {
+    sinkTableName.value = '';
+  }
+  if (!sinkDatasourceId.value || !selectedSink.value) {
+    return;
+  }
+  if (selectedSink.value.type === 'PRINT') {
+    sinkTableName.value = 'print';
+    return;
+  }
+  await withLoading('sinkOptions', async () => {
+    if (selectedSink.value?.type === 'MYSQL') {
+      sinkOptions.value = (await listLiveTables(Number(sinkDatasourceId.value))).map((table) => table.tableName);
+    } else if (selectedSink.value?.type === 'KAFKA') {
+      sinkOptions.value = await listLiveTopics(Number(sinkDatasourceId.value));
+    }
+    if (preserveSelection && currentTableName) {
+      sinkTableName.value = currentTableName;
+    }
   });
 }
 
@@ -281,12 +406,15 @@ function buildRequest() {
   if (!sourceDatasourceId.value || !sinkDatasourceId.value) {
     throw new Error('请选择源和目标数据源');
   }
-  if (selectedSource.value?.type === 'MYSQL' && !sourceTableId.value) {
+  if (selectedSource.value?.type === 'MYSQL' && !sourceTableName.value) {
     throw new Error('请选择 MySQL 源表');
+  }
+  if (selectedSink.value?.type !== 'PRINT' && !sinkTableName.value) {
+    throw new Error('请选择或输入目标表 / Topic');
   }
   return {
     sourceDatasourceId: Number(sourceDatasourceId.value),
-    sourceTableId: sourceTableId.value ? Number(sourceTableId.value) : undefined,
+    sourceTableName: sourceTableName.value || undefined,
     sinkDatasourceId: Number(sinkDatasourceId.value),
     sinkTableName: sinkTableName.value || undefined,
     fieldMapping: fieldMappings.value,
@@ -314,14 +442,17 @@ async function runSimulation() {
 async function saveJob() {
   await withLoading('createJob', async () => {
     if (!jobName.value.trim()) throw new Error('请输入任务名称');
-    const job = await createJob({
+    const wasEditing = Boolean(editingJobId.value);
+    const payload = {
       ...buildRequest(),
       jobName: jobName.value.trim(),
       remark: remark.value
-    });
+    };
+    const job = editingJobId.value ? await updateJob(editingJobId.value, payload) : await createJob(payload);
+    editingJobId.value = job.id;
     await refreshJobs(job.id);
     activePage.value = 'jobs';
-    setToast(`任务已保存：${job.jobName}`, 'success');
+    setToast(`${wasEditing ? '任务已更新' : '任务已保存'}：${job.jobName}`, 'success');
   });
 }
 
@@ -358,12 +489,15 @@ async function runSubmit(job: Job) {
 }
 
 function pickJob(job: Job) {
+  editingJobId.value = job.id;
   jobName.value = job.jobName;
   sourceDatasourceId.value = job.sourceDatasourceId;
-  sourceTableId.value = job.sourceTableId || '';
+  sourceTableName.value = job.sourceTableName || '';
   sinkDatasourceId.value = job.sinkDatasourceId;
   sinkTableName.value = job.sinkTableName;
   remark.value = job.remark || '';
+  fieldMappings.value = parseJson<FieldMapping[]>(job.fieldMappingJson, []);
+  Object.assign(runtime, parseJson<Partial<RuntimeConfig>>(job.runtimeConfigJson, {}));
   sqlPreview.value = job.generatedSql
     ? {
         sourceTableName: 'source_preview',
@@ -378,9 +512,35 @@ function pickJob(job: Job) {
   void loadVersions(job.id);
 }
 
-function editJob(job: Job) {
+async function editJob(job: Job) {
   pickJob(job);
+  if (job.sourceDatasourceId) {
+    await onSourceChange();
+  }
+  if (job.sourceTableName) {
+    sourceTableName.value = job.sourceTableName;
+    await onTableChange();
+  }
+  await loadSinkOptions(true);
+  fieldMappings.value = parseJson<FieldMapping[]>(job.fieldMappingJson, fieldMappings.value);
+  Object.assign(runtime, parseJson<Partial<RuntimeConfig>>(job.runtimeConfigJson, {}));
   activePage.value = 'simulate';
+}
+
+async function viewInstance(instance: JobInstance) {
+  selectedInstance.value = instance;
+  await withLoading(`logs-${instance.id}`, async () => {
+    logs.value = await listInstanceLogs(instance.id);
+  });
+}
+
+function parseJson<T>(value: string | undefined, fallback: T): T {
+  if (!value) return fallback;
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return fallback;
+  }
 }
 
 onMounted(refreshAll);
@@ -395,9 +555,9 @@ onMounted(refreshAll);
         </button>
         <div class="brand">sqlSubmit</div>
         <nav class="top-nav">
-          <button class="active">同步中心</button>
-          <button>任务运维</button>
-          <button>数据准备</button>
+          <button :class="{ active: activeTopNav === 'sync' }" @click="goPage('simulate')">同步中心</button>
+          <button :class="{ active: activeTopNav === 'ops' }" @click="goPage('instances')">任务运维</button>
+          <button :class="{ active: activeTopNav === 'prepare' }" @click="goPage('datasources')">数据准备</button>
         </nav>
       </div>
       <div class="top-actions">
@@ -427,11 +587,11 @@ onMounted(refreshAll);
         </button>
       </div>
       <div class="side-bottom">
-        <button class="side-item muted">
+        <button class="side-item muted" @click="setToast('API 访问页面还未接入，当前可直接调用 /api/v1 接口', 'info')">
           <FileCode2 :size="18" />
           <span>API访问</span>
         </button>
-        <button class="side-item muted">
+        <button class="side-item muted" :class="{ active: activePage === 'settings' }" @click="goPage('settings')">
           <Settings :size="18" />
           <span>设置</span>
         </button>
@@ -452,18 +612,77 @@ onMounted(refreshAll);
             <Search :size="19" />
             <input v-model.trim="datasourceKeyword" placeholder="输入数据源名称或类型" />
           </div>
-          <button class="icon-button primary" :disabled="loading.refresh" @click="refreshAll">
-            <RefreshCw :size="17" />
-            <span>刷新</span>
-          </button>
+          <div class="filter-tabs">
+            <button
+              v-for="filter in datasourceTypeFilters"
+              :key="filter.key"
+              :class="{ active: datasourceTypeFilter === filter.key }"
+              @click="datasourceTypeFilter = filter.key"
+            >
+              {{ filter.label }}
+            </button>
+          </div>
+          <div class="toolbar-actions">
+            <button class="icon-button primary" @click="openCreateDatasource">
+              <Database :size="17" />
+              <span>新建数据源</span>
+            </button>
+            <button class="icon-button" :disabled="loading.refresh" @click="refreshAll">
+              <RefreshCw :size="17" />
+              <span>刷新</span>
+            </button>
+          </div>
         </div>
 
-        <div class="two-column">
-          <article class="panel">
+        <div class="datasource-layout">
+          <article class="panel datasource-list-panel">
             <div class="panel-title">
               <Database :size="18" />
-              <h2>创建数据源</h2>
+              <h2>数据源列表</h2>
             </div>
+            <div class="card-grid">
+              <div v-for="item in filteredDatasources" :key="item.id" class="resource-card">
+                <div>
+                  <strong>{{ item.name }}</strong>
+                  <p>{{ item.remark || '-' }}</p>
+                  <small>{{ item.type }} · {{ item.enabled ? '已启用' : '已停用' }}</small>
+                </div>
+                <div class="card-actions">
+                  <button class="icon-button" @click="runConnectionTest(item)">
+                    <Play :size="16" />
+                    <span>测试</span>
+                  </button>
+                  <button
+                    class="icon-button"
+                    :disabled="item.type === 'DATAGEN' || item.type === 'PRINT'"
+                    @click="editDatasource(item)"
+                  >
+                    <span>编辑</span>
+                  </button>
+                  <button
+                    class="icon-button danger"
+                    :disabled="item.type === 'DATAGEN' || item.type === 'PRINT'"
+                    @click="removeDatasource(item)"
+                  >
+                    <span>删除</span>
+                  </button>
+                </div>
+              </div>
+              <div v-if="filteredDatasources.length === 0" class="empty-card">暂无数据源</div>
+            </div>
+          </article>
+        </div>
+
+        <div v-if="showDatasourceDialog" class="modal-backdrop" @click.self="closeDatasourceDialog">
+          <article class="modal-panel datasource-modal">
+            <div class="modal-header">
+              <div class="panel-title">
+                <Database :size="18" />
+                <h2>{{ editingDatasourceId ? '编辑数据源' : '创建数据源' }}</h2>
+              </div>
+              <button class="square-button" title="关闭" type="button" @click="closeDatasourceDialog">×</button>
+            </div>
+
             <form class="form-grid" @submit.prevent="submitDatasource">
               <label>
                 名称
@@ -498,7 +717,7 @@ onMounted(refreshAll);
                 </label>
                 <label>
                   Topic
-                  <input v-model.trim="datasourceForm.topic" required />
+                  <input v-model.trim="datasourceForm.topic" placeholder="可在任务目标表中指定" />
                 </label>
                 <label>
                   Format
@@ -510,123 +729,23 @@ onMounted(refreshAll);
                 备注
                 <input v-model.trim="datasourceForm.remark" />
               </label>
-              <button class="icon-button primary full" :disabled="loading.createDatasource">
-                <Save :size="17" />
-                <span>保存数据源</span>
-              </button>
-            </form>
-          </article>
-
-          <article class="panel">
-            <div class="panel-title">
-              <Database :size="18" />
-              <h2>数据源列表</h2>
-            </div>
-            <div class="card-grid">
-              <div v-for="item in filteredDatasources" :key="item.id" class="resource-card">
-                <div>
-                  <strong>{{ item.name }}</strong>
-                  <p>{{ item.remark || '-' }}</p>
-                  <small>{{ item.type }} · {{ item.enabled ? '已启用' : '已停用' }}</small>
-                </div>
-                <button class="icon-button" @click="runConnectionTest(item)">
-                  <Play :size="16" />
-                  <span>测试</span>
+              <div class="modal-actions full">
+                <button class="icon-button" type="button" @click="closeDatasourceDialog">
+                  <span>取消</span>
+                </button>
+                <button class="icon-button primary" :disabled="loading.createDatasource">
+                  <Save :size="17" />
+                  <span>{{ editingDatasourceId ? '更新数据源' : '保存数据源' }}</span>
                 </button>
               </div>
-              <div v-if="filteredDatasources.length === 0" class="empty-card">暂无数据源</div>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section v-else-if="activePage === 'metadata'" class="page-stack">
-        <div class="page-toolbar">
-          <div class="form-inline">
-            <label>
-              MySQL 数据源
-              <select v-model="sourceDatasourceId" @change="onSourceChange">
-                <option disabled value="">请选择</option>
-                <option v-for="item in sourceDatasources" :key="item.id" :value="item.id">
-                  {{ item.name }} / {{ item.type }}
-                </option>
-              </select>
-            </label>
-          </div>
-          <button
-            class="icon-button primary"
-            :disabled="selectedSource?.type !== 'MYSQL' || loading.syncMetadata"
-            @click="runMetadataSync"
-          >
-            <RefreshCw :size="17" />
-            <span>同步元数据</span>
-          </button>
-        </div>
-
-        <div class="two-column wide-left">
-          <article class="panel">
-            <div class="panel-title">
-              <Table2 :size="18" />
-              <h2>表列表</h2>
-            </div>
-            <div class="table-wrap tall">
-              <table>
-                <thead>
-                  <tr>
-                    <th>表名</th>
-                    <th>类型</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="table in tables" :key="table.id" :class="{ selected: sourceTableId === table.id }">
-                    <td>{{ table.tableName }}</td>
-                    <td>{{ table.tableType }}</td>
-                    <td>
-                      <button class="text-button" @click="sourceTableId = table.id; onTableChange()">查看字段</button>
-                    </td>
-                  </tr>
-                  <tr v-if="tables.length === 0">
-                    <td colspan="3" class="empty">暂无表，请先同步元数据</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </article>
-
-          <article class="panel">
-            <div class="panel-title">
-              <Table2 :size="18" />
-              <h2>字段结构</h2>
-            </div>
-            <div class="table-wrap tall">
-              <table>
-                <thead>
-                  <tr>
-                    <th>字段</th>
-                    <th>Flink类型</th>
-                    <th>主键</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="column in columns" :key="column.columnName">
-                    <td>{{ column.columnName }}</td>
-                    <td>{{ column.flinkType }}</td>
-                    <td>{{ column.primaryKey ? 'Y' : '' }}</td>
-                  </tr>
-                  <tr v-if="columns.length === 0">
-                    <td colspan="3" class="empty">请选择表查看字段</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            </form>
           </article>
         </div>
       </section>
 
       <section v-else-if="activePage === 'simulate'" class="page-stack">
-        <div class="three-column">
-          <article class="panel">
+        <div class="three-column simulate-workbench">
+          <article class="panel config-panel">
             <div class="panel-title">
               <GitBranch :size="18" />
               <h2>任务配置</h2>
@@ -647,14 +766,16 @@ onMounted(refreshAll);
               </label>
               <label class="full">
                 源表
-                <select v-model="sourceTableId" :disabled="selectedSource?.type !== 'MYSQL'" @change="onTableChange">
+                <select v-model="sourceTableName" :disabled="selectedSource?.type !== 'MYSQL'" @change="onTableChange">
                   <option disabled value="">请选择</option>
-                  <option v-for="table in tables" :key="table.id" :value="table.id">{{ table.tableName }}</option>
+                  <option v-for="table in tables" :key="table.tableName" :value="table.tableName">
+                    {{ table.tableName }}
+                  </option>
                 </select>
               </label>
               <label>
                 目标数据源
-                <select v-model="sinkDatasourceId">
+                <select v-model="sinkDatasourceId" @change="onSinkChange">
                   <option disabled value="">请选择</option>
                   <option v-for="item in sinkDatasources" :key="item.id" :value="item.id">
                     {{ item.name }} / {{ item.type }}
@@ -663,7 +784,17 @@ onMounted(refreshAll);
               </label>
               <label>
                 目标表 / Topic
-                <input v-model.trim="sinkTableName" :placeholder="selectedSink?.type === 'PRINT' ? 'print' : ''" />
+                <select v-if="sinkOptions.length > 0" v-model="sinkTableName" @change="sqlPreview = null">
+                  <option disabled value="">请选择</option>
+                  <option v-for="option in sinkOptions" :key="option" :value="option">{{ option }}</option>
+                </select>
+                <input
+                  v-else
+                  v-model.trim="sinkTableName"
+                  :disabled="selectedSink?.type === 'PRINT'"
+                  :placeholder="sinkTargetPlaceholder"
+                  @input="sqlPreview = null"
+                />
               </label>
               <label>
                 并行度
@@ -709,7 +840,7 @@ onMounted(refreshAll);
             </div>
           </article>
 
-          <article class="panel">
+          <article class="panel mapping-panel">
             <div class="panel-title">
               <Table2 :size="18" />
               <h2>字段映射</h2>
@@ -757,7 +888,7 @@ onMounted(refreshAll);
               <button :class="{ active: activeSqlTab === 'sink' }" @click="activeSqlTab = 'sink'">Sink</button>
               <button :class="{ active: activeSqlTab === 'insert' }" @click="activeSqlTab = 'insert'">Insert</button>
             </div>
-            <pre>{{ sqlText || ' ' }}</pre>
+            <pre :class="{ placeholder: !sqlText }">{{ sqlText || '选择源表后点击“模拟生成”或“预览SQL”查看结果' }}</pre>
           </article>
         </div>
       </section>
@@ -798,7 +929,12 @@ onMounted(refreshAll);
                       <Save :size="15" />
                       <span>保存版本</span>
                     </button>
-                    <button class="icon-button primary" @click="runSubmit(job)">
+                    <button
+                      class="icon-button primary"
+                      :disabled="!job.currentVersion || job.currentVersion <= 0 || loading[`submit-${job.id}`]"
+                      title="需要先保存版本后才能提交"
+                      @click="runSubmit(job)"
+                    >
                       <Send :size="15" />
                       <span>提交</span>
                     </button>
@@ -846,12 +982,18 @@ onMounted(refreshAll);
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="item in instances" :key="item.id">
+                  <tr
+                    v-for="item in instances"
+                    :key="item.id"
+                    :class="{ selected: selectedInstance?.id === item.id }"
+                  >
                     <td>#{{ item.id }}</td>
                     <td>{{ item.jobId }}</td>
                     <td>v{{ item.jobVersion }}</td>
                     <td><span class="status">{{ item.status }}</span></td>
-                    <td class="path-cell">{{ item.sqlPath }}</td>
+                    <td class="path-cell">
+                      <button class="text-button" @click="viewInstance(item)">查看详情</button>
+                    </td>
                   </tr>
                   <tr v-if="instances.length === 0">
                     <td colspan="5" class="empty">暂无提交实例</td>
@@ -861,6 +1003,37 @@ onMounted(refreshAll);
             </div>
           </article>
         </div>
+
+        <article class="panel instance-detail-panel">
+          <div class="panel-title">
+            <FileCode2 :size="18" />
+            <h2>实例详情</h2>
+          </div>
+          <template v-if="selectedInstance">
+            <div class="detail-grid">
+              <div>
+                <strong>提交命令</strong>
+                <pre>{{ selectedInstance.submitCommand }}</pre>
+              </div>
+              <div>
+                <strong>SQL 文件</strong>
+                <span>{{ selectedInstance.sqlPath }}</span>
+              </div>
+              <div>
+                <strong>Properties 文件</strong>
+                <span>{{ selectedInstance.propPath }}</span>
+              </div>
+            </div>
+            <div class="log-list">
+              <div v-for="log in logs" :key="log.id" class="log-line" :class="log.level.toLowerCase()">
+                <span>{{ log.level }}</span>
+                <pre>{{ log.message }}</pre>
+              </div>
+              <div v-if="logs.length === 0" class="empty-card">暂无日志</div>
+            </div>
+          </template>
+          <div v-else class="empty-card">点击提交实例查看命令和日志</div>
+        </article>
       </section>
 
       <section v-else class="page-stack">

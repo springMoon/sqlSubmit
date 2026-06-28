@@ -18,7 +18,7 @@ export interface Datasource {
 }
 
 export interface TableMetadata {
-  id: number;
+  id?: number;
   datasourceId: number;
   tableName: string;
   tableType: string;
@@ -61,6 +61,7 @@ export interface RuntimeConfig {
 export interface SqlPreviewRequest {
   sourceDatasourceId: number;
   sourceTableId?: number;
+  sourceTableName?: string;
   sinkDatasourceId: number;
   sinkTableName?: string;
   fieldMapping?: FieldMapping[];
@@ -83,11 +84,14 @@ export interface Job {
   jobName: string;
   sourceDatasourceId: number;
   sourceTableId?: number;
+  sourceTableName?: string;
   sinkDatasourceId: number;
   sinkTableName: string;
   status: string;
   currentVersion: number;
   generatedSql?: string;
+  fieldMappingJson?: string;
+  runtimeConfigJson?: string;
   remark?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -117,4 +121,12 @@ export interface JobInstance {
   errorMessage?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface JobLog {
+  id: number;
+  jobInstanceId: number;
+  level: string;
+  message: string;
+  createdAt?: string;
 }

@@ -14,6 +14,7 @@ public class SyncJobEntity {
     private String jobName;
     private Long sourceDatasourceId;
     private Long sourceTableId;
+    private String sourceTableName;
     private Long sinkDatasourceId;
     private String sinkTableName;
     private String fieldMappingJson;
@@ -55,6 +56,14 @@ public class SyncJobEntity {
 
     public void setSourceTableId(Long sourceTableId) {
         this.sourceTableId = sourceTableId;
+    }
+
+    public String getSourceTableName() {
+        return sourceTableName;
+    }
+
+    public void setSourceTableName(String sourceTableName) {
+        this.sourceTableName = sourceTableName;
     }
 
     public Long getSinkDatasourceId() {

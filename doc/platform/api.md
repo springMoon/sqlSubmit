@@ -82,11 +82,31 @@ POST /api/v1/datasources/{id}/metadata/sync
 GET /api/v1/datasources/{id}/tables
 ```
 
+该接口查询平台缓存的元数据。当前页面主流程推荐使用实时接口：
+
+```http
+GET /api/v1/datasources/{id}/live/tables
+```
+
 ### 查询表字段
 
 ```http
 GET /api/v1/tables/{tableId}/columns
 ```
+
+该接口查询平台缓存的字段。当前页面主流程推荐使用实时接口：
+
+```http
+GET /api/v1/datasources/{id}/live/columns?tableName=sync_datasource
+```
+
+### 查询 Kafka Topic
+
+```http
+GET /api/v1/datasources/{id}/live/topics
+```
+
+用于目标数据源选择 Kafka 时动态加载 Topic 列表。若本地 Kafka 不可用，接口会返回连接错误，页面仍保留手动输入兜底。
 
 ## 任务接口
 
@@ -101,7 +121,7 @@ POST /api/v1/jobs/sql/preview
 ```json
 {
   "sourceDatasourceId": 1,
-  "sourceTableId": 10,
+  "sourceTableName": "user",
   "sinkDatasourceId": 2,
   "sinkTableName": "user_log",
   "fieldMapping": [
@@ -195,7 +215,7 @@ POST /api/v1/jobs
 {
   "jobName": "mysql_user_to_kafka",
   "sourceDatasourceId": 1,
-  "sourceTableId": 10,
+  "sourceTableName": "user",
   "sinkDatasourceId": 2,
   "sinkTableName": "user_log",
   "fieldMapping": [

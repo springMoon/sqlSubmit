@@ -8,6 +8,7 @@ import com.rookie.submit.platform.metadata.service.MetadataService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,6 +34,24 @@ public class MetadataController {
     public ApiResponse<List<TableMetadataResponse>> listTables(@PathVariable Long id) {
         List<TableMetadataResponse> responses = metadataService.listTables(id).stream()
                 .map(TableMetadataResponse::from)
+                .collect(Collectors.toList());
+        return ApiResponse.ok(responses);
+    }
+
+    @GetMapping("/datasources/{id}/live/tables")
+    public ApiResponse<List<TableMetadataResponse>> listLiveTables(@PathVariable Long id) throws Exception {
+        List<TableMetadataResponse> responses = metadataService.listLiveMysqlTables(id).stream()
+                .map(TableMetadataResponse::from)
+                .collect(Collectors.toList());
+        return ApiResponse.ok(responses);
+    }
+
+    @GetMapping("/datasources/{id}/live/columns")
+    public ApiResponse<List<ColumnMetadataResponse>> listLiveColumns(
+            @PathVariable Long id,
+            @RequestParam String tableName) throws Exception {
+        List<ColumnMetadataResponse> responses = metadataService.listLiveMysqlColumns(id, tableName).stream()
+                .map(ColumnMetadataResponse::from)
                 .collect(Collectors.toList());
         return ApiResponse.ok(responses);
     }

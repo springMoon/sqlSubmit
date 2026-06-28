@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -96,6 +97,61 @@ public class MetadataService {
         return columnMetadataMapper.selectList(wrapper);
     }
 
+    public List<SyncTableMetadataEntity> listLiveMysqlTables(Long datasourceId) throws Exception {
+        DatasourceDefinition datasource = mysqlDatasource(datasourceId);
+        JsonNode config = datasource.getConfig();
+        String url = required(config, "url");
+        String username = required(config, "username");
+        String password = required(config, "password");
+
+        List<SyncTableMetadataEntity> result = new ArrayList<>();
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            DatabaseMetaData metaData = connection.getMetaData();
+            String catalog = connection.getCatalog();
+            try (ResultSet tables = metaData.getTables(catalog, null, "%", new String[]{"TABLE"})) {
+                while (tables.next()) {
+                    SyncTableMetadataEntity entity = new SyncTableMetadataEntity();
+                    entity.setDatasourceId(datasourceId);
+                    entity.setTableName(tables.getString("TABLE_NAME"));
+                    entity.setTableType("TABLE");
+                    entity.setComment(tables.getString("REMARKS"));
+                    result.add(entity);
+                }
+            }
+        } catch (SQLException e) {
+            throw new IllegalArgumentException(toMysqlMetadataError(url, e), e);
+        }
+        LOG.info("loaded live mysql tables, datasourceId: {}, tableCount: {}", datasourceId, result.size());
+        return result;
+    }
+
+    public List<SyncColumnMetadataEntity> listLiveMysqlColumns(Long datasourceId, String tableName) throws Exception {
+        if (tableName == null || tableName.trim().isEmpty()) {
+            throw new IllegalArgumentException("表名不能为空");
+        }
+        DatasourceDefinition datasource = mysqlDatasource(datasourceId);
+        JsonNode config = datasource.getConfig();
+        String url = required(config, "url");
+        String username = required(config, "username");
+        String password = required(config, "password");
+
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            DatabaseMetaData metaData = connection.getMetaData();
+            String catalog = connection.getCatalog();
+            return readColumns(metaData, catalog, tableName.trim(), null);
+        } catch (SQLException e) {
+            throw new IllegalArgumentException(toMysqlMetadataError(url, e), e);
+        }
+    }
+
+    private DatasourceDefinition mysqlDatasource(Long datasourceId) {
+        DatasourceDefinition datasource = datasourceService.get(datasourceId);
+        if (datasource.getType() != DatasourceType.MYSQL) {
+            throw new IllegalArgumentException("仅支持读取 MySQL 数据源元数据");
+        }
+        return datasource;
+    }
+
     private SyncTableMetadataEntity upsertTable(Long datasourceId, String tableName, String comment) {
         LocalDateTime now = LocalDateTime.now();
         LambdaQueryWrapper<SyncTableMetadataEntity> wrapper = new LambdaQueryWrapper<>();
@@ -127,8 +183,20 @@ public class MetadataService {
         deleteWrapper.eq(SyncColumnMetadataEntity::getTableId, tableId);
         columnMetadataMapper.delete(deleteWrapper);
 
+        List<SyncColumnMetadataEntity> columns = readColumns(metaData, catalog, tableName, tableId);
+        for (SyncColumnMetadataEntity entity : columns) {
+            columnMetadataMapper.insert(entity);
+        }
+        return columns.size();
+    }
+
+    private List<SyncColumnMetadataEntity> readColumns(
+            DatabaseMetaData metaData,
+            String catalog,
+            String tableName,
+            Long tableId) throws Exception {
         Set<String> primaryKeys = readPrimaryKeys(metaData, catalog, tableName);
-        int count = 0;
+        List<SyncColumnMetadataEntity> result = new ArrayList<>();
         try (ResultSet columns = metaData.getColumns(catalog, null, tableName, "%")) {
             while (columns.next()) {
                 SyncColumnMetadataEntity entity = new SyncColumnMetadataEntity();
@@ -142,11 +210,13 @@ public class MetadataService {
                 entity.setComment(columns.getString("REMARKS"));
                 entity.setCreatedAt(LocalDateTime.now());
                 entity.setUpdatedAt(LocalDateTime.now());
-                columnMetadataMapper.insert(entity);
-                count++;
+                result.add(entity);
             }
         }
-        return count;
+        if (result.isEmpty()) {
+            throw new IllegalArgumentException("源表没有字段或表不存在: " + tableName);
+        }
+        return result;
     }
 
     private Set<String> readPrimaryKeys(DatabaseMetaData metaData, String catalog, String tableName) throws Exception {

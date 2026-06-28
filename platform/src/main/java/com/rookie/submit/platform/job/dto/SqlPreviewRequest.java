@@ -13,6 +13,8 @@ public class SqlPreviewRequest {
 
     private Long sourceTableId;
 
+    private String sourceTableName;
+
     @NotNull(message = "目标数据源 ID 不能为空")
     private Long sinkDatasourceId;
 
@@ -40,6 +42,14 @@ public class SqlPreviewRequest {
 
     public void setSourceTableId(Long sourceTableId) {
         this.sourceTableId = sourceTableId;
+    }
+
+    public String getSourceTableName() {
+        return sourceTableName;
+    }
+
+    public void setSourceTableName(String sourceTableName) {
+        this.sourceTableName = sourceTableName;
     }
 
     public Long getSinkDatasourceId() {
